@@ -1,0 +1,81 @@
+<!-- public/templates/post.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} - dane サイト</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="ascii-container">
+                <div class="ascii-box">
+                    <pre>
+⣀⣀⣀⣀⣀⣀⣀⣀⣀⡀⢀⣀⣀⣀⣀⣀⡀⢀⣀⢀⣀⣀⣀⣀⣀⣀⣀⣀⠀
+⣿⣿⣿⣿⣿⣿⡏⢹⣿⠀⠀⣿⣿⣿⣿⣿⡇⠈⢿⣧⠫⣻⣿⣿⣿⣿⣿⣿⠀
+⣿⣿⣿⣿⣿⣿⠁⢾⣿⠀⢀⣹⣿⣿⣿⣿⣷⣄⡀⠙⢧⡈⢿⣿⣿⣿⣿⣿⠀
+⣿⣿⣿⣿⣿⡟⠒⠚⡟⡉⠁⠈⢻⣿⣿⣿⢻⡄⠀⣉⠉⠉⠚⣿⣿⣿⣿⣿⡀
+⣿⣿⣿⣿⣿⣷⣦⣤⣵⣄⠱⣀⠐⠹⢿⣿⣈⣷⡿⢿⣿⣿⣄⠯⣿⣿⣿⣿⡇
+⣿⣿⣿⣿⣿⡻⣿⢿⣿⣿⠑⠇⠀⠀⠱⠹⣇⢸⠛⠟⢿⠇⡽⠂⣿⡿⢿⣿⠃
+⣿⣿⣿⣿⣿⡕⠓⣄⡬⠊⠀⠀⠀⠀⠀⠀⠈⠀⠒⡰⡦⠥⠘⠀⣿⡇⠄⢿⠀
+⢹⣿⣿⣿⣿⣷⠴⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠀⢠⡟⡇⣠⣾⠀
+⠈⠉⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠈⠈⠉⠉⠀
+                    </pre>
+                </div>
+            </div>
+            <h1>[ dane ]</h1>
+            <nav>
+                <div class="nav-container">
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/about">About</a></li>
+                        <li><a href="/projects">Projects</a></li>
+                        <li><a href="/blog">Blog</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+        <hr>
+        <div class="layout">
+            <div class="post-container card">
+                <article class="blog-post">
+                    <header class="post-header">
+                        <h2>{{title}}</h2>
+                        <div class="post-meta">
+                            <time datetime="{{date_iso}}">{{date}}</time>
+                            <span class="reading-time">{{reading_time}} min read</span>
+                        </div>
+                    </header>
+                    
+                    <div class="post-content">
+                        {{content}}
+                    </div>
+
+                    <footer class="post-footer">
+                        {{#if tags}}
+                        <div class="post-tags">
+                            {{#each tags}}
+                            <span class="tag">{{this}}</span>
+                            {{/each}}
+                        </div>
+                        {{/if}}
+
+                        <div class="post-navigation">
+                            {{#if prev_post}}
+                            <a href="/blog/{{prev_post.slug}}" class="prev-post">← {{prev_post.title}}</a>
+                            {{/if}}
+                            {{#if next_post}}
+                            <a href="/blog/{{next_post.slug}}" class="next-post">{{next_post.title}} →</a>
+                            {{/if}}
+                        </div>
+                    </footer>
+                </article>
+            </div>
+        </div>
+    </div>
+    <script src="../js/main.js"></script>
+</body>
+</html>
