@@ -4,8 +4,8 @@
 
 @font-face {
     font-family: 'W95FA';
-    src: url('/public/assets/fonts/w95fa.woff2') format('woff2'),
-         url('/public/assets/fonts/w95fa.woff') format('woff');
+    src: url('../assets/fonts/w95fa.woff2') format('woff2'),
+         url('../assets/fonts/w95fa.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }

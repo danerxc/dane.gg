@@ -52,9 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadPosts() {
     try {
-        const response = await fetch('/api/posts');
+        const response = await fetch('/blog/posts');
         const posts = await response.json();
-        const container = document.getElementById('blog-posts');
+        const indexContainer = document.getElementById('blog-index');
+        const blogContainer = document.getElementById('blog-posts');
         
         posts.forEach(post => {
             const date = new Date(post.created_at).toLocaleDateString('en-US', {
@@ -63,7 +64,7 @@ async function loadPosts() {
                 day: 'numeric'
             });
 
-            container.innerHTML += `
+            blogContainer.innerHTML += `
                 <div class="card blog-post-card">
                     <article>
                         <header>
@@ -73,7 +74,7 @@ async function loadPosts() {
                             </div>
                         </header>
                         <div class="post-excerpt">
-                            <p>${post.excerpt || ''}</p>
+                            <p>${post.content || ''}</p>
                         </div>
                         <footer>
                             <a href="/blog/${post.slug}" class="read-more">Read more →</a>

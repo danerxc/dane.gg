@@ -1,7 +1,5 @@
-// services/blog.js
 const { Pool } = require('pg');
-const marked = require('marked');
-
+const { marked } = require('marked');
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
@@ -10,7 +8,7 @@ class BlogService {
     async getAllPosts() {
         try {
             const { rows } = await pool.query(
-                'SELECT id, title, slug, excerpt, created_at FROM blog_posts WHERE published = true ORDER BY created_at DESC'
+                'SELECT id, title, slug, content, created_at FROM website.posts WHERE published = true ORDER BY created_at DESC'
             );
             return rows;
         } catch (err) {
@@ -19,9 +17,10 @@ class BlogService {
     }
 
     async getPostBySlug(slug) {
+        console.log('slug:', slug);
         try {
             const { rows } = await pool.query(
-                'SELECT * FROM blog_posts WHERE slug = $1 AND published = true',
+                'SELECT * FROM website.posts WHERE slug = $1 AND published = true',
                 [slug]
             );
             
@@ -30,7 +29,18 @@ class BlogService {
             }
 
             const post = rows[0];
-            post.content = marked(post.content); // Convert Markdown to HTML
+            try {
+                marked.setOptions({
+                    gfm: true,
+                    breaks: true,
+                    sanitize: true
+                });
+                post.content = marked.parse(post.content);
+            } catch (markdownError) {
+                console.error('Markdown parsing error:', markdownError);
+                post.content = post.content;
+            }
+            console.log('post:', post);
             return post;
         } catch (err) {
             throw new Error('Failed to fetch post: ' + err.message);
@@ -40,7 +50,7 @@ class BlogService {
     async createPost({ title, content, slug, published = true }) {
         try {
             const { rows } = await pool.query(
-                `INSERT INTO blog_posts (title, content, slug, published) 
+                `INSERT INTO website.posts (title, content, slug, published) 
                  VALUES ($1, $2, $3, $4) 
                  RETURNING *`,
                 [title, content, slug, published]
@@ -54,7 +64,7 @@ class BlogService {
     async updatePost(slug, { title, content, published }) {
         try {
             const { rows } = await pool.query(
-                `UPDATE blog_posts 
+                `UPDATE website.posts 
                  SET title = COALESCE($1, title),
                      content = COALESCE($2, content),
                      published = COALESCE($3, published),
@@ -72,7 +82,7 @@ class BlogService {
     async deletePost(slug) {
         try {
             const { rowCount } = await pool.query(
-                'DELETE FROM blog_posts WHERE slug = $1',
+                'DELETE FROM website.posts WHERE slug = $1',
                 [slug]
             );
             return rowCount > 0;
