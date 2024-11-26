@@ -5,12 +5,32 @@ const pool = new Pool({
 });
 
 class BlogService {
-    async getAllPosts() {
+    async getAllPosts(limit, offset = 0) {
         try {
-            const { rows } = await pool.query(
-                'SELECT id, title, slug, content, created_at FROM website.posts WHERE published = true ORDER BY created_at DESC'
+            // Get total count
+            const countResult = await pool.query(
+                'SELECT COUNT(*) FROM website.posts WHERE published = true'
             );
-            return rows;
+            const total = parseInt(countResult.rows[0].count);
+
+            // Build query with pagination
+            const query = `
+                SELECT id, title, slug, content, created_at, thumbnail 
+                FROM website.posts 
+                WHERE published = true 
+                ORDER BY created_at DESC
+                LIMIT $1 OFFSET $2
+            `;
+            
+            const { rows } = await pool.query(query, [limit, offset]);
+
+            return {
+                posts: rows,
+                total,
+                hasMore: total > offset + limit,
+                currentPage: Math.floor(offset / limit) + 1,
+                totalPages: Math.ceil(total / limit)
+            };
         } catch (err) {
             throw new Error('Failed to fetch posts: ' + err.message);
         }

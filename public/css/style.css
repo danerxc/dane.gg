@@ -763,3 +763,53 @@ nav a:hover {
 .read-more:hover {
     color: #e48f8f;
 }
+
+/* Blog Grid Layout */
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    margin: 0 5px;
+    padding: 10px 15px;
+    border: none;
+    background-color: #333;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.pagination button:hover {
+    background-color: #555;
+}
+
+/* Responsive Adjustments for Small Screens */
+@media (max-width: 768px) {
+    .blog-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Responsive Adjustments for Small Screens */
+@media (max-width: 768px) {
+    .blog-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.blog-index a {
+    text-decoration: none;
+}
+
+.blog-index a:hover {
+    color: #e48f8f;
+}

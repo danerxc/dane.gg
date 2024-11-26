@@ -6,8 +6,12 @@ const path = require('path');
 // Get all posts
 router.get('/posts', async (req, res) => {
     try {
-        const posts = await blogService.getAllPosts();
-        res.json(posts);
+        const limit = parseInt(req.query.limit) || 5; // Default to 5 posts
+        const page = parseInt(req.query.page) || 1;
+        const offset = (page - 1) * limit;
+
+        const result = await blogService.getAllPosts(limit, offset);
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -24,6 +28,7 @@ router.get('/:slug', async (req, res) => {
         }
         
         res.render('post', {
+            thumbnail: post.thumbnail,
             title: post.title,
             content: post.content,
             date: new Date(post.created_at).toLocaleDateString(),

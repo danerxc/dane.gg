@@ -24,7 +24,7 @@ CREATE TABLE website.posts (
     title VARCHAR(255) NOT NULL,
     slug VARCHAR(280) NOT NULL UNIQUE,
     content TEXT NOT NULL,
-    author_id UUID NOT NULL REFERENCES website.users(id),
+    thumbnail VARCHAR(255),
     published BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
