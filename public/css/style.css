@@ -1,5 +1,5 @@
 :root {
-    --scale-factor: 0.85; /* Adjust between 0-1 */
+    --scale-factor: 0.85; 
 }
 
 @font-face {
@@ -53,7 +53,7 @@ body::before {
     padding: 20px;
     width: 90%;
     max-width: 900px;
-    border: 1px solid #ffffff; /* Correct border declaration */
+    border: 1px solid #ffffff;
     font-size: 14px;
     box-sizing: border-box;
     transform: scale(var(--scale-factor));
@@ -66,8 +66,8 @@ body::before {
 header {
     text-align: left;
     margin-bottom: 20px;
-    border-bottom: 2px solid black; /* Add a black bottom border */
-    padding-bottom: 5px; /* Space between text and border */
+    border-bottom: 2px solid black;
+    padding-bottom: 5px;
 }
 
 header h1 {
@@ -96,16 +96,16 @@ header p {
 /* Left and Right Columns */
 .left-column {
     display: flex;
-    flex-direction: column; /* Stack items vertically */
-    gap: 10px; /* Space between cards */
-    flex: 1; /* Smaller width */
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
 }
 
 .right-column {
     display: flex;
-    flex-direction: column; /* Stack items vertically */
-    gap: 10px; /* Space between cards */
-    flex: 2; /* Larger width */
+    flex-direction: column;
+    gap: 10px;
+    flex: 2;
 }
 
 /* Card Styles */
@@ -122,9 +122,9 @@ header p {
 .card h3 {
     font-size: 16px;
     margin: 0 0 10px;
-    border-bottom: 2px solid rgb(255, 255, 255); /* Add a white bottom border */
-    padding-bottom: 5px; /* Space between text and border */
-    margin-bottom: 10px; /* Space below the border */
+    border-bottom: 2px solid rgb(255, 255, 255);
+    padding-bottom: 5px;
+    margin-bottom: 10px;
 }
 
 .card ul {
@@ -153,56 +153,56 @@ header p {
 /* Responsive Adjustments for Small Screens */
 @media (max-width: 600px) {
     .layout {
-        flex-direction: column; /* Stack columns vertically */
+        flex-direction: column; 
     }
 
     .left-column,
     .right-column {
-        flex: none; /* Reset equal width */
-        width: 100%; /* Full width for each column */
+        flex: none;
+        width: 100%;
     }
 }
 
 /* Header Container */
 .header-container {
     display: flex;
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-    max-width: 90%; /* Restrict the width of the header container */
-    margin: 0 auto; /* Center in the viewport */
-    padding: 20px; /* Add some padding around the header */
-    flex-wrap: wrap; /* Allow wrapping to prevent overlap */
-    box-sizing: border-box; /* Include padding in size calculation */
+    justify-content: center;
+    align-items: center;
+    max-width: 90%;
+    margin: 0 auto;
+    padding: 20px;
+    flex-wrap: wrap;
+    box-sizing: border-box;
 }
 
 /* ASCII Art (Left) */
 .header-container .ascii-art {
-    flex: 1; /* Allow flexible size */
-    max-width: 40%; /* Limit maximum width */
-    font-size: 1vw; /* Dynamically scale font size */
-    line-height: 1; /* Compact line spacing */
-    white-space: pre; /* Preserve ASCII art formatting */
-    text-align: center; /* Align to the right within its space */
+    flex: 1;
+    max-width: 40%;
+    font-size: 1vw;
+    line-height: 1;
+    white-space: pre;
+    text-align: center;
 }
 
 /* Text Content (Right) */
 .header-container .text-content {
-    flex: 1; /* Allow flexible size */
-    max-width: 40%; /* Limit maximum width */
-    font-size: 1vw; /* Dynamically scale font size */
-    line-height: 1; /* Compact line spacing */
-    white-space: pre; /* Preserve ASCII formatting */
-    text-align: center; /* Align to the left within its space */
+    flex: 1;
+    max-width: 40%;
+    font-size: 1vw;
+    line-height: 1;
+    white-space: pre;
+    text-align: center;
 }
 
 /* Black Container */
 .black-container {
     display: flex;
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-    min-height: 20vh; /* Adjust the container height */
-    width: 100%; /* Full width of the page */
-    margin: 0 auto; /* Center in the viewport */
+    justify-content: center;
+    align-items: center; 
+    min-height: 20vh; 
+    width: 100%;
+    margin: 0 auto;
     background-color: black;
     padding: 20px;
     box-sizing: border-box;
@@ -211,14 +211,14 @@ header p {
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .header-container {
-        flex-wrap: wrap; /* Ensure wrapping on smaller screens */
+        flex-wrap: wrap;
     }
 
     .header-container .ascii-art,
     .header-container .text-content {
-        font-size: 2vw; /* Scale up font size on smaller screens */
-        max-width: 100%; /* Allow full width for each */
-        text-align: center; /* Center-align content */
+        font-size: 2vw; 
+        max-width: 100%;
+        text-align: center;
     }
 }
 
@@ -321,13 +321,13 @@ hr {
     cursor: pointer;
 }
 
-.chat-input button:hover {
+chat-input button:hover {
     background: #444;
 }
 
 .status-items {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr)); /* Force 2 equal columns */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
     padding: 4px;
 }
@@ -336,7 +336,7 @@ hr {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    min-width: 0; /* Prevent overflow */
+    min-width: 0;
     padding: 2px 4px;
 }
 
@@ -363,47 +363,49 @@ hr {
 
 .track-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
+    width: 100%;
 }
 
 .album-art {
-    width: auto;
-    max-width: 250px ;
-    aspect-ratio: 1;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
     overflow: hidden;
 }
 
 .current-album-art {
-    width: auto;
-    height: auto;
-    object-fit: fill;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .track-info {
     display: flex;
     flex-direction: column;
-    align-items: left;
+    align-items: flex-start;
     text-align: left;
     gap: 4px;
+    flex: 1;
 }
 
 .track-title {
-    font-weight: bold;
     font-size: 14px;
+    font-weight: bold;
 }
 
 .track-artist {
     font-size: 12px;
-    color: #888;
+    opacity: 0.8;
 }
 
 nav {
     display: flex;
     justify-content: flex-start;
-    margin: 15px 0 0px 0; /* top right bottom left */
-    padding-left: 5px; /* Align with content */
+    margin: 15px 0 0px 0;
+    padding-left: 5px;
 }
 
 nav ul {
@@ -552,3 +554,108 @@ nav a:hover {
         grid-template-columns: 1fr;
     }
 } */
+
+.discord-status {
+    position: relative;
+    overflow: hidden;
+}
+
+.status-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+}
+
+.status-prefix {
+    font-size: 20px;
+    opacity: 0.7;
+}
+
+.status-state {
+    font-size: 28px;
+    font-weight: bold;
+    position: relative;
+}
+
+.status-exclaim {
+    display: inline-block;
+    transform: rotate(15deg) skew(-15deg, 0);
+    transform-origin: bottom;
+    margin-left: -5px;
+}
+
+.status-state::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%
+    );
+    animation: scanline 2s linear infinite;
+}
+
+@keyframes scanline {
+    0% {
+        transform: translateY(-100%);
+    }
+    100% {
+        transform: translateY(100%);
+    }
+}
+
+.tweet-container {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px;
+}
+
+.profile-image {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.tweet-content {
+    flex: 1;
+}
+
+.tweet-header {
+    margin-bottom: 4px;
+}
+
+.display-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.username {
+    font-size: 14px;
+    opacity: 0.7;
+    margin-left: 4px;
+}
+
+.tweet-text {
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
