@@ -537,18 +537,6 @@ nav a:hover {
 .prev { left: 5px; }
 .next { right: 5px; }
 
-/* @media (max-width: 768px) {
-    .cert-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 480px) {
-    .cert-grid {
-        grid-template-columns: 1fr;
-    }
-} */
-
 .discord-status {
     position: relative;
     overflow: hidden;
@@ -717,28 +705,6 @@ nav a:hover {
     color: #e48f8f;
 }
 
-/* Blog List Page */
-.blog-post-card {
-    margin-bottom: 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-}
-
-.blog-post-card h2 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-.blog-post-card h2 a {
-    color: #fff;
-    text-decoration: none;
-}
-
-.blog-post-card h2 a:hover {
-    color: #e48f8f;
-}
-
 .post-meta {
     color: #888;
     font-size: 0.9rem;
@@ -761,48 +727,6 @@ nav a:hover {
     color: #e48f8f;
 }
 
-/* Blog Grid Layout */
-.blog-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-/* Pagination Styles */
-.pagination {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.pagination button {
-    margin: 0 5px;
-    padding: 10px 15px;
-    border: none;
-    background-color: #333;
-    color: #fff;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.pagination button:hover {
-    background-color: #555;
-}
-
-/* Responsive Adjustments for Small Screens */
-@media (max-width: 768px) {
-    .blog-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Responsive Adjustments for Small Screens */
-@media (max-width: 768px) {
-    .blog-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 #blog-index a {
     color: #ffffff;
     text-decoration: none;
@@ -813,10 +737,76 @@ nav a:hover {
     color: #e48f8f;
 }
 
-/* Ensure the thumbnail image scales within the container */
 .post-header img {
     max-width: 100%;
     height: auto;
     display: block;
-    margin: 0 auto; /* Center the image */
+    margin: 0 auto;
+}
+
+/* Blog Grid Layout */
+.blog-grid {
+  column-count: 2;
+  column-gap: 20px;
+}
+
+/* Blog Post Card */
+.blog-post-card {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  flex-direction: column;
+}
+
+.blog-post-thumbnail {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.blog-post-card h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.blog-post-card h2 a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.blog-post-card h2 a:hover {
+    color: #e48f8f;
+}
+
+@media (max-width: 768px) {
+  .blog-grid {
+    column-count: 1;
+  }
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination .page-button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    margin: 0 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 0;
+    transition: background-color 0.3s;
+}
+
+.pagination .page-button:hover {
+    background-color: #555;
+}
+
+.pagination .page-button.active {
+    background-color: #e48f8f;
 }
