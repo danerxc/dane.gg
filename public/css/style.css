@@ -73,6 +73,9 @@ header {
 header h1 {
     font-size: 24px;
     margin: 0;
+    margin-top: 0px;
+    text-align: center;
+    animation: rainbow-text 8s linear infinite;
 }
 
 header h2 {
@@ -241,12 +244,6 @@ header p {
     padding: 0;
     font-size: clamp(8px, 1vw, 16px);
     line-height: 1;
-    animation: rainbow-text 8s linear infinite;
-}
-
-header h1 {
-    margin-top: 0px;
-    text-align: center;
     animation: rainbow-text 8s linear infinite;
 }
 
@@ -806,10 +803,20 @@ nav a:hover {
     }
 }
 
-.blog-index a {
+#blog-index a {
+    color: #ffffff;
     text-decoration: none;
+
 }
 
-.blog-index a:hover {
+#blog-index a:hover {
     color: #e48f8f;
+}
+
+/* Ensure the thumbnail image scales within the container */
+.post-header img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto; /* Center the image */
 }

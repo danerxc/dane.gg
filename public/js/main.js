@@ -70,10 +70,11 @@ async function blogLoadBlogPosts(page = 1, limit = 5) {
                     day: 'numeric'
                 });
     
-                const postHTML = `
+                let postHTML = `
                     <div class="card blog-post-card">
                         <article>
                             <header>
+                                ${post.thumbnail ? `<img src="${post.thumbnail}" alt="${post.title}" class="blog-post-thumbnail" />` : ''}
                                 <h2><a href="/blog/${post.slug}">${post.title}</a></h2>
                                 <div class="post-meta">
                                     <time datetime="${post.created_at}">${date}</time>
@@ -85,9 +86,8 @@ async function blogLoadBlogPosts(page = 1, limit = 5) {
                         </article>
                     </div>
                 `;
-    
-                grid.innerHTML += postHTML;
-            });
+                    grid.innerHTML += postHTML;
+                });
         }
 
         const totalPages = Math.ceil(total / limit);
