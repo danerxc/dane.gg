@@ -840,3 +840,35 @@ nav a:hover {
 .pagination .page-button.active {
     background-color: #e48f8f;
 }
+
+/* Skills Grid Layout */
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Skills Section */
+.skills-section {
+    background: #1f1f1f;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+/* Progress Bar Styles */
+.progress-bar {
+    background-color: #333;
+    border-radius: 5px;
+    overflow: hidden;
+    height: 10px;
+    width: 100px; /* Adjust width as needed */
+    display: inline-block;
+    margin-left: 10px; /* Space between text and progress bar */
+    vertical-align: middle;
+}
+
+.progress {
+    background-color: #8ee28e; /* Color of the filled portion */
+    height: 100%;
+    width: 0; /* Default width, will be overridden by inline styles */
+}
