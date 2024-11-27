@@ -1,0 +1,31 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "3500:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=$DATABASE_URL
+    # depends_on:
+    #   - db
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  # db:
+  #   image: postgres:16
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     - POSTGRES_USER=user
+  #     - POSTGRES_PASSWORD=password
+  #     - POSTGRES_DB=website
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #     - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+# volumes:
+#   pgdata:
