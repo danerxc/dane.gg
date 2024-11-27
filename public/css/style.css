@@ -12,7 +12,7 @@
 
 /* General Styles */
 body {
-    background: #070707;
+    background: #141414;
     color: #ffffff;
     margin: 0;
     padding: 0;
@@ -31,8 +31,15 @@ body::before {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: url('../assets/img/backgrounds/1.png') no-repeat center center;
-    background-size: cover;
+    background:
+        linear-gradient(
+            rgba(255, 255, 255, 0.05) 50%,
+            rgba(255, 255, 255, 0) 50%
+        ) repeat-y,
+        url('../assets/img/backgrounds/1.png') no-repeat center center;
+    background-size:
+        100% 4px, /* Adjust this value to control scanline thickness */
+        cover;
     z-index: -1;
 }
 
@@ -49,7 +56,7 @@ body::before {
 
 /* Container */
 .container {
-    background: #070707;
+    background: #141414;
     padding: 20px;
     width: 90%;
     max-width: 900px;
@@ -71,7 +78,7 @@ header h1 {
     font-size: 30px;
     margin: 0;
     text-align: center;
-    animation: rainbow-text 8s linear infinite;
+    animation: wave 4s ease-in-out infinite;
 }
 
 header h2 {
@@ -109,7 +116,7 @@ header p {
 
 /* Card Styles */
 .card {
-    background: #070707;
+    background: #141414;
     padding: 10px;
     border: 1px solid #ffffff;
     display: flex;
@@ -236,12 +243,31 @@ header p {
     white-space: pre;
 }
 
+/* Wave Animation */
+@keyframes wave {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+#ascii-art span {
+  display: inline-block;
+  animation: wave 4s ease-in-out infinite; /* Duration matches totalAnimationDuration */
+}
+
 .ascii-box pre {
     margin: 0;
     padding: 0;
     font-size: clamp(8px, 1vw, 16px);
     line-height: 1;
     animation: rainbow-text 8s linear infinite;
+    animation: wave 3s infinite ease-in-out;
 }
 
 hr {
@@ -371,6 +397,14 @@ chat-input button:hover {
 }
 
 .current-album-art {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+}
+
+.current-album-art img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -554,41 +588,37 @@ nav a:hover {
     opacity: 0.7;
 }
 
+/* Apply scanline effect directly to .status-state */
 .status-state {
     font-size: 28px;
     font-weight: bold;
     position: relative;
+    color: #fff; /* Ensure text color is set */
+    background: linear-gradient(
+        transparent 0%,
+        rgb(255, 73, 73) 50%,
+        transparent 100%
+    );
+    background-clip: text; /* Clip the background to the text */
+    -webkit-background-clip: text; /* For Safari */
+    color: transparent; /* Make the text color transparent to show the background */
 }
 
+/* Apply scanline effect to .status-exclaim */
 .status-exclaim {
     display: inline-block;
     transform: rotate(15deg) skew(-15deg, 0);
     transform-origin: bottom;
     margin-left: -5px;
-}
-
-.status-state::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    color: #fff; /* Ensure text color is set */
     background: linear-gradient(
         transparent 0%,
-        rgba(255, 255, 255, 0.1) 50%,
+        rgb(255, 73, 73) 50%,
         transparent 100%
     );
-    animation: scanline 2s linear infinite;
-}
-
-@keyframes scanline {
-    0% {
-        transform: translateY(-100%);
-    }
-    100% {
-        transform: translateY(100%);
-    }
+    background-clip: text; /* Clip the background to the text */
+    -webkit-background-clip: text; /* For Safari */
+    color: transparent; /* Make the text color transparent to show the background */
 }
 
 .tweet-container {
