@@ -12,7 +12,7 @@
 
 /* General Styles */
 body {
-    background: #000000;
+    background: #070707;
     color: #ffffff;
     margin: 0;
     padding: 0;
@@ -23,16 +23,16 @@ body {
     font-family: 'W95FA', sans-serif;
 }
 
-/* Dotted Background */
+/* Background Image */
 body::before {
     content: '';
-    position: fixed; /* Changed to fixed */
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100vw; /* Use viewport width */
-    height: 100vh; /* Use viewport height */
-    background: radial-gradient(#555555 1px, transparent 1px);
-    background-size: 10px 10px;
+    width: 100vw;
+    height: 100vh;
+    background: url('../assets/img/backgrounds/1.png') no-repeat center center;
+    background-size: cover;
     z-index: -1;
 }
 
@@ -49,31 +49,27 @@ body::before {
 
 /* Container */
 .container {
-    background: #000000;
+    background: #070707;
     padding: 20px;
     width: 90%;
     max-width: 900px;
     border: 1px solid #ffffff;
     font-size: 14px;
     box-sizing: border-box;
-    /* transform: scale(var(--scale-factor));
-    transform-origin: center;
-    width: calc(100% / var(--scale-factor));
-    min-height: calc(100vh / var(--scale-factor)); */
+    margin-top: 100px;
+    margin-bottom: 100px;
 }
 
 /* Header */
 header {
     text-align: left;
     margin-bottom: 20px;
-    border-bottom: 2px solid black;
     padding-bottom: 5px;
 }
 
 header h1 {
-    font-size: 24px;
+    font-size: 30px;
     margin: 0;
-    margin-top: 0px;
     text-align: center;
     animation: rainbow-text 8s linear infinite;
 }
@@ -93,7 +89,7 @@ header p {
 /* Layout: Flexbox for Columns */
 .layout {
     display: flex;
-    gap: 20px;
+    gap: 10px;
 }
 
 /* Left and Right Columns */
@@ -113,12 +109,13 @@ header p {
 
 /* Card Styles */
 .card {
-    background: #000000be;
+    background: #070707;
     padding: 10px;
     border: 1px solid #ffffff;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    box-sizing: border-box; /* Ensure padding and border are included in the element's total width and height */
 }
 
 /* Typography */
@@ -723,6 +720,9 @@ nav a:hover {
 /* Blog List Page */
 .blog-post-card {
     margin-bottom: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .blog-post-card h2 {
