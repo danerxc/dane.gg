@@ -1,13 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const blogService = require('../services/blog');
+const fs = require('fs').promises;
+const path = require('path');
 
 let lastCheck = 0;
 let cachedLastfm = {};
 
+const STATUS_FILE = path.join(__dirname, '../data/serviceStatus.json');
+
 // Status
 router.get('/status', (req, res) => {
     res.json({ status: 'online' });
+});
+
+// Services Status
+router.get('/services/status', async (req, res) => {
+  try {
+    const data = JSON.parse(await fs.readFile(STATUS_FILE, 'utf8'));
+    res.json(data.services);
+  } catch (err) {
+    console.error('Status fetch error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 router.get('/nowplaying', (req, res) => {
