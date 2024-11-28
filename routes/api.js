@@ -13,6 +13,9 @@ const DISCORD_STATUS_FILE = path.join(__dirname, '../data/discordStatus.json');
 let lastStatusCheck = 0;
 let cachedDiscordStatus = { status: 0, lastUpdate: null };
 
+let lastServicesCheck = 0;
+let cachedServices = { services: {} };
+
 // Discord Status
 router.get('/status', async (req, res) => {
   try {
@@ -35,8 +38,16 @@ router.get('/status', async (req, res) => {
 // Services Status
 router.get('/services/status', async (req, res) => {
   try {
-    const data = JSON.parse(await fs.readFile(STATUS_FILE, 'utf8'));
-    res.json(data.services);
+    if (Date.now() - lastServicesCheck > 7500) {
+      lastServicesCheck = Date.now();
+      try {
+        const data = JSON.parse(await fs.readFile(STATUS_FILE, 'utf8'));
+        cachedServices = data;
+      } catch (err) {
+        if (err.code !== 'ENOENT') throw err;
+      }
+    }
+    res.json(cachedServices.services);
   } catch (err) {
     console.error('Status fetch error:', err);
     res.status(500).json({ error: 'Internal server error' });

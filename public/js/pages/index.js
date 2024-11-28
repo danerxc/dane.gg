@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateNowPlaying, 7500);
     updateStatus();
     setInterval(updateStatus, 7500);
+    updateServices();
+    setInterval(updateServices, 7500);
 });
 
 async function loadPosts(page = 1, limit = 4) {
@@ -41,6 +43,26 @@ async function updateStatus() {
         }
     } catch (err) {
         console.error('Failed to update Discord status:', err);
+    }
+}
+
+async function updateServices() {
+    try {
+        const response = await fetch('/api/services/status');
+        const services = await response.json();
+        
+        Object.entries(services).forEach(([service, data]) => {
+            const statusEl = document.querySelector(`.status-item[data-service="${service}"]`);
+            if (statusEl) {
+                const stateEl = statusEl.querySelector('.state');
+                if (stateEl) {
+                    stateEl.className = `state ${data.status ? 'ok' : 'down'}`;
+                    stateEl.textContent = data.status ? '[ OK ]' : '[ DOWN ]';
+                }
+            }
+        });
+    } catch (err) {
+        console.error('Failed to update services status:', err);
     }
 }
 
