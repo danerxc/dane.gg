@@ -424,8 +424,22 @@ chat-input button:hover {
     font-weight: bold;
 }
 
+.track-title a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.track-title a:hover {
+    color: #e48f8f;
+}
+
 .track-artist {
     font-size: 12px;
+    opacity: 0.8;
+}
+
+.track-last-played {
+    font-size: 11px;
     opacity: 0.8;
 }
 
