@@ -5,6 +5,7 @@ const path = require('path');
 const ALLOWED_SERVICES = require('../config/services');
 
 const STATUS_FILE = path.join(__dirname, '../data/serviceStatus.json');
+const DISCORD_STATUS_FILE = path.join(__dirname, '../data/discordStatus.json');
 
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -44,6 +45,35 @@ router.post('/services/update', authMiddleware, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('Webhook error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/status/update', authMiddleware, async (req, res) => {
+  try {
+    const { status } = req.body;
+    
+    if (typeof status !== 'number' || ![0, 1].includes(status)) {
+      return res.status(400).json({ error: 'Status must be 0 or 1' });
+    }
+
+    let data = { status: 0, lastUpdate: null };
+    try {
+      data = JSON.parse(await fs.readFile(DISCORD_STATUS_FILE, 'utf8'));
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw err;
+    }
+
+    data = {
+      status,
+      lastUpdate: new Date().toISOString()
+    };
+
+    await fs.writeFile(DISCORD_STATUS_FILE, JSON.stringify(data, null, 2));
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Discord status webhook error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

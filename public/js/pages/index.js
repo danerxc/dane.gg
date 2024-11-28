@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPosts(1, 4);
     updateNowPlaying();
     setInterval(updateNowPlaying, 7500);
+    updateStatus();
+    setInterval(updateStatus, 7500);
 });
 
 async function loadPosts(page = 1, limit = 4) {
@@ -24,6 +26,21 @@ async function loadPosts(page = 1, limit = 4) {
     
             container.innerHTML += postHTML;
         });
+    }
+}
+
+async function updateStatus() {
+    try {
+        const response = await fetch('/api/status');
+        const data = await response.json();
+        
+        const statusEl = document.querySelector('.status-state');
+        if (statusEl) {
+            statusEl.textContent = data.status ? 'ONLINE' : 'OFFLINE';
+            statusEl.classList.toggle('online', data.status === 1);
+        }
+    } catch (err) {
+        console.error('Failed to update Discord status:', err);
     }
 }
 
