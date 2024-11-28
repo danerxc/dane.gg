@@ -20,9 +20,7 @@ router.get('/posts', async (req, res) => {
 // Get blog post by slug
 router.get('/:slug', async (req, res) => {
     try {
-        console.log('slug:', req.params.slug);
         const post = await blogService.getPostBySlug(req.params.slug);
-        console.log('post:', post);
         if (!post) {
             return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
         }

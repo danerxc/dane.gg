@@ -47,8 +47,11 @@
             <div class="left-column">
                 <div class="card discord-status">
                     <div class="status-text">
-                        <span class="status-prefix">I'm</span>
-                        <span class="status-state">OFFLINE<span class="status-exclaim">!</span></span>
+                      <span class="status-prefix">I'm</span>
+                      <div class="status-indicator">
+                        <span class="status-state">OFFLINE</span>
+                        <span class="status-exclaim">!</span>
+                      </div>
                     </div>
                 </div>
                 <div class="card status">
@@ -71,12 +74,13 @@
                     <h3 class="play-status">Recently played</h3>
                     <div class="track-container">
                         <div class="album-art">
-                            <img src="assets/img/music/placeholder.jpg" alt="Album Art"
+                            <img src="assets/img/misc/music-placeholder.jpg" alt="Album Art"
                                 class="current-album-art">
                         </div>
                         <div class="track-info">
                             <span class="track-title">Track Title</span>
                             <span class="track-artist">Artist Name</span>
+                            <span class="track-last-played" style="display: none;">Last Played</span>
                         </div>
                     </div>
                 </div>
@@ -196,12 +200,16 @@
                 <div class="card status">
                     <h3>Status</h3>
                     <div class="status-items">
-                        <div class="status-item">
-                            <span class="service">example</span>
+                        <div class="status-item" data-service="dane.vc">
+                            <span class="service">dane.vc</span>
                             <span class="state ok">[ OK ]</span>
                         </div>
-                        <div class="status-item">
-                            <span class="service">example2</span>
+                        <div class="status-item" data-service="dane.lol">
+                            <span class="service">dane.lol</span>
+                            <span class="state down">[ DOWN ]</span>
+                        </div>
+                        <div class="status-item" data-service="Dane's Dungeon Bot">
+                            <span class="service">discord bot</span>
                             <span class="state down">[ DOWN ]</span>
                         </div>
                     </div>
@@ -235,6 +243,7 @@
             </div>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="js/pages/index.js"></script>
     <script src="js/shared.js"></script>
     <!-- <script src="/public/js/oneko.js" data-cat="/public/assets/fonts/oneko.gif"></script> -->

@@ -9,6 +9,10 @@ services:
     environment:
       - NODE_ENV=development
       - DATABASE_URL=$DATABASE_URL
+      - DATABASE_URL=$DATABASE_URL
+      - LASTFM_USERNAME=$LASTFM_USERNAME
+      - LASTFM_API_KEY=$LASTFM_API_KEY
+      - WEBHOOK_AUTH_TOKEN=$WEBHOOK_AUTH_TOKEN
     # depends_on:
     #   - db
     volumes:

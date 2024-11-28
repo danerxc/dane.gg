@@ -14,12 +14,8 @@ app.engine('handlebars', exphbs.engine({
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'public/templates'));
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Middleware to dynamically serve .html files without the extension
@@ -47,9 +43,14 @@ app.use('/api', apiRoutes);
 app.use('/blog', blogRoutes);
 app.use('/webhooks', webhookRoutes);
 
-// SPA fallback
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.use((req, res, next) => {
+  res.status(404).redirect(`/error.html?code=404`);
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  const statusCode = err.status || 500;
+  res.status(statusCode).redirect(`/error.html?code=${statusCode}`);
 });
 
 const PORT = process.env.PORT || 3000;

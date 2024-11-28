@@ -12,7 +12,7 @@
 
 /* General Styles */
 body {
-    background: #070707;
+    background: #141414;
     color: #ffffff;
     margin: 0;
     padding: 0;
@@ -31,8 +31,15 @@ body::before {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: url('../assets/img/backgrounds/1.png') no-repeat center center;
-    background-size: cover;
+    background:
+        linear-gradient(
+            rgba(255, 255, 255, 0.05) 50%,
+            rgba(255, 255, 255, 0) 50%
+        ) repeat-y,
+        url('../assets/img/backgrounds/1.png') no-repeat center center;
+    background-size:
+        100% 4px, /* Adjust this value to control scanline thickness */
+        cover;
     z-index: -1;
 }
 
@@ -49,7 +56,7 @@ body::before {
 
 /* Container */
 .container {
-    background: #070707;
+    background: #141414;
     padding: 20px;
     width: 90%;
     max-width: 900px;
@@ -71,7 +78,7 @@ header h1 {
     font-size: 30px;
     margin: 0;
     text-align: center;
-    animation: rainbow-text 8s linear infinite;
+    animation: wave 4s ease-in-out infinite;
 }
 
 header h2 {
@@ -109,7 +116,7 @@ header p {
 
 /* Card Styles */
 .card {
-    background: #070707;
+    background: #141414;
     padding: 10px;
     border: 1px solid #ffffff;
     display: flex;
@@ -236,12 +243,31 @@ header p {
     white-space: pre;
 }
 
+/* Wave Animation */
+@keyframes wave {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+#ascii-art span {
+  display: inline-block;
+  animation: wave 4s ease-in-out infinite; /* Duration matches totalAnimationDuration */
+}
+
 .ascii-box pre {
     margin: 0;
     padding: 0;
     font-size: clamp(8px, 1vw, 16px);
     line-height: 1;
     animation: rainbow-text 8s linear infinite;
+    animation: wave 3s infinite ease-in-out;
 }
 
 hr {
@@ -371,6 +397,14 @@ chat-input button:hover {
 }
 
 .current-album-art {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+}
+
+.current-album-art img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -390,8 +424,22 @@ chat-input button:hover {
     font-weight: bold;
 }
 
+.track-title a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.track-title a:hover {
+    color: #e48f8f;
+}
+
 .track-artist {
     font-size: 12px;
+    opacity: 0.8;
+}
+
+.track-last-played {
+    font-size: 11px;
     opacity: 0.8;
 }
 
@@ -554,41 +602,78 @@ nav a:hover {
     opacity: 0.7;
 }
 
+/* style.css */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Apply scanline effect directly to .status-state */
 .status-state {
     font-size: 28px;
     font-weight: bold;
     position: relative;
+    color: #fff; /* Ensure text color is set */
+    background: linear-gradient(
+        transparent 0%,
+        rgb(255, 73, 73) 50%,
+        transparent 100%
+    );
+    background-clip: text; /* Clip the background to the text */
+    -webkit-background-clip: text; /* For Safari */
+    color: transparent; /* Make the text color transparent to show the background */
 }
 
+.status-state.online {
+    font-size: 28px;
+    font-weight: bold;
+    position: relative;
+    color: #fff; /* Ensure text color is set */
+    background: linear-gradient(
+        transparent 0%,
+        rgb(118, 255, 84) 100%,
+        transparent 100%
+    );
+    background-clip: text; /* Clip the background to the text */
+    -webkit-background-clip: text; /* For Safari */
+    color: transparent; /* Make the text color transparent to show the background */
+}
+
+/* Apply scanline effect to .status-exclaim */
 .status-exclaim {
+    font-size: 28px;
+    font-weight: bold;
     display: inline-block;
     transform: rotate(15deg) skew(-15deg, 0);
     transform-origin: bottom;
     margin-left: -5px;
-}
-
-.status-state::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    color: #fff; /* Ensure text color is set */
     background: linear-gradient(
         transparent 0%,
-        rgba(255, 255, 255, 0.1) 50%,
+        rgb(255, 73, 73) 50%,
         transparent 100%
     );
-    animation: scanline 2s linear infinite;
+    background-clip: text; /* Clip the background to the text */
+    -webkit-background-clip: text; /* For Safari */
+    color: transparent; /* Make the text color transparent to show the background */
 }
 
-@keyframes scanline {
-    0% {
-        transform: translateY(-100%);
-    }
-    100% {
-        transform: translateY(100%);
-    }
+.status-exclaim.online {
+    font-size: 28px;
+    font-weight: bold;
+    display: inline-block;
+    transform: rotate(15deg) skew(-15deg, 0);
+    transform-origin: bottom;
+    margin-left: -5px;
+    color: #fff; /* Ensure text color is set */
+    background: linear-gradient(
+        transparent 0%,
+        rgb(118, 255, 84) 100%,
+        transparent 100%
+    );
+    background-clip: text; /* Clip the background to the text */
+    -webkit-background-clip: text; /* For Safari */
+    color: transparent; /* Make the text color transparent to show the background */
 }
 
 .tweet-container {
@@ -809,4 +894,69 @@ nav a:hover {
 
 .pagination .page-button.active {
     background-color: #e48f8f;
+}
+
+/* Skills Grid Layout */
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Skills Section */
+.skills-section {
+    background: #1f1f1f;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+/* Progress Bar Styles */
+.progress-bar {
+    background-color: #333;
+    border-radius: 5px;
+    overflow: hidden;
+    height: 10px;
+    width: 100px;
+    display: inline-block;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.progress {
+    background-color: #8ee28e;
+    height: 100%;
+    width: 0;
+}
+
+.error-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.error-content h1 {
+    font-size: 40px;
+    margin-bottom: -10px;
+}
+
+.error-content p {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.error-content img {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+}
+
+.error-content a{
+    text-decoration: none;
+    color: #ffffff;
+}
+
+.error-content a:hover{
+    text-decoration: none;
+    color: #e48f8f;
 }
