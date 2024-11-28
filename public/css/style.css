@@ -861,14 +861,47 @@ nav a:hover {
     border-radius: 5px;
     overflow: hidden;
     height: 10px;
-    width: 100px; /* Adjust width as needed */
+    width: 100px;
     display: inline-block;
-    margin-left: 10px; /* Space between text and progress bar */
+    margin-left: 10px;
     vertical-align: middle;
 }
 
 .progress {
-    background-color: #8ee28e; /* Color of the filled portion */
+    background-color: #8ee28e;
     height: 100%;
-    width: 0; /* Default width, will be overridden by inline styles */
+    width: 0;
+}
+
+.error-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.error-content h1 {
+    font-size: 40px;
+    margin-bottom: -10px;
+}
+
+.error-content p {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.error-content img {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+}
+
+.error-content a{
+    text-decoration: none;
+    color: #ffffff;
+}
+
+.error-content a:hover{
+    text-decoration: none;
+    color: #e48f8f;
 }
