@@ -602,6 +602,12 @@ nav a:hover {
     opacity: 0.7;
 }
 
+/* style.css */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+}
+
 /* Apply scanline effect directly to .status-state */
 .status-state {
     font-size: 28px;
@@ -618,8 +624,25 @@ nav a:hover {
     color: transparent; /* Make the text color transparent to show the background */
 }
 
+.status-state.online {
+    font-size: 28px;
+    font-weight: bold;
+    position: relative;
+    color: #fff; /* Ensure text color is set */
+    background: linear-gradient(
+        transparent 0%,
+        rgb(118, 255, 84) 100%,
+        transparent 100%
+    );
+    background-clip: text; /* Clip the background to the text */
+    -webkit-background-clip: text; /* For Safari */
+    color: transparent; /* Make the text color transparent to show the background */
+}
+
 /* Apply scanline effect to .status-exclaim */
 .status-exclaim {
+    font-size: 28px;
+    font-weight: bold;
     display: inline-block;
     transform: rotate(15deg) skew(-15deg, 0);
     transform-origin: bottom;
@@ -628,6 +651,24 @@ nav a:hover {
     background: linear-gradient(
         transparent 0%,
         rgb(255, 73, 73) 50%,
+        transparent 100%
+    );
+    background-clip: text; /* Clip the background to the text */
+    -webkit-background-clip: text; /* For Safari */
+    color: transparent; /* Make the text color transparent to show the background */
+}
+
+.status-exclaim.online {
+    font-size: 28px;
+    font-weight: bold;
+    display: inline-block;
+    transform: rotate(15deg) skew(-15deg, 0);
+    transform-origin: bottom;
+    margin-left: -5px;
+    color: #fff; /* Ensure text color is set */
+    background: linear-gradient(
+        transparent 0%,
+        rgb(118, 255, 84) 100%,
         transparent 100%
     );
     background-clip: text; /* Clip the background to the text */

@@ -37,7 +37,6 @@ class BlogService {
     }
 
     async getPostBySlug(slug) {
-        console.log('slug:', slug);
         try {
             const { rows } = await pool.query(
                 'SELECT * FROM website.posts WHERE slug = $1 AND published = true',
@@ -60,7 +59,6 @@ class BlogService {
                 console.error('Markdown parsing error:', markdownError);
                 post.content = post.content;
             }
-            console.log('post:', post);
             return post;
         } catch (err) {
             throw new Error('Failed to fetch post: ' + err.message);

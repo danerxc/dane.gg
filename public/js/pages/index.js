@@ -37,9 +37,11 @@ async function updateStatus() {
         const data = await response.json();
         
         const statusEl = document.querySelector('.status-state');
+        const statusExclaim = document.querySelector('.status-exclaim');
         if (statusEl) {
             statusEl.textContent = data.status ? 'ONLINE' : 'OFFLINE';
             statusEl.classList.toggle('online', data.status === 1);
+            statusExclaim.classList.toggle('online', data.status === 1);
         }
     } catch (err) {
         console.error('Failed to update Discord status:', err);

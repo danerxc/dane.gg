@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
-const ALLOWED_SERVICES = require('../config/services');
+const ALLOWED_SERVICES = require('../config/service_monitoring');
 
 const STATUS_FILE = path.join(__dirname, '../data/serviceStatus.json');
 const DISCORD_STATUS_FILE = path.join(__dirname, '../data/discordStatus.json');
@@ -10,8 +10,9 @@ const DISCORD_STATUS_FILE = path.join(__dirname, '../data/discordStatus.json');
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
   const expectedToken = process.env.WEBHOOK_AUTH_TOKEN;
+  const expectedAuth = `Bearer ${expectedToken}`;
 
-  if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+  if (!authHeader || authHeader !== expectedAuth) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   next();
@@ -52,12 +53,15 @@ router.post('/services/update', authMiddleware, async (req, res) => {
 router.post('/status/update', authMiddleware, async (req, res) => {
   try {
     const { status } = req.body;
+
+    console.log(status);
     
     if (typeof status !== 'number' || ![0, 1].includes(status)) {
       return res.status(400).json({ error: 'Status must be 0 or 1' });
     }
 
     let data = { status: 0, lastUpdate: null };
+    console.log(data);
     try {
       data = JSON.parse(await fs.readFile(DISCORD_STATUS_FILE, 'utf8'));
     } catch (err) {
