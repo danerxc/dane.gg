@@ -44,14 +44,12 @@ body::before {
 }
 
 @keyframes rainbow-text {
-    0% { color: #ff0000; }
-    14% { color: #ff7f00; }
-    28% { color: #ffff00; }
-    42% { color: #00ff00; }
-    56% { color: #0000ff; }
-    70% { color: #4b0082; }
-    84% { color: #8f00ff; }
-    100% { color: #ff0000; }
+    0% { color: #89ffbe; }
+    20% { color: #80ffee; }
+    40% { color: #61d2ff; }
+    60% { color: #60dfff; }
+    80% { color: #75fff4; }
+    100% { color: #83ffc1; }
 }
 
 /* Container */
@@ -78,7 +76,6 @@ header h1 {
     font-size: 30px;
     margin: 0;
     text-align: center;
-    animation: wave 4s ease-in-out infinite;
 }
 
 header h2 {
@@ -185,17 +182,7 @@ header p {
 /* ASCII Art (Left) */
 .header-container .ascii-art {
     flex: 1;
-    max-width: 40%;
-    font-size: 1vw;
-    line-height: 1;
-    white-space: pre;
-    text-align: center;
-}
-
-/* Text Content (Right) */
-.header-container .text-content {
-    flex: 1;
-    max-width: 40%;
+    max-width: 50%;
     font-size: 1vw;
     line-height: 1;
     white-space: pre;
@@ -243,31 +230,12 @@ header p {
     white-space: pre;
 }
 
-/* Wave Animation */
-@keyframes wave {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.03);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-#ascii-art span {
-  display: inline-block;
-  animation: wave 4s ease-in-out infinite; /* Duration matches totalAnimationDuration */
-}
-
 .ascii-box pre {
     margin: 0;
     padding: 0;
     font-size: clamp(8px, 1vw, 16px);
     line-height: 1;
-    animation: rainbow-text 8s linear infinite;
-    animation: wave 3s infinite ease-in-out;
+    animation: rainbow-text 3s linear infinite;
 }
 
 hr {
