@@ -9,12 +9,16 @@ let cachedLastfm = {};
 
 const STATUS_FILE = path.join(__dirname, '../data/serviceStatus.json');
 const DISCORD_STATUS_FILE = path.join(__dirname, '../data/discordStatus.json');
+const LATEST_TWEET_FILE = path.join(__dirname, '../data/latestTweet.json');
 
 let lastStatusCheck = 0;
 let cachedDiscordStatus = { status: 0, lastUpdate: null };
 
 let lastServicesCheck = 0;
 let cachedServices = { services: {} };
+
+let cachedTweet = null;
+let lastTweetCheck = 0;
 
 // Discord Status
 router.get('/status', async (req, res) => {
@@ -75,6 +79,30 @@ router.get('/nowplaying', (req, res) => {
     } else {
         res.json(cachedLastfm);
     }
+});
+
+// Latest tweet endpoint
+router.get('/latest-tweet', async (req, res) => {
+  try {
+    if (cachedTweet && Date.now() - lastTweetCheck > 60000) {
+      return res.json(cachedTweet);
+    }
+
+    const data = await fs.readFile(LATEST_TWEET_FILE, 'utf8');
+    const tweet = JSON.parse(data);
+
+    cachedTweet = tweet;
+    lastTweetCheck = Date.now();
+
+    res.json(tweet);
+  } catch (err) {
+    console.error('Failed to fetch tweet:', err);
+    if (cachedTweet) {
+      res.json(cachedTweet);
+    } else {
+      res.status(500).json({ error: 'Failed to fetch tweet' });
+    }
+  }
 });
 
 module.exports = router;
