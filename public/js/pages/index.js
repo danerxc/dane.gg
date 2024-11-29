@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateStatus, 7500);
     updateServices();
     setInterval(updateServices, 7500);
+    updateTweet();
+    setInterval(updateTweet, 7500);
 });
 
 async function loadPosts(page = 1, limit = 4) {
@@ -101,6 +103,43 @@ async function updateNowPlaying() {
     }
 }
 
+async function updateTweet() {
+  try {
+    const response = await fetch('/api/latest-tweet');
+    const tweet = await response.json();
+    
+    const tweetTextEl = document.querySelector('.tweet-text');
+    const postedDateEl = document.querySelector('.posted-date');
+    const displayNameEl = document.querySelector('.display-name');
+    const usernameEl = document.querySelector('.username');
+    const profileImageEl = document.querySelector('.profile-image img');
+    
+    if (tweetTextEl && tweet.text) {
+      tweetTextEl.textContent = tweet.text;
+    }
+    
+    if (displayNameEl && tweet.accountName) {
+      displayNameEl.textContent = tweet.accountName;
+    }
+    
+    if (usernameEl && tweet.username) {
+      usernameEl.textContent = `@${tweet.username}`;
+    }
+    
+    if (profileImageEl && tweet.profilePicture) {
+      profileImageEl.src = tweet.profilePicture;
+      profileImageEl.alt = tweet.accountName;
+    }
+    
+    if (postedDateEl && tweet.created_at) {
+      const timestamp = new Date(tweet.created_at).getTime() / 1000;
+      postedDateEl.textContent = timeAgoShort(timestamp);
+    }
+  } catch (err) {
+    console.error('Failed to update tweet:', err);
+  }
+}
+
 function timeAgo(timestamp) {
     const now = new Date();
     const secondsPast = (now.getTime() - timestamp * 1000) / 1000;
@@ -121,4 +160,18 @@ function timeAgo(timestamp) {
         return `${Math.floor(secondsPast / 2592000)} months ago`;
     }
     return `${Math.floor(secondsPast / 31536000)} years ago`;
+}
+
+function timeAgoShort(timestamp) {
+    const date = timestamp * 1000;
+    const now = Date.now();
+    
+    const secondsPast = Math.floor((now - date) / 1000);
+
+    if (secondsPast < 60) return `${secondsPast}s`;
+    if (secondsPast < 3600) return `${Math.floor(secondsPast / 60)}m`;
+    if (secondsPast < 86400) return `${Math.floor(secondsPast / 3600)}h`; 
+    if (secondsPast < 604800) return `${Math.floor(secondsPast / 86400)}d`;
+    if (secondsPast < 31536000) return `${Math.floor(secondsPast / 604800)}w`;
+    return `${Math.floor(secondsPast / 31536000)}y`;
 }

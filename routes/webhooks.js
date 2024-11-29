@@ -6,6 +6,7 @@ const ALLOWED_SERVICES = require('../config/service_monitoring');
 
 const STATUS_FILE = path.join(__dirname, '../data/serviceStatus.json');
 const DISCORD_STATUS_FILE = path.join(__dirname, '../data/discordStatus.json');
+const LATEST_TWEET_FILE = path.join(__dirname, '../data/latestTweet.json');
 
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -53,15 +54,12 @@ router.post('/services/update', authMiddleware, async (req, res) => {
 router.post('/status/update', authMiddleware, async (req, res) => {
   try {
     const { status } = req.body;
-
-    console.log(status);
     
     if (typeof status !== 'number' || ![0, 1].includes(status)) {
       return res.status(400).json({ error: 'Status must be 0 or 1' });
     }
 
     let data = { status: 0, lastUpdate: null };
-    console.log(data);
     try {
       data = JSON.parse(await fs.readFile(DISCORD_STATUS_FILE, 'utf8'));
     } catch (err) {
@@ -78,6 +76,32 @@ router.post('/status/update', authMiddleware, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('Discord status webhook error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Tweet webhook endpoint
+router.post('/twitter/update', authMiddleware, async (req, res) => {
+  try {
+    const { accountName, username, profilePicture, caption, postedTime } = req.body;
+    
+    if (!accountName || !username || !caption || !postedTime) {
+      return res.status(400).json({ error: 'Invalid payload format' });
+    }
+
+    const tweetData = {
+      accountName,
+      username,
+      profilePicture,
+      text: caption,
+      created_at: postedTime,
+      lastUpdate: new Date().toISOString()
+    };
+
+    await fs.writeFile(LATEST_TWEET_FILE, JSON.stringify(tweetData, null, 2));
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Tweet webhook error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
