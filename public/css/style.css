@@ -705,13 +705,19 @@ nav a:hover {
     margin-bottom: 4px;
 }
 
-.display-name {
+.display-name a {
     font-weight: bold;
     font-size: 14px;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.display-name a:hover {
+    color: #e48f8f;
 }
 
 .username {
-    font-size: 14px;
+    font-size: 12px;
     opacity: 0.7;
     margin-left: 4px;
 }
@@ -725,6 +731,10 @@ nav a:hover {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.posted-date {
+    font-size: 12px;
 }
 
 /* BLOG POST PAGE TEMPLATE */

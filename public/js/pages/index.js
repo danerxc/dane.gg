@@ -119,7 +119,7 @@ async function updateTweet() {
     }
     
     if (displayNameEl && tweet.accountName) {
-      displayNameEl.textContent = tweet.accountName;
+      displayNameEl.innerHTML = `<a href="https://twitter.com/${tweet.username}">${tweet.accountName}</a>`;
     }
     
     if (usernameEl && tweet.username) {
