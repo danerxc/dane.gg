@@ -34,7 +34,7 @@ function setupWebSocket(server) {
                 const query = `
                     INSERT INTO website.messages (username, content)
                     VALUES ($1, $2)
-                    RETURNING id, username, content, created_at
+                    RETURNING id, username, content, timestamp
                 `;
                 const result = await pool.query(query, [data.username, data.content]);
                 console.log('Saved message:', result.rows[0]);
@@ -44,7 +44,7 @@ function setupWebSocket(server) {
                     data: {
                         username: result.rows[0].username,
                         content: result.rows[0].content,
-                        timestamp: result.rows[0].created_at
+                        timestamp: result.rows[0].timestamp
                     }
                 });
                 console.log('Broadcasting:', broadcastData);
@@ -74,9 +74,9 @@ function setupWebSocket(server) {
 async function sendMessageHistory(ws) {
     try {
         const result = await pool.query(`
-            SELECT username, content, created_at 
+            SELECT username, content, timestamp
             FROM website.messages 
-            ORDER BY created_at DESC 
+            ORDER BY timestamp DESC 
             LIMIT 50
         `);
 

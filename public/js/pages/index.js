@@ -28,7 +28,7 @@ async function loadPosts(page = 1, limit = 4) {
         return;
     } else {
         posts.forEach((post) => {
-            const date = new Date(post.created_at).toISOString().split('T')[0];
+            const date = new Date(post.timestamp).toISOString().split('T')[0];
             const postHTML = `
                 <li><a href="/blog/${post.slug}" class="blog-post"><b>${date}</b> :: ${post.title}</a></li>
             `;
@@ -129,8 +129,8 @@ async function updateTweet() {
             profileImageEl.alt = tweet.accountName;
         }
         
-        if (postedDateEl && tweet.created_at) {
-            const timestamp = new Date(tweet.created_at).getTime() / 1000;
+        if (postedDateEl && tweet.timestamp) {
+            const timestamp = new Date(tweet.timestamp).getTime() / 1000;
             postedDateEl.textContent = timeAgoShort(timestamp);
         }
     } catch (err) {
@@ -214,7 +214,7 @@ function setupChat() {
             if (ws.readyState === WebSocket.OPEN) {
                 ws.close();
             }
-        }, 30000);
+        }, 30000); // 30 seconds
     }
 
     function connect() {
@@ -226,7 +226,7 @@ function setupChat() {
             addMessage({
                 username: 'system',
                 content: 'Connected to chat server',
-                timestamp: new Date()
+                timestamp: new Date().toISOString()
             });
             resetInactivityTimeout();
         };
@@ -250,7 +250,7 @@ function setupChat() {
             addMessage({
                 username: 'system',
                 content: 'Disconnected from chat',
-                timestamp: new Date()
+                timestamp: new Date().toISOString()
             });
         };
 
@@ -275,7 +275,8 @@ function setupChat() {
             const username = getCookie('chatUsername') || 'user';
             const message = JSON.stringify({
                 username,
-                content
+                content,
+                timestamp: new Date().toISOString()
             });
             console.log('Sending message:', message);
             ws.send(message);
@@ -318,15 +319,30 @@ function setupChat() {
 
 function addMessage({ username, content, timestamp }) {
     const messages = document.querySelector('.messages');
-    const time = new Date(timestamp).toLocaleTimeString('en-US', { 
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    const messageDate = new Date(timestamp);
+    const now = new Date();
+    let timeString;
+
+    if (messageDate.toDateString() === now.toDateString()) {
+        timeString = messageDate.toLocaleTimeString('en-US', { 
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } else {
+        timeString = messageDate.toLocaleString('en-US', { 
+            hour12: false,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
 
     messages.innerHTML += `
         <div class="message">
-            <span class="timestamp">[${time}]</span>
+            <span class="timestamp">[${timeString}]</span>
             <span class="nick">&lt;${username}&gt;</span>
             <span class="text">${content}</span>
         </div>
