@@ -1,6 +1,7 @@
 let ws;
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
+let inactivityTimeout;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadPosts(1, 4);
@@ -206,6 +207,16 @@ function setupChat() {
     const input = document.querySelector('.chat-input input');
     const button = document.querySelector('.chat-input button');
 
+    function resetInactivityTimeout() {
+        clearTimeout(inactivityTimeout);
+        inactivityTimeout = setTimeout(() => {
+            messages.innerHTML = '';
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.close();
+            }
+        }, 30000);
+    }
+
     function connect() {
         ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/chat`);
 
@@ -217,6 +228,7 @@ function setupChat() {
                 content: 'Connected to chat server',
                 timestamp: new Date()
             });
+            resetInactivityTimeout();
         };
 
         ws.onmessage = (event) => {
@@ -230,19 +242,16 @@ function setupChat() {
                 addMessage(data.data);
                 messages.scrollTop = messages.scrollHeight;
             }
+            resetInactivityTimeout();
         };
 
         ws.onclose = () => {
             console.log('Disconnected from chat');
-            if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-                reconnectAttempts++;
-                setTimeout(connect, 3000);
-                addMessage({
-                    username: 'system',
-                    content: `Connection lost, attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`,
-                    timestamp: new Date()
-                });
-            }
+            addMessage({
+                username: 'system',
+                content: 'Disconnected from chat',
+                timestamp: new Date()
+            });
         };
 
         ws.onerror = (error) => {
@@ -258,6 +267,7 @@ function setupChat() {
 
         if (handleCommand(content)) {
             input.value = '';
+            resetInactivityTimeout();
             return;
         }
 
@@ -270,6 +280,7 @@ function setupChat() {
             console.log('Sending message:', message);
             ws.send(message);
             input.value = '';
+            resetInactivityTimeout();
         } else {
             console.error('WebSocket not connected');
             addMessage({
@@ -280,10 +291,29 @@ function setupChat() {
         }
     }
 
+    function reconnectOnInteraction() {
+        if (ws.readyState !== WebSocket.OPEN) {
+            connect();
+        }
+    }
+
     button.addEventListener('click', sendMessage);
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
+        resetInactivityTimeout();
     });
+
+    // Reset inactivity timer on any user interaction
+    messages.addEventListener('click', resetInactivityTimeout);
+    input.addEventListener('click', resetInactivityTimeout);
+    button.addEventListener('click', resetInactivityTimeout);
+    document.addEventListener('mousemove', resetInactivityTimeout);
+    document.addEventListener('keydown', resetInactivityTimeout);
+
+    // Reconnect on interaction
+    messages.addEventListener('click', reconnectOnInteraction);
+    input.addEventListener('click', reconnectOnInteraction);
+    button.addEventListener('click', reconnectOnInteraction);
 }
 
 function addMessage({ username, content, timestamp }) {
