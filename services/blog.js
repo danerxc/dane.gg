@@ -1,5 +1,8 @@
-const { Pool } = require('pg');
-const { marked } = require('marked');
+// services/blog.js
+import pg from 'pg';
+import { marked } from 'marked';
+const { Pool } = pg;
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
@@ -110,4 +113,4 @@ class BlogService {
     }
 }
 
-module.exports = new BlogService();
+export default new BlogService();

@@ -1,8 +1,8 @@
-// config/services.js
+// config/service_monitoring.js
 const ALLOWED_SERVICES = [
   'dane.vc',
   'dane.lol',
   'Dane\'s Dungeon Bot'
 ];
 
-module.exports = ALLOWED_SERVICES;
+export default ALLOWED_SERVICES;
