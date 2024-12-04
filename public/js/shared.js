@@ -54,6 +54,7 @@ class RainDrop {
     }
 }
 
+// Update RainSystem class
 class RainSystem {
     constructor() {
         this.canvas = document.getElementById('rainCanvas');
@@ -65,6 +66,24 @@ class RainSystem {
         this.containerTop = this.container.getBoundingClientRect().top;
 
         window.addEventListener('resize', () => this.resizeCanvas());
+        
+        // Add scroll listener
+        window.addEventListener('scroll', () => this.updateContainerPosition());
+        window.addEventListener('resize', () => {
+            this.resizeCanvas();
+            this.updateContainerPosition();
+        });
+    }
+
+    updateContainerPosition() {
+        this.containerTop = this.container.getBoundingClientRect().top;
+        // Update splashes position with scroll
+        this.splashes.forEach(particles => {
+            particles.forEach(p => {
+                p.y += (window.scrollY - this.lastScrollY);
+            });
+        });
+        this.lastScrollY = window.scrollY;
     }
 
     resizeCanvas() {
@@ -227,6 +246,7 @@ class SnowFlake {
     }
 }
 
+// Update SnowSystem class
 class SnowSystem {
     constructor() {
         console.log('Initializing SnowSystem');
@@ -261,6 +281,24 @@ class SnowSystem {
 
         // Start initialization
         initSystem();
+        
+        this.lastScrollY = window.scrollY;
+        window.addEventListener('scroll', () => this.updateContainerPosition());
+        window.addEventListener('resize', () => {
+            this.resizeCanvas();
+            this.updateContainerPosition();
+        });
+    }
+
+    updateContainerPosition() {
+        this.containerRect = this.container.getBoundingClientRect();
+        // Update settled flakes position with scroll
+        this.settledFlakes.forEach(flake => {
+            if (flake.settled) {
+                flake.settledY += (window.scrollY - this.lastScrollY);
+            }
+        });
+        this.lastScrollY = window.scrollY;
     }
 
     resizeCanvas() {
@@ -276,12 +314,20 @@ class SnowSystem {
     }
 
     update() {
+        if (!this.isAnimating) return;
+
         if (Math.random() < 0.3) {
             this.createFlake();
         }
 
+        // Update container position
+        this.containerRect = this.container.getBoundingClientRect();
+
         // Update and remove faded flakes
-        this.settledFlakes = this.settledFlakes.filter(flake => !flake.update());
+        this.settledFlakes = this.settledFlakes.filter(flake => {
+            const remove = flake.update(this.containerRect.top, this.containerRect.bottom, this.accumulation);
+            return !remove;
+        });
         
         // Update falling flakes
         for (let i = this.flakes.length - 1; i >= 0; i--) {
