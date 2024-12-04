@@ -97,9 +97,9 @@ async function updateNowPlaying() {
             playStatus.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="2 0 12 12"><circle cx="8" cy="8" r="4" fill="green"/></svg> Now Playing';
             trackLastPlayed.style.display = 'none';
         } else {
-            playStatus.textContent = 'Recently played';
+            playStatus.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="2 0 12 12"><circle cx="8" cy="8" r="4" fill="gray"/></svg> Recently Played';
             trackLastPlayed.style.display = 'block';
-            trackLastPlayed.textContent = timeAgo(new Date(track.date.uts * 1000));
+            trackLastPlayed.innerHTML = `Last Played: ${timeAgo(track.date.uts * 1000)}`;
         }
         
         trackTitle.innerHTML = `<span><a href="${track.url}" target="_blank">${track.name || 'Track Title'}</a></span>`;

@@ -216,7 +216,9 @@ header p {
     }
 }
 
+/* Update ASCII art container styles */
 .ascii-container {
+    display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
@@ -225,8 +227,9 @@ header p {
 }
 
 .ascii-box {
-    flex: 0 0 auto;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     white-space: pre;
 }
 
@@ -236,6 +239,7 @@ header p {
     font-size: clamp(8px, 1vw, 16px);
     line-height: 1;
     animation: rainbow-text 3s linear infinite;
+    display: inline-block;
 }
 
 hr {
@@ -947,4 +951,60 @@ nav a:hover {
     height: 100%;
     z-index: -1;
     pointer-events: none;
+}
+
+/* Update these styles in style.css */
+.weather-settings {
+    position: fixed;
+    right: 0;
+    bottom: 20%;
+    z-index: 1000;
+    display: flex;
+}
+
+.settings-tab {
+    background: #141414;
+    color: #fff;
+    padding: 10px;
+    cursor: pointer;
+    border: 1px solid #fff;
+    border-right: none;
+    border-radius: 5px 0 0 5px;
+    font-size: 16px;
+    position: relative;
+    z-index: 1001;
+}
+
+.settings-panel {
+    position: absolute;
+    right: -232px;
+    top: 0;
+    width: 200px;
+    background: #141414;
+    border: 1px solid #fff;
+    padding: 15px;
+    transition: right 0.3s ease;
+    z-index: 1000;
+}
+
+.weather-settings.open .settings-panel {
+    right: 0;
+}
+
+.settings-panel h4 {
+    margin: 0 0 10px 0;
+    color: #fff;
+    font-size: 14px;
+}
+
+.settings-panel label {
+    display: block;
+    color: #fff;
+    margin: 8px 0;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.settings-panel input[type="checkbox"] {
+    margin-right: 8px;
 }
