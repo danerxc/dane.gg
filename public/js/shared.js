@@ -320,10 +320,77 @@ class SnowSystem {
     }
 }
 
-// Initialize on DOM load
+// Update WeatherManager class in shared.js
+class WeatherManager {
+    constructor() {
+        this.rainSystem = null;
+        this.snowSystem = null;
+        this.initializeUI();
+        this.initializeSystems();
+    }
+
+    initializeUI() {
+        const weatherSettings = document.querySelector('.weather-settings');
+        const tab = document.querySelector('.settings-tab');
+        
+        // Toggle panel
+        tab.addEventListener('click', (e) => {
+            e.stopPropagation();
+            weatherSettings.classList.toggle('open');
+        });
+
+        // Close panel when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!weatherSettings.contains(e.target)) {
+                weatherSettings.classList.remove('open');
+            }
+        });
+
+        const rainToggle = document.getElementById('rainToggle');
+        const snowToggle = document.getElementById('snowToggle');
+
+        // Prevent panel from closing when clicking checkboxes
+        rainToggle.addEventListener('click', (e) => e.stopPropagation());
+        snowToggle.addEventListener('click', (e) => e.stopPropagation());
+
+        rainToggle.addEventListener('change', () => this.toggleRain(rainToggle.checked));
+        snowToggle.addEventListener('change', () => this.toggleSnow(snowToggle.checked));
+    }
+
+    // ... rest of WeatherManager code ...
+    initializeSystems() {
+        // Initialize systems but don't start them yet
+        this.rainSystem = new RainSystem();
+        this.snowSystem = new SnowSystem();
+        
+        // Start rain by default (matches checkbox)
+        this.toggleRain(true);
+    }
+
+    toggleRain(enabled) {
+        if (enabled) {
+            this.snowSystem?.isAnimating && this.toggleSnow(false);
+            document.getElementById('snowToggle').checked = false;
+            this.rainSystem.isAnimating = true;
+            this.rainSystem.animate();
+        } else {
+            this.rainSystem.isAnimating = false;
+        }
+    }
+
+    toggleSnow(enabled) {
+        if (enabled) {
+            this.rainSystem?.isAnimating && this.toggleRain(false);
+            document.getElementById('rainToggle').checked = false;
+            this.snowSystem.isAnimating = true;
+            this.snowSystem.animate();
+        } else {
+            this.snowSystem.isAnimating = false;
+        }
+    }
+}
+
+// Update DOM load handler
 document.addEventListener('DOMContentLoaded', () => {
-    // new SnowSystem();
-    
-    const rainSystem = new RainSystem();
-    rainSystem.animate();
+    new WeatherManager();
 });
