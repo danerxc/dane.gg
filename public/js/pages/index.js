@@ -1,3 +1,8 @@
+let ws;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+let inactivityTimeout;
+
 document.addEventListener('DOMContentLoaded', () => {
     loadPosts(1, 4);
     updateNowPlaying();
@@ -7,7 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateServices();
     setInterval(updateServices, 7500);
     updateTweet();
-    setInterval(updateTweet, 7500);
+    setInterval(updateTweet, 300000);
+    setupChat();
 });
 
 async function loadPosts(page = 1, limit = 4) {
@@ -23,11 +29,9 @@ async function loadPosts(page = 1, limit = 4) {
     } else {
         posts.forEach((post) => {
             const date = new Date(post.created_at).toISOString().split('T')[0];
-    
             const postHTML = `
                 <li><a href="/blog/${post.slug}" class="blog-post"><b>${date}</b> :: ${post.title}</a></li>
             `;
-    
             container.innerHTML += postHTML;
         });
     }
@@ -74,27 +78,21 @@ async function updateNowPlaying() {
     try {
         const response = await fetch('/api/nowplaying');
         const track = await response.json();
-
         const playStatus = document.querySelector('.play-status');
         const trackTitle = document.querySelector('.track-title');
         const trackArtist = document.querySelector('.track-artist');
         const albumArt = document.querySelector('.current-album-art');
         const trackLastPlayed = document.querySelector('.track-last-played');
-
+        
         if (track['@attr'] && track['@attr'].nowplaying) {
             playStatus.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="2 0 12 12"><circle cx="8" cy="8" r="4" fill="green"/></svg> Now Playing';
             trackLastPlayed.style.display = 'none';
         } else {
-            playStatus.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="2 0 12 12"><circle cx="8" cy="8" r="4" fill="gray"/></svg> Recently Played';
-            if (track.date && track.date.uts) {
-                const timeAgoText = timeAgo(track.date.uts);
-                trackLastPlayed.textContent = `Last played: ${timeAgoText}`;
-                trackLastPlayed.style.display = 'block';
-            } else {
-                trackLastPlayed.style.display = 'none';
-            }
+            playStatus.textContent = 'Recently played';
+            trackLastPlayed.style.display = 'block';
+            trackLastPlayed.textContent = timeAgo(new Date(track.date.uts * 1000));
         }
-
+        
         trackTitle.innerHTML = `<span><a href="${track.url}" target="_blank">${track.name || 'Track Title'}</a></span>`;
         trackArtist.textContent = track.artist['#text'] || 'Artist Name';
         albumArt.src = track.image[2]['#text'] || 'assets/img/misc/music-placeholder.jpg';
@@ -104,45 +102,45 @@ async function updateNowPlaying() {
 }
 
 async function updateTweet() {
-  try {
-    const response = await fetch('/api/latest-tweet');
-    const tweet = await response.json();
-    
-    const tweetTextEl = document.querySelector('.tweet-text');
-    const postedDateEl = document.querySelector('.posted-date');
-    const displayNameEl = document.querySelector('.display-name');
-    const usernameEl = document.querySelector('.username');
-    const profileImageEl = document.querySelector('.profile-image img');
-    
-    if (tweetTextEl && tweet.text) {
-      tweetTextEl.textContent = tweet.text;
+    try {
+        const response = await fetch('/api/latest-tweet');
+        const tweet = await response.json();
+        
+        const tweetTextEl = document.querySelector('.tweet-text');
+        const postedDateEl = document.querySelector('.posted-date');
+        const displayNameEl = document.querySelector('.display-name');
+        const usernameEl = document.querySelector('.username');
+        const profileImageEl = document.querySelector('.profile-image img');
+        
+        if (tweetTextEl && tweet.text) {
+            tweetTextEl.textContent = tweet.text;
+        }
+        
+        if (displayNameEl && tweet.accountName) {
+            displayNameEl.innerHTML = `<a href="https://twitter.com/${tweet.username}">${tweet.accountName}</a>`;
+        }
+        
+        if (usernameEl && tweet.username) {
+            usernameEl.textContent = `@${tweet.username}`;
+        }
+        
+        if (profileImageEl && tweet.profilePicture) {
+            profileImageEl.src = tweet.profilePicture;
+            profileImageEl.alt = tweet.accountName;
+        }
+        
+        if (postedDateEl && tweet.timestamp) {
+            const timestamp = new Date(tweet.timestamp).getTime() / 1000;
+            postedDateEl.textContent = timeAgoShort(timestamp);
+        }
+    } catch (err) {
+        console.error('Failed to update tweet:', err);
     }
-    
-    if (displayNameEl && tweet.accountName) {
-      displayNameEl.innerHTML = `<a href="https://twitter.com/${tweet.username}">${tweet.accountName}</a>`;
-    }
-    
-    if (usernameEl && tweet.username) {
-      usernameEl.textContent = `@${tweet.username}`;
-    }
-    
-    if (profileImageEl && tweet.profilePicture) {
-      profileImageEl.src = tweet.profilePicture;
-      profileImageEl.alt = tweet.accountName;
-    }
-    
-    if (postedDateEl && tweet.created_at) {
-      const timestamp = new Date(tweet.created_at).getTime() / 1000;
-      postedDateEl.textContent = timeAgoShort(timestamp);
-    }
-  } catch (err) {
-    console.error('Failed to update tweet:', err);
-  }
 }
 
 function timeAgo(timestamp) {
     const now = new Date();
-    const secondsPast = (now.getTime() - timestamp * 1000) / 1000;
+    const secondsPast = (now.getTime() - timestamp) / 1000;
 
     if (secondsPast < 60) {
         return `${Math.floor(secondsPast)} seconds ago`;
@@ -163,7 +161,7 @@ function timeAgo(timestamp) {
 }
 
 function timeAgoShort(timestamp) {
-    const date = timestamp * 1000;
+    const date = new Date(timestamp * 1000);
     const now = Date.now();
     
     const secondsPast = Math.floor((now - date) / 1000);
@@ -174,4 +172,183 @@ function timeAgoShort(timestamp) {
     if (secondsPast < 604800) return `${Math.floor(secondsPast / 86400)}d`;
     if (secondsPast < 31536000) return `${Math.floor(secondsPast / 604800)}w`;
     return `${Math.floor(secondsPast / 31536000)}y`;
+}
+
+function setCookie(name, value, days = 365) {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+}
+
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+}
+
+function handleCommand(input) {
+    const match = input.match(/^\/nick\s+(.+)$/);
+    if (match) {
+        const newUsername = match[1].trim();
+        if (newUsername) {
+            setCookie('chatUsername', newUsername);
+            addMessage({ 
+                username: 'system',
+                content: `Username changed to: ${newUsername}`,
+                timestamp: new Date().toISOString()
+            });
+            return true;
+        }
+    }
+    return false;
+}
+
+function setupChat() {
+    const messages = document.querySelector('.messages');
+    const input = document.querySelector('.chat-input input');
+    const button = document.querySelector('.chat-input button');
+
+    function resetInactivityTimeout() {
+        clearTimeout(inactivityTimeout);
+        inactivityTimeout = setTimeout(() => {
+            messages.innerHTML = '';
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.close();
+            }
+        }, 30000); // 30 seconds
+    }
+
+    function connect() {
+        ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/chat`);
+
+        ws.onopen = () => {
+            console.log('Connected to chat');
+            reconnectAttempts = 0;
+            resetInactivityTimeout();
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'history') {
+                messages.innerHTML = '';
+                data.data.reverse().forEach(msg => addMessage(msg));
+                addMessage({
+                    username: 'System',
+                    content: 'Connected to chat server',
+                    timestamp: new Date().toISOString()
+                });
+            } else if (data.type === 'message') {
+                addMessage(data.data);
+                messages.scrollTop = messages.scrollHeight;
+            }
+            resetInactivityTimeout();
+        };
+
+        ws.onclose = () => {
+            console.log('Disconnected from chat');
+            addMessage({
+                username: 'System',
+                content: 'Disconnected from chat',
+                timestamp: new Date().toISOString()
+            });
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+    }
+
+    connect();
+
+    function sendMessage() {
+        const content = input.value.trim();
+        if (!content) return;
+
+        if (handleCommand(content)) {
+            input.value = '';
+            resetInactivityTimeout();
+            return;
+        }
+
+        if (ws.readyState === WebSocket.OPEN) {
+            const username = getCookie('chatUsername') || 'Anonymous';
+            const message = JSON.stringify({
+                username,
+                content,
+                timestamp: new Date().toISOString(),
+                message_type: 'Web',
+                message_color: null
+            });
+            console.log('Sending message:', message);
+            ws.send(message);
+            input.value = '';
+            resetInactivityTimeout();
+        } else {
+            addMessage({
+                username: 'System',
+                content: 'Not connected to chat server',
+                timestamp: new Date()
+            });
+        }
+    }
+
+    function reconnectOnInteraction() {
+        if (ws.readyState !== WebSocket.OPEN) {
+            connect();
+        }
+    }
+
+    button.addEventListener('click', sendMessage);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+        resetInactivityTimeout();
+    });
+
+    document.addEventListener('mousemove', resetInactivityTimeout);
+    document.addEventListener('keydown', resetInactivityTimeout);
+
+    document.addEventListener('mousemove', reconnectOnInteraction);
+    document.addEventListener('keydown', reconnectOnInteraction);
+}
+
+function addMessage({ username, content, timestamp, message_type, message_color }) {
+    const messages = document.querySelector('.messages');
+    const messageDate = new Date(timestamp);
+    const now = new Date();
+    let timeString;
+
+    if (messageDate.toDateString() === now.toDateString()) {
+        timeString = messageDate.toLocaleTimeString('en-US', { 
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } else {
+        timeString = messageDate.toLocaleString('en-US', { 
+            hour12: false,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    if (message_type === 'Discord') {
+        messages.innerHTML += `
+            <div class="message">
+                <span class="timestamp">[${timeString}]</span>
+                <span class="nick" style="color: ${message_color}">&lt;${username}&gt;</span>
+                <span class="text">${content}</span>
+            </div>
+        `;
+    } else {
+        messages.innerHTML += `
+        <div class="message">
+            <span class="timestamp">[${timeString}]</span>
+            <span class="nick">&lt;${username}&gt;</span>
+            <span class="text">${content}</span>
+        </div>
+    `;
+    }
+    messages.scrollTop = messages.scrollHeight;
 }

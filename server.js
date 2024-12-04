@@ -1,9 +1,19 @@
-const express = require('express');
-const path = require('path');
-const exphbs = require('express-handlebars');
-require('dotenv').config();
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import exphbs from 'express-handlebars';
+import dotenv from 'dotenv';
+import setupWebSocket from './services/chat.js';
+import http from 'http';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
 
 // Handlebars
 app.engine('handlebars', exphbs.engine({
@@ -34,9 +44,9 @@ app.use((req, res, next) => {
 });
 
 // Import routes
-const apiRoutes = require('./routes/api');
-const blogRoutes = require('./routes/blog');
-const webhookRoutes = require('./routes/webhooks');
+import apiRoutes from './routes/api.js';
+import blogRoutes from './routes/blog.js';
+import webhookRoutes from './routes/webhooks.js';
 
 // API routes
 app.use('/api', apiRoutes);
@@ -53,5 +63,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).redirect(`/error.html?code=${statusCode}`);
 });
 
+setupWebSocket(server);
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

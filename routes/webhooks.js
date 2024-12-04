@@ -1,9 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const fs = require('fs').promises;
-const path = require('path');
-const ALLOWED_SERVICES = require('../config/service_monitoring');
+import express from 'express';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import ALLOWED_SERVICES from '../config/service_monitoring.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const router = express.Router();
 const STATUS_FILE = path.join(__dirname, '../data/serviceStatus.json');
 const DISCORD_STATUS_FILE = path.join(__dirname, '../data/discordStatus.json');
 const LATEST_TWEET_FILE = path.join(__dirname, '../data/latestTweet.json');
@@ -106,4 +111,4 @@ router.post('/twitter/update', authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
