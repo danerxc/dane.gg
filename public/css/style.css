@@ -939,48 +939,12 @@ nav a:hover {
     color: #e48f8f;
 }
 
-/* Raindrop styles */
-.raindrop {
-    position: absolute;
-    top: -10px;
-    width: 2px;
-    height: 15px;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), transparent);
-    opacity: 0.5;
-    animation: fall linear infinite;
-}
-
-@keyframes fall {
-    to {
-        top: calc(80vh - 15px); /* Raindrops stop at 80% of viewport height */
-    }
-}
-
-/* Splash styles */
-.splash {
-    position: absolute;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
-    opacity: 0.5;
-    animation: splat 0.5s forwards;
-}
-
-@keyframes splat {
-    to {
-        opacity: 0;
-        transform: scale(3);
-    }
-}
-
-.rain-container {
+#rainCanvas {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
-    overflow: hidden;
     z-index: -1;
+    pointer-events: none;
 }
