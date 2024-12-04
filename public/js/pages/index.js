@@ -28,7 +28,7 @@ async function loadPosts(page = 1, limit = 4) {
         return;
     } else {
         posts.forEach((post) => {
-            const date = new Date(post.timestamp).toISOString().split('T')[0];
+            const date = new Date(post.created_at).toISOString().split('T')[0];
             const postHTML = `
                 <li><a href="/blog/${post.slug}" class="blog-post"><b>${date}</b> :: ${post.title}</a></li>
             `;
@@ -194,7 +194,7 @@ function handleCommand(input) {
             addMessage({ 
                 username: 'system',
                 content: `Username changed to: ${newUsername}`,
-                timestamp: new Date()
+                timestamp: new Date().toISOString()
             });
             return true;
         }
@@ -223,21 +223,19 @@ function setupChat() {
         ws.onopen = () => {
             console.log('Connected to chat');
             reconnectAttempts = 0;
-            addMessage({
-                username: 'system',
-                content: 'Connected to chat server',
-                timestamp: new Date().toISOString()
-            });
             resetInactivityTimeout();
         };
 
         ws.onmessage = (event) => {
-            console.log('Received message:', event.data);
             const data = JSON.parse(event.data);
-            
             if (data.type === 'history') {
                 messages.innerHTML = '';
                 data.data.reverse().forEach(msg => addMessage(msg));
+                addMessage({
+                    username: 'System',
+                    content: 'Connected to chat server',
+                    timestamp: new Date().toISOString()
+                });
             } else if (data.type === 'message') {
                 addMessage(data.data);
                 messages.scrollTop = messages.scrollHeight;
@@ -248,7 +246,7 @@ function setupChat() {
         ws.onclose = () => {
             console.log('Disconnected from chat');
             addMessage({
-                username: 'system',
+                username: 'System',
                 content: 'Disconnected from chat',
                 timestamp: new Date().toISOString()
             });
@@ -272,20 +270,21 @@ function setupChat() {
         }
 
         if (ws.readyState === WebSocket.OPEN) {
-            const username = getCookie('chatUsername') || 'user';
+            const username = getCookie('chatUsername') || 'Anonymous';
             const message = JSON.stringify({
                 username,
                 content,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                message_type: 'Web',
+                message_color: null
             });
             console.log('Sending message:', message);
             ws.send(message);
             input.value = '';
             resetInactivityTimeout();
         } else {
-            console.error('WebSocket not connected');
             addMessage({
-                username: 'system',
+                username: 'System',
                 content: 'Not connected to chat server',
                 timestamp: new Date()
             });
@@ -304,20 +303,14 @@ function setupChat() {
         resetInactivityTimeout();
     });
 
-    // Reset inactivity timer on any user interaction
-    messages.addEventListener('click', resetInactivityTimeout);
-    input.addEventListener('click', resetInactivityTimeout);
-    button.addEventListener('click', resetInactivityTimeout);
     document.addEventListener('mousemove', resetInactivityTimeout);
     document.addEventListener('keydown', resetInactivityTimeout);
 
-    // Reconnect on interaction
-    messages.addEventListener('click', reconnectOnInteraction);
-    input.addEventListener('click', reconnectOnInteraction);
-    button.addEventListener('click', reconnectOnInteraction);
+    document.addEventListener('mousemove', reconnectOnInteraction);
+    document.addEventListener('keydown', reconnectOnInteraction);
 }
 
-function addMessage({ username, content, timestamp }) {
+function addMessage({ username, content, timestamp, message_type, message_color }) {
     const messages = document.querySelector('.messages');
     const messageDate = new Date(timestamp);
     const now = new Date();
@@ -340,12 +333,22 @@ function addMessage({ username, content, timestamp }) {
         });
     }
 
-    messages.innerHTML += `
+    if (message_type === 'Discord') {
+        messages.innerHTML += `
+            <div class="message">
+                <span class="timestamp">[${timeString}]</span>
+                <span class="nick" style="color: ${message_color}">&lt;${username}&gt;</span>
+                <span class="text">${content}</span>
+            </div>
+        `;
+    } else {
+        messages.innerHTML += `
         <div class="message">
             <span class="timestamp">[${timeString}]</span>
             <span class="nick">&lt;${username}&gt;</span>
             <span class="text">${content}</span>
         </div>
     `;
+    }
     messages.scrollTop = messages.scrollHeight;
 }
