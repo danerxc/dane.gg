@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTweet();
     setInterval(updateTweet, 300000);
     setupChat();
+    openBtnHotlink();
 });
 
 async function loadPosts(page = 1, limit = 4) {
@@ -351,4 +352,13 @@ function addMessage({ username, content, timestamp, message_type, message_color 
     `;
     }
     messages.scrollTop = messages.scrollHeight;
+}
+
+function openBtnHotlink() {
+    const hotlinkText = document.querySelector('.hotlink-text .clickable');
+    const dropdown = document.querySelector('.dropdown-content');
+    
+    hotlinkText.addEventListener('click', () => {
+        dropdown.classList.toggle('active');
+    });
 }
