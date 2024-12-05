@@ -1,3 +1,7 @@
+// =======================================
+// >> RAIN SYSTEM 
+// =======================================
+
 class RainDrop {
     constructor(canvas, x, y) {
         this.canvas = canvas;
@@ -54,7 +58,6 @@ class RainDrop {
     }
 }
 
-// Update RainSystem class
 class RainSystem {
     constructor() {
         this.canvas = document.getElementById('rainCanvas');
@@ -67,23 +70,28 @@ class RainSystem {
 
         window.addEventListener('resize', () => this.resizeCanvas());
         
-        // Add scroll listener
         window.addEventListener('scroll', () => this.updateContainerPosition());
         window.addEventListener('resize', () => {
             this.resizeCanvas();
             this.updateContainerPosition();
         });
+
+        this.resizeObserver = new ResizeObserver(() => {
+            this.updateContainerPosition();
+        });
+        this.resizeObserver.observe(this.container);
     }
 
     updateContainerPosition() {
+        const oldTop = this.containerTop;
         this.containerTop = this.container.getBoundingClientRect().top;
-        // Update splashes position with scroll
+        
+        const diff = this.containerTop - oldTop;
         this.splashes.forEach(particles => {
             particles.forEach(p => {
-                p.y += (window.scrollY - this.lastScrollY);
+                p.y += diff;
             });
         });
-        this.lastScrollY = window.scrollY;
     }
 
     resizeCanvas() {
@@ -164,6 +172,10 @@ class RainSystem {
     }
 }
 
+// =======================================
+// >> SNOW SYSTEM 
+// =======================================
+
 class SnowFlake {
     constructor(canvas, x, y) {
         this.canvas = canvas;
@@ -179,7 +191,7 @@ class SnowFlake {
         this.settledY = 0;
         this.opacity = 0.8;
         this.fadeStartTime = null;
-        this.lifetime = 5000 + Math.random() * 5000; // Random lifetime between 5-10 seconds
+        this.lifetime = 5000 + Math.random() * 5000;
     }
 
     update(containerTop, containerBottom, accumulation) {
@@ -192,25 +204,23 @@ class SnowFlake {
             if (elapsed > this.lifetime) {
                 this.opacity = Math.max(0, 0.8 * (1 - (elapsed - this.lifetime) / 1000));
                 if (this.opacity <= 0) {
-                    return true; // Remove flake
+                    return true;
                 }
             }
             return false;
         }
 
-        // Update sway motion
+
         this.swayAngle += this.swaySpeed;
         this.wind = Math.sin(this.swayAngle) * 0.5;
         this.x += this.wind;
         this.y += this.speed;
 
-        // Get container bounds
         const container = document.querySelector('.container');
         const containerRect = container.getBoundingClientRect();
         const isOverContainer = this.x >= containerRect.left && 
                               this.x <= containerRect.right;
 
-        // Check for settling
         if (isOverContainer) {
             const relativeX = Math.floor(this.x - containerRect.left);
             if (relativeX >= 0 && relativeX < accumulation.length) {
@@ -224,7 +234,6 @@ class SnowFlake {
                 }
             }
         } else if (this.y > this.canvas.height) {
-            // Remove flakes that fall off screen
             this.settled = true;
             return false;
         }
@@ -246,7 +255,6 @@ class SnowFlake {
     }
 }
 
-// Update SnowSystem class
 class SnowSystem {
     constructor() {
         console.log('Initializing SnowSystem');
@@ -260,7 +268,6 @@ class SnowSystem {
         this.flakes = [];
         this.settledFlakes = [];
         
-        // Wait for container to be available
         const initSystem = () => {
             this.container = document.querySelector('.container');
             if (!this.container) {
@@ -279,7 +286,6 @@ class SnowSystem {
             this.start();
         };
 
-        // Start initialization
         initSystem();
         
         this.lastScrollY = window.scrollY;
@@ -288,11 +294,24 @@ class SnowSystem {
             this.resizeCanvas();
             this.updateContainerPosition();
         });
+
+        this.resizeObserver = new ResizeObserver(() => {
+            this.containerRect = this.container.getBoundingClientRect();
+            const oldTop = this.containerTop;
+            this.containerTop = this.containerRect.top;
+
+            const diff = this.containerTop - oldTop;
+            this.settledFlakes.forEach(flake => {
+                if (flake.settled) {
+                    flake.settledY += diff;
+                }
+            });
+        });
+        this.resizeObserver.observe(this.container);
     }
 
     updateContainerPosition() {
         this.containerRect = this.container.getBoundingClientRect();
-        // Update settled flakes position with scroll
         this.settledFlakes.forEach(flake => {
             if (flake.settled) {
                 flake.settledY += (window.scrollY - this.lastScrollY);
@@ -320,16 +339,13 @@ class SnowSystem {
             this.createFlake();
         }
 
-        // Update container position
         this.containerRect = this.container.getBoundingClientRect();
 
-        // Update and remove faded flakes
         this.settledFlakes = this.settledFlakes.filter(flake => {
             const remove = flake.update(this.containerRect.top, this.containerRect.bottom, this.accumulation);
             return !remove;
         });
         
-        // Update falling flakes
         for (let i = this.flakes.length - 1; i >= 0; i--) {
             const flake = this.flakes[i];
             if (flake.update(this.containerRect.top, this.containerRect.bottom, this.accumulation)) {
@@ -342,10 +358,8 @@ class SnowSystem {
     }
 
     draw() {
-        // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw all flakes
         [...this.settledFlakes, ...this.flakes].forEach(flake => {
             flake.draw(this.ctx);
         });
@@ -366,7 +380,10 @@ class SnowSystem {
     }
 }
 
-// Update WeatherManager class in shared.js
+// =======================================
+// >> WEATHER MANAGEMENT SYSTEM 
+// =======================================
+
 class WeatherManager {
     constructor() {
         this.rainSystem = null;
@@ -430,7 +447,6 @@ class WeatherManager {
     }
 }
 
-// Update DOM load handler
 document.addEventListener('DOMContentLoaded', () => {
     new WeatherManager();
 });
