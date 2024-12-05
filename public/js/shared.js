@@ -376,16 +376,14 @@ class WeatherManager {
     }
 
     initializeUI() {
-        const weatherSettings = document.querySelector('.weather-settings');
+        const weatherSettings = document.querySelector('.site-settings');
         const tab = document.querySelector('.settings-tab');
         
-        // Toggle panel
         tab.addEventListener('click', (e) => {
             e.stopPropagation();
             weatherSettings.classList.toggle('open');
         });
 
-        // Close panel when clicking outside
         document.addEventListener('click', (e) => {
             if (!weatherSettings.contains(e.target)) {
                 weatherSettings.classList.remove('open');
@@ -395,7 +393,6 @@ class WeatherManager {
         const rainToggle = document.getElementById('rainToggle');
         const snowToggle = document.getElementById('snowToggle');
 
-        // Prevent panel from closing when clicking checkboxes
         rainToggle.addEventListener('click', (e) => e.stopPropagation());
         snowToggle.addEventListener('click', (e) => e.stopPropagation());
 
@@ -403,13 +400,10 @@ class WeatherManager {
         snowToggle.addEventListener('change', () => this.toggleSnow(snowToggle.checked));
     }
 
-    // ... rest of WeatherManager code ...
     initializeSystems() {
-        // Initialize systems but don't start them yet
         this.rainSystem = new RainSystem();
         this.snowSystem = new SnowSystem();
         
-        // Start rain by default (matches checkbox)
         this.toggleRain(true);
     }
 
