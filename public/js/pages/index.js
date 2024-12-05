@@ -371,6 +371,10 @@ function timeAgoShort(timestamp) {
     return `${Math.floor(secondsPast / 31536000)}y`;
 }
 
+// =======================================
+// >> COOKIE HELPER FUNCTIONS 
+// =======================================
+
 function setCookie(name, value, days = 365) {
     const expires = new Date();
     expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
