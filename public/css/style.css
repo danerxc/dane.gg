@@ -1,11 +1,11 @@
 :root {
-    --scale-factor: 0.85; 
+    --scale-factor: 0.85;
 }
 
 @font-face {
     font-family: 'W95FA';
     src: url('../assets/fonts/w95fa.woff2') format('woff2'),
-         url('../assets/fonts/w95fa.woff') format('woff');
+        url('../assets/fonts/w95fa.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
@@ -32,24 +32,40 @@ body::before {
     width: 100vw;
     height: 100vh;
     background:
-        linear-gradient(
-            rgba(255, 255, 255, 0.05) 50%,
-            rgba(255, 255, 255, 0) 50%
-        ) repeat-y,
+        linear-gradient(rgba(255, 255, 255, 0.05) 50%,
+            rgba(255, 255, 255, 0) 50%) repeat-y,
         url('../assets/img/backgrounds/1.png') no-repeat center center;
     background-size:
-        100% 4px, /* Adjust this value to control scanline thickness */
+        100% 4px,
+        /* Adjust this value to control scanline thickness */
         cover;
     z-index: -1;
 }
 
 @keyframes rainbow-text {
-    0% { color: #89ffbe; }
-    20% { color: #80ffee; }
-    40% { color: #61d2ff; }
-    60% { color: #60dfff; }
-    80% { color: #75fff4; }
-    100% { color: #83ffc1; }
+    0% {
+        color: #89ffbe;
+    }
+
+    20% {
+        color: #80ffee;
+    }
+
+    40% {
+        color: #61d2ff;
+    }
+
+    60% {
+        color: #60dfff;
+    }
+
+    80% {
+        color: #75fff4;
+    }
+
+    100% {
+        color: #83ffc1;
+    }
 }
 
 /* Container */
@@ -119,7 +135,8 @@ header p {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    box-sizing: border-box; /* Ensure padding and border are included in the element's total width and height */
+    box-sizing: border-box;
+    /* Ensure padding and border are included in the element's total width and height */
 }
 
 /* Typography */
@@ -157,13 +174,17 @@ header p {
 /* Responsive Adjustments for Small Screens */
 @media (max-width: 800px) {
     .layout {
-        flex-direction: column; 
+        flex-direction: column;
     }
 
     .left-column,
     .right-column {
         flex: none;
         width: 100%;
+    }
+
+    .right-column {
+        /* order: -1; Make the right column appear first */
     }
 }
 
@@ -193,8 +214,8 @@ header p {
 .black-container {
     display: flex;
     justify-content: center;
-    align-items: center; 
-    min-height: 20vh; 
+    align-items: center;
+    min-height: 20vh;
     width: 100%;
     margin: 0 auto;
     background-color: black;
@@ -210,7 +231,7 @@ header p {
 
     .header-container .ascii-art,
     .header-container .text-content {
-        font-size: 2vw; 
+        font-size: 2vw;
         max-width: 100%;
         text-align: center;
     }
@@ -554,8 +575,13 @@ nav a:hover {
     z-index: 10;
 }
 
-.prev { left: 5px; }
-.next { right: 5px; }
+.prev {
+    left: 5px;
+}
+
+.next {
+    right: 5px;
+}
 
 .discord-status {
     position: relative;
@@ -576,8 +602,8 @@ nav a:hover {
 
 /* style.css */
 .status-indicator {
-  display: inline-flex;
-  align-items: center;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* Apply scanline effect directly to .status-state */
@@ -585,30 +611,34 @@ nav a:hover {
     font-size: 28px;
     font-weight: bold;
     position: relative;
-    color: #fff; /* Ensure text color is set */
-    background: linear-gradient(
-        transparent 0%,
-        rgb(255, 73, 73) 50%,
-        transparent 100%
-    );
-    background-clip: text; /* Clip the background to the text */
-    -webkit-background-clip: text; /* For Safari */
-    color: transparent; /* Make the text color transparent to show the background */
+    color: #fff;
+    /* Ensure text color is set */
+    background: linear-gradient(transparent 0%,
+            rgb(255, 73, 73) 50%,
+            transparent 100%);
+    background-clip: text;
+    /* Clip the background to the text */
+    -webkit-background-clip: text;
+    /* For Safari */
+    color: transparent;
+    /* Make the text color transparent to show the background */
 }
 
 .status-state.online {
     font-size: 28px;
     font-weight: bold;
     position: relative;
-    color: #fff; /* Ensure text color is set */
-    background: linear-gradient(
-        transparent 0%,
-        rgb(118, 255, 84) 100%,
-        transparent 100%
-    );
-    background-clip: text; /* Clip the background to the text */
-    -webkit-background-clip: text; /* For Safari */
-    color: transparent; /* Make the text color transparent to show the background */
+    color: #fff;
+    /* Ensure text color is set */
+    background: linear-gradient(transparent 0%,
+            rgb(118, 255, 84) 100%,
+            transparent 100%);
+    background-clip: text;
+    /* Clip the background to the text */
+    -webkit-background-clip: text;
+    /* For Safari */
+    color: transparent;
+    /* Make the text color transparent to show the background */
 }
 
 /* Apply scanline effect to .status-exclaim */
@@ -619,15 +649,17 @@ nav a:hover {
     transform: rotate(15deg) skew(-15deg, 0);
     transform-origin: bottom;
     margin-left: -5px;
-    color: #fff; /* Ensure text color is set */
-    background: linear-gradient(
-        transparent 0%,
-        rgb(255, 73, 73) 50%,
-        transparent 100%
-    );
-    background-clip: text; /* Clip the background to the text */
-    -webkit-background-clip: text; /* For Safari */
-    color: transparent; /* Make the text color transparent to show the background */
+    color: #fff;
+    /* Ensure text color is set */
+    background: linear-gradient(transparent 0%,
+            rgb(255, 73, 73) 50%,
+            transparent 100%);
+    background-clip: text;
+    /* Clip the background to the text */
+    -webkit-background-clip: text;
+    /* For Safari */
+    color: transparent;
+    /* Make the text color transparent to show the background */
 }
 
 .status-exclaim.online {
@@ -637,15 +669,17 @@ nav a:hover {
     transform: rotate(15deg) skew(-15deg, 0);
     transform-origin: bottom;
     margin-left: -5px;
-    color: #fff; /* Ensure text color is set */
-    background: linear-gradient(
-        transparent 0%,
-        rgb(118, 255, 84) 100%,
-        transparent 100%
-    );
-    background-clip: text; /* Clip the background to the text */
-    -webkit-background-clip: text; /* For Safari */
-    color: transparent; /* Make the text color transparent to show the background */
+    color: #fff;
+    /* Ensure text color is set */
+    background: linear-gradient(transparent 0%,
+            rgb(118, 255, 84) 100%,
+            transparent 100%);
+    background-clip: text;
+    /* Clip the background to the text */
+    -webkit-background-clip: text;
+    /* For Safari */
+    color: transparent;
+    /* Make the text color transparent to show the background */
 }
 
 .tweet-container {
@@ -813,23 +847,23 @@ nav a:hover {
 
 /* Blog Grid Layout */
 .blog-grid {
-  column-count: 2;
-  column-gap: 20px;
+    column-count: 2;
+    column-gap: 20px;
 }
 
 /* Blog Post Card */
 .blog-post-card {
-  display: inline-block;
-  width: 100%;
-  margin-bottom: 20px;
-  box-sizing: border-box;
-  flex-direction: column;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    flex-direction: column;
 }
 
 .blog-post-thumbnail {
-  width: 100%;
-  height: auto;
-  display: block;
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
 .blog-post-card h2 {
@@ -847,9 +881,9 @@ nav a:hover {
 }
 
 @media (max-width: 768px) {
-  .blog-grid {
-    column-count: 1;
-  }
+    .blog-grid {
+        column-count: 1;
+    }
 }
 
 .pagination {
@@ -933,12 +967,12 @@ nav a:hover {
     height: auto;
 }
 
-.error-content a{
+.error-content a {
     text-decoration: none;
     color: #ffffff;
 }
 
-.error-content a:hover{
+.error-content a:hover {
     text-decoration: none;
     color: #e48f8f;
 }
@@ -1007,6 +1041,12 @@ nav a:hover {
 
 .settings-panel input[type="checkbox"] {
     margin-right: 8px;
+}
+
+.hotlink-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .small-image-container {
@@ -1084,4 +1124,57 @@ nav a:hover {
 
 .dropdown-content.active {
     display: block;
+}
+
+.left-column-toggle {
+    display: none;
+    width: 100%;
+    padding: 10px;
+    background: #141414;
+    border: 1px solid #ffffff;
+    color: #ffffff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.left-column-toggle::after {
+    content: '▼';
+    float: right;
+}
+
+.left-column-toggle.active::after {
+    content: '▲';
+}
+
+.mobile-widget-divider {
+    display: none;
+}
+
+@media (max-width: 800px) {
+    .left-column-toggle {
+        display: block;
+    }
+
+    .left-column {
+        display: none;
+    }
+
+    .left-column.show {
+        display: flex;
+    }
+
+    .layout {
+        flex-direction: column;
+    }
+
+    .mobile-widget-divider {
+        display: block;
+        margin-top: 10px;
+    }
+
+    .mobile-widget-divider hr {
+        background: #858585;
+    }
+
+
 }

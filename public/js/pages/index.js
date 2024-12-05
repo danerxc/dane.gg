@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateTweet, 300000);
     setupChat();
     openBtnHotlink();
+    openAdditionalMobile();
 });
 
 async function loadPosts(page = 1, limit = 4) {
@@ -361,4 +362,15 @@ function openBtnHotlink() {
     hotlinkText.addEventListener('click', () => {
         dropdown.classList.toggle('active');
     });
+}
+
+function openAdditionalMobile() {
+    const toggle = document.querySelector('.left-column-toggle');
+    const leftColumn = document.querySelector('.left-column');
+
+  toggle.addEventListener('click', () => {
+    leftColumn.classList.toggle('show');
+    toggle.classList.toggle('active');
+    toggle.textContent = leftColumn.classList.contains('show') ? 'Hide Widgets' : 'Show Widgets';
+  });
 }
