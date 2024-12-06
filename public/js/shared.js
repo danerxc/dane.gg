@@ -1,4 +1,19 @@
 // =======================================
+// >> COOKIE HELPER FUNCTIONS
+// =======================================
+
+function setCookie(name, value, days = 365) {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+}
+
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+}
+
+// =======================================
 // >> RAIN SYSTEM 
 // =======================================
 
@@ -432,9 +447,50 @@ class WeatherManager {
     constructor() {
         this.rainSystem = null;
         this.snowSystem = null;
-        this.speedMultiplier = 1;
-        this.initializeUI();
+        this.speedMultiplier = parseFloat(getCookie('weatherSpeed') || '1.0');
+        // Initialize systems first
         this.initializeSystems();
+        // Then setup UI and load settings
+        this.initializeUI();
+        this.loadSettings();
+    }
+
+    initializeSystems() {
+        // Only create systems, don't start them
+        this.rainSystem = new RainSystem();
+        this.snowSystem = new SnowSystem();
+    }
+
+    loadSettings() {
+        // Default both to disabled if no cookie exists
+        const rainEnabled = getCookie('rainEnabled') === 'true';
+        const snowEnabled = getCookie('snowEnabled') === 'true';
+        const speed = parseFloat(getCookie('weatherSpeed') || '1.0');
+
+        // Update UI state
+        const rainToggle = document.getElementById('rainToggle');
+        const snowToggle = document.getElementById('snowToggle');
+        const speedSlider = document.getElementById('weatherSpeed');
+        const speedValue = document.getElementById('speedValue');
+
+        // Set initial UI state
+        rainToggle.checked = rainEnabled;
+        snowToggle.checked = snowEnabled;
+        speedSlider.value = speed;
+        speedValue.textContent = `${speed}x`;
+
+        // Stop any running systems first
+        this.rainSystem.stop();
+        this.snowSystem.stop();
+
+        // Only start if explicitly enabled
+        if (snowEnabled) {
+            this.snowSystem.start();
+        } else if (rainEnabled) {
+            this.rainSystem.start();
+        }
+        
+        this.updateSpeed(speed);
     }
 
     initializeUI() {
@@ -490,6 +546,7 @@ class WeatherManager {
 
     updateSpeed(multiplier) {
         this.speedMultiplier = multiplier;
+        setCookie('weatherSpeed', multiplier);
         
         if (this.rainSystem) {
             this.rainSystem.setSpeedMultiplier(multiplier);
@@ -500,22 +557,16 @@ class WeatherManager {
         }
     }
 
-    initializeSystems() {
-        this.rainSystem = new RainSystem();
-        this.snowSystem = new SnowSystem();
-        
-        this.rainSystem.start();
-        document.getElementById('rainToggle').checked = true;
-    }
-
     toggleRain(enabled) {
         if (enabled) {
             this.snowSystem?.stop();
             document.getElementById('snowToggle').checked = false;
             this.rainSystem.start();
+            setCookie('snowEnabled', 'false');
         } else {
             this.rainSystem.stop();
         }
+        setCookie('rainEnabled', enabled.toString());
     }
 
     toggleSnow(enabled) {
@@ -523,9 +574,11 @@ class WeatherManager {
             this.rainSystem?.stop();
             document.getElementById('rainToggle').checked = false;
             this.snowSystem.start();
+            setCookie('rainEnabled', 'false');
         } else {
             this.snowSystem.stop();
         }
+        setCookie('snowEnabled', enabled.toString());
     }
 }
 
