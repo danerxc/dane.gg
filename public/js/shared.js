@@ -63,6 +63,7 @@ class RainDrop {
 
 class RainSystem {
     constructor() {
+        this.isAnimating = false;
         this.canvas = document.getElementById('rainCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.drops = [];
@@ -88,7 +89,6 @@ class RainSystem {
 
     setSpeedMultiplier(multiplier) {
         this.speedMultiplier = multiplier;
-        // Update existing drops
         this.drops.forEach(drop => drop.setSpeedMultiplier(multiplier));
     }
 
@@ -177,9 +177,23 @@ class RainSystem {
     }
 
     animate() {
+        if (!this.isAnimating) return;
+        
         this.update();
         this.draw();
         requestAnimationFrame(() => this.animate());
+    }
+
+    start() {
+        this.isAnimating = true;
+        this.animate();
+    }
+
+    stop() {
+        this.isAnimating = false;
+        this.drops = [];
+        this.splashes = [];
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
 
@@ -330,7 +344,6 @@ class SnowSystem {
 
     setSpeedMultiplier(multiplier) {
         this.speedMultiplier = multiplier;
-        // Update existing flakes
         this.flakes.forEach(flake => flake.setSpeedMultiplier(multiplier));
     }
 
@@ -402,6 +415,13 @@ class SnowSystem {
         this.draw();
         requestAnimationFrame(() => this.animate());
     }
+
+    stop() {
+        this.isAnimating = false;
+        this.flakes = [];
+        this.settledFlakes = [];
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
 }
 
 // =======================================
@@ -442,8 +462,8 @@ class WeatherManager {
         snowToggle.addEventListener('change', () => this.toggleSnow(snowToggle.checked));
 
         const speedSlider = document.getElementById('weatherSpeed');
-        speedSlider.min = "0.2";  // Slower
-        speedSlider.max = "3.0";  // Faster
+        speedSlider.min = "0.2";
+        speedSlider.max = "3.0";
         speedSlider.step = "0.1";
         speedSlider.value = "1.0";
 
@@ -453,6 +473,18 @@ class WeatherManager {
             const speed = parseFloat(e.target.value);
             speedValue.textContent = `${speed}x`;
             this.updateSpeed(speed);
+        });
+
+        const disableButton = document.getElementById('disableWeather');
+        disableButton.addEventListener('click', () => {
+            const rainToggle = document.getElementById('rainToggle');
+            const snowToggle = document.getElementById('snowToggle');
+            
+            rainToggle.checked = false;
+            snowToggle.checked = false;
+            
+            this.toggleRain(false);
+            this.toggleSnow(false);
         });
     }
 
@@ -472,28 +504,27 @@ class WeatherManager {
         this.rainSystem = new RainSystem();
         this.snowSystem = new SnowSystem();
         
-        this.toggleRain(true);
+        this.rainSystem.start();
+        document.getElementById('rainToggle').checked = true;
     }
 
     toggleRain(enabled) {
         if (enabled) {
-            this.snowSystem?.isAnimating && this.toggleSnow(false);
+            this.snowSystem?.stop();
             document.getElementById('snowToggle').checked = false;
-            this.rainSystem.isAnimating = true;
-            this.rainSystem.animate();
+            this.rainSystem.start();
         } else {
-            this.rainSystem.isAnimating = false;
+            this.rainSystem.stop();
         }
     }
 
     toggleSnow(enabled) {
         if (enabled) {
-            this.rainSystem?.isAnimating && this.toggleRain(false);
+            this.rainSystem?.stop();
             document.getElementById('rainToggle').checked = false;
-            this.snowSystem.isAnimating = true;
-            this.snowSystem.animate();
+            this.snowSystem.start();
         } else {
-            this.snowSystem.isAnimating = false;
+            this.snowSystem.stop();
         }
     }
 }

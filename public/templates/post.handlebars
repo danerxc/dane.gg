@@ -86,10 +86,11 @@
                 </footer>
             </article>
         </div>
-        <<div class="site-settings">
+    <div class="site-settings">
         <div class="settings-tab">⚙</div>
         <div class="settings-panel">
             <h4>Weather Effects</h4>
+            <button id="disableWeather" class="weather-disable">Disable Weather</button>
             <label>
                 <input type="checkbox" id="rainToggle" checked>
                 Rain
@@ -98,6 +99,11 @@
                 <input type="checkbox" id="snowToggle">
                 Snow
             </label>
+            <div class="speed-control">
+                <label for="weatherSpeed">Speed</label>
+                <input type="range" id="weatherSpeed" min="0.2" max="3.0" step="0.1" value="1.0">
+                <span id="speedValue">1x</span>
+            </div>
         </div>
     </div>
     <script src="/js/shared.js" defer></script>
