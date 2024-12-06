@@ -333,11 +333,16 @@ function addMessage({ username, content, timestamp, message_type, message_color 
         });
     }
 
+    function decimalToHex(decimal) {
+        const hex = Number(decimal).toString(16).padStart(6, '0');
+        return `#${hex}`;
+    }
+
     if (message_type === 'Discord') {
         messages.innerHTML += `
             <div class="message">
                 <span class="timestamp">[${timeString}]</span>
-                <span class="nick" style="color: ${message_color}">&lt;${username}&gt;</span>
+                <span class="nick" style="color: ${decimalToHex(message_color)}">&lt;${username}&gt;</span>
                 <span class="text">${content}</span>
             </div>
         `;
