@@ -3,14 +3,7 @@ let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 let inactivityTimeout;
 const messageSound = new Audio('/assets/sounds/notification.mp3');
-
-function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
+let isChatSoundEnabled = getCookie('chatSoundEnabled') !== 'false';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadPosts(1, 4);
@@ -25,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupChat();
     openBtnHotlink();
     openAdditionalMobile();
+    initializeChatSoundToggle();
 });
 
 // =======================================
@@ -172,6 +166,14 @@ async function updateTweet() {
 // >> WSS CHAT SYSTEM
 // =======================================
 
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 let userUUID = getCookie('userUUID');
 if (!userUUID) {
     userUUID = generateUUID();
@@ -305,8 +307,10 @@ function setupChat() {
 }
 
 function playMessageSound() {
-    messageSound.currentTime = 0;
-    messageSound.play().catch(e => console.log('Error playing sound:', e));
+    if (isChatSoundEnabled) {
+        messageSound.currentTime = 0;
+        messageSound.play().catch(e => console.log('Error playing sound:', e));
+    }
 }
 
 function addMessage({ username, content, timestamp, message_type, message_color, userUUID, isHistorical }) {
@@ -440,4 +444,14 @@ function openAdditionalMobile() {
     toggle.classList.toggle('active');
     toggle.textContent = leftColumn.classList.contains('show') ? 'Hide Widgets' : 'Show Widgets';
   });
+}
+
+function initializeChatSoundToggle() {
+    const toggle = document.getElementById('chatSoundToggle');
+    toggle.checked = isChatSoundEnabled;
+    
+    toggle.addEventListener('change', (e) => {
+        isChatSoundEnabled = e.target.checked;
+        setCookie('chatSoundEnabled', isChatSoundEnabled);
+    });
 }
