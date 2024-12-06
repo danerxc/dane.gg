@@ -32,11 +32,17 @@ function setupWebSocket(server) {
                 console.log('Received message:', data);
 
                 const query = `
-                    INSERT INTO website.messages (username, content, message_type, message_color)
-                    VALUES ($1, $2, $3, $4)
-                    RETURNING id, username, content, timestamp, message_type, message_color
+                    INSERT INTO website.messages (username, content, message_type, message_color, client_uuid)
+                    VALUES ($1, $2, $3, $4, $5)
+                    RETURNING id, username, content, timestamp, message_type, message_color, client_uuid
                 `;
-                const result = await pool.query(query, [data.username, data.content, data.message_type, data.message_color]);
+                const result = await pool.query(query, [
+                    data.username, 
+                    data.content, 
+                    data.message_type, 
+                    data.message_color,
+                    data.userUUID
+                ]);
                 console.log('Saved message:', result.rows[0]);
 
                 const broadcastData = JSON.stringify({
@@ -46,7 +52,9 @@ function setupWebSocket(server) {
                         content: result.rows[0].content,
                         timestamp: result.rows[0].timestamp,
                         message_type: result.rows[0].message_type,
-                        message_color: result.rows[0].message_color
+                        message_color: result.rows[0].message_color,
+                        userUUID: result.rows[0].client_uuid,
+                        isHistorical: false 
                     }
                 });
                 console.log('Broadcasting:', broadcastData);
@@ -76,15 +84,21 @@ function setupWebSocket(server) {
 async function sendMessageHistory(ws) {
     try {
         const result = await pool.query(`
-            SELECT username, content, timestamp, message_type, message_color
+            SELECT username, content, timestamp, message_type, message_color, client_uuid
             FROM website.messages 
             ORDER BY timestamp DESC 
             LIMIT 50
         `);
 
+        // Add isHistorical flag to each message
+        const historicalMessages = result.rows.map(msg => ({
+            ...msg,
+            isHistorical: true
+        }));
+
         ws.send(JSON.stringify({
             type: 'history',
-            data: result.rows
+            data: historicalMessages
         }));
     } catch (err) {
         console.error('Error fetching message history:', err);
