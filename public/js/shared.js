@@ -3,40 +3,43 @@
 // =======================================
 
 class RainDrop {
-    constructor(canvas, x, y) {
+    constructor(canvas, x, y, speedMultiplier = 1) {
         this.canvas = canvas;
         this.x = x;
         this.y = y;
-        this.speed = 15 + Math.random() * 5;
+        this.baseSpeed = 15 + Math.random() * 5;
+        this.speedMultiplier = speedMultiplier;
+        this.speed = this.baseSpeed * this.speedMultiplier;
         this.length = 15 + Math.random() * 5;
         this.width = 1 + Math.random();
         this.bounced = false;
         this.isDead = false;
     }
 
+    setSpeedMultiplier(multiplier) {
+        this.speedMultiplier = multiplier;
+        this.speed = this.baseSpeed * this.speedMultiplier;
+    }
+
     update(containerTop) {
         this.y += this.speed;
         
-        // Get container bounds
         const container = document.querySelector('.container');
         const containerRect = container.getBoundingClientRect();
         const isOverContainer = this.x >= containerRect.left && 
                               this.x <= containerRect.right;
 
-        // Handle drops over container
         if (isOverContainer && !this.bounced && this.y > containerTop) {
             this.bounced = true;
             this.speed = -this.speed * 0.3;
             return true;
         }
 
-        // Handle drops that miss container
         if (!isOverContainer && this.y > this.canvas.height) {
             this.isDead = true;
             return false;
         }
 
-        // Handle bounced drops
         if (this.bounced) {
             this.speed += 0.8;
             if (Math.abs(this.speed) < 0.5) {
@@ -64,6 +67,7 @@ class RainSystem {
         this.ctx = this.canvas.getContext('2d');
         this.drops = [];
         this.splashes = [];
+        this.speedMultiplier = 1;
         this.resizeCanvas();
         this.container = document.querySelector('.container');
         this.containerTop = this.container.getBoundingClientRect().top;
@@ -80,6 +84,12 @@ class RainSystem {
             this.updateContainerPosition();
         });
         this.resizeObserver.observe(this.container);
+    }
+
+    setSpeedMultiplier(multiplier) {
+        this.speedMultiplier = multiplier;
+        // Update existing drops
+        this.drops.forEach(drop => drop.setSpeedMultiplier(multiplier));
     }
 
     updateContainerPosition() {
@@ -102,7 +112,8 @@ class RainSystem {
     createDrop() {
         const x = Math.random() * this.canvas.width;
         const y = -20;
-        this.drops.push(new RainDrop(this.canvas, x, y));
+        // Pass current speed multiplier to new drops
+        this.drops.push(new RainDrop(this.canvas, x, y, this.speedMultiplier));
     }
 
     createSplash(x, y) {
@@ -177,12 +188,14 @@ class RainSystem {
 // =======================================
 
 class SnowFlake {
-    constructor(canvas, x, y) {
+    constructor(canvas, x, y, speedMultiplier = 1) {
         this.canvas = canvas;
         this.x = x;
         this.y = y;
+        this.baseSpeed = 1 + Math.random() * 2;
+        this.speedMultiplier = speedMultiplier;
+        this.speed = this.baseSpeed * this.speedMultiplier;
         this.size = 2 + Math.random() * 3;
-        this.speed = 1 + Math.random() * 2;
         this.wind = 0;
         this.swayAngle = Math.random() * Math.PI * 2;
         this.swaySpeed = 0.02 + Math.random() * 0.02;
@@ -192,6 +205,11 @@ class SnowFlake {
         this.opacity = 0.8;
         this.fadeStartTime = null;
         this.lifetime = 5000 + Math.random() * 5000;
+    }
+
+    setSpeedMultiplier(multiplier) {
+        this.speedMultiplier = multiplier;
+        this.speed = this.baseSpeed * this.speedMultiplier;
     }
 
     update(containerTop, containerBottom, accumulation) {
@@ -310,6 +328,12 @@ class SnowSystem {
         this.resizeObserver.observe(this.container);
     }
 
+    setSpeedMultiplier(multiplier) {
+        this.speedMultiplier = multiplier;
+        // Update existing flakes
+        this.flakes.forEach(flake => flake.setSpeedMultiplier(multiplier));
+    }
+
     updateContainerPosition() {
         this.containerRect = this.container.getBoundingClientRect();
         this.settledFlakes.forEach(flake => {
@@ -329,7 +353,7 @@ class SnowSystem {
     createFlake() {
         const x = Math.random() * this.canvas.width;
         const y = -20;
-        this.flakes.push(new SnowFlake(this.canvas, x, y));
+        this.flakes.push(new SnowFlake(this.canvas, x, y, this.speedMultiplier));
     }
 
     update() {
@@ -388,6 +412,7 @@ class WeatherManager {
     constructor() {
         this.rainSystem = null;
         this.snowSystem = null;
+        this.speedMultiplier = 1;
         this.initializeUI();
         this.initializeSystems();
     }
@@ -415,6 +440,32 @@ class WeatherManager {
 
         rainToggle.addEventListener('change', () => this.toggleRain(rainToggle.checked));
         snowToggle.addEventListener('change', () => this.toggleSnow(snowToggle.checked));
+
+        const speedSlider = document.getElementById('weatherSpeed');
+        speedSlider.min = "0.2";  // Slower
+        speedSlider.max = "3.0";  // Faster
+        speedSlider.step = "0.1";
+        speedSlider.value = "1.0";
+
+        const speedValue = document.getElementById('speedValue');
+
+        speedSlider.addEventListener('input', (e) => {
+            const speed = parseFloat(e.target.value);
+            speedValue.textContent = `${speed}x`;
+            this.updateSpeed(speed);
+        });
+    }
+
+    updateSpeed(multiplier) {
+        this.speedMultiplier = multiplier;
+        
+        if (this.rainSystem) {
+            this.rainSystem.setSpeedMultiplier(multiplier);
+        }
+        
+        if (this.snowSystem) {
+            this.snowSystem.setSpeedMultiplier(multiplier);
+        }
     }
 
     initializeSystems() {

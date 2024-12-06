@@ -1175,6 +1175,23 @@ nav a:hover {
     .mobile-widget-divider hr {
         background: #858585;
     }
+}
 
+.speed-control {
+    margin-top: 15px;
+}
 
+.speed-control label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.speed-control input[type="range"] {
+    width: 100%;
+    margin: 5px 0;
+}
+
+#speedValue {
+    color: #fff;
+    font-size: 12px;
 }
