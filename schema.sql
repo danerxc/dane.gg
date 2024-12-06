@@ -37,13 +37,15 @@ CREATE TABLE website.messages (
     content TEXT NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     message_type VARCHAR(50) NOT NULL,
-    message_color VARCHAR(50)
+    message_color VARCHAR(50),
+    COLUMN client_uuid UUID;
 );
 
 -- Rest of schema with explicit references
 CREATE INDEX idx_posts_slug ON website.posts(slug);
 CREATE INDEX idx_posts_author ON website.posts(author_id);
 CREATE INDEX idx_posts_published ON website.posts(published) WHERE published = true;
+CREATE INDEX idx_messages_client_uuid ON website.messages(client_uuid);
 
 -- Function and trigger
 CREATE OR REPLACE FUNCTION website.update_updated_at_column()

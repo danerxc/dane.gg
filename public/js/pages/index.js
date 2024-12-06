@@ -2,6 +2,15 @@ let ws;
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 let inactivityTimeout;
+const messageSound = new Audio('/assets/sounds/notification.mp3');
+
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     loadPosts(1, 4);
@@ -163,6 +172,12 @@ async function updateTweet() {
 // >> WSS CHAT SYSTEM
 // =======================================
 
+let userUUID = getCookie('userUUID');
+if (!userUUID) {
+    userUUID = generateUUID();
+    document.cookie = `userUUID=${userUUID};path=/;max-age=31536000`; // 1 year
+}
+
 function handleCommand(input) {
     const match = input.match(/^\/nick\s+(.+)$/);
     if (match) {
@@ -254,7 +269,8 @@ function setupChat() {
                 content,
                 timestamp: new Date().toISOString(),
                 message_type: 'Web',
-                message_color: null
+                message_color: null,
+                userUUID: userUUID
             });
             console.log('Sending message:', message);
             ws.send(message);
@@ -288,7 +304,18 @@ function setupChat() {
     document.addEventListener('keydown', reconnectOnInteraction);
 }
 
-function addMessage({ username, content, timestamp, message_type, message_color }) {
+function playMessageSound() {
+    messageSound.currentTime = 0;
+    messageSound.play().catch(e => console.log('Error playing sound:', e));
+}
+
+function addMessage({ username, content, timestamp, message_type, message_color, userUUID, isHistorical }) {
+    if (!isHistorical && 
+        userUUID !== getCookie('userUUID') && 
+        username.toLowerCase() !== 'system') {
+        playMessageSound();
+    }
+    
     const messages = document.querySelector('.messages');
     const messageDate = new Date(timestamp);
     const now = new Date();
@@ -311,11 +338,16 @@ function addMessage({ username, content, timestamp, message_type, message_color 
         });
     }
 
+    function decimalToHex(decimal) {
+        const hex = Number(decimal).toString(16).padStart(6, '0');
+        return `#${hex}`;
+    }
+
     if (message_type === 'Discord') {
         messages.innerHTML += `
             <div class="message">
                 <span class="timestamp">[${timeString}]</span>
-                <span class="nick" style="color: ${message_color}">&lt;${username}&gt;</span>
+                <span class="nick" style="color: ${decimalToHex(message_color)}">&lt;${username}&gt;</span>
                 <span class="text">${content}</span>
             </div>
         `;
