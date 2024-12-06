@@ -86,6 +86,7 @@ async function sendMessageHistory(ws) {
         const result = await pool.query(`
             SELECT username, content, timestamp, message_type, message_color, client_uuid
             FROM website.messages 
+            WHERE timestamp >= CURRENT_TIMESTAMP - INTERVAL '7 days'
             ORDER BY timestamp DESC 
             LIMIT 50
         `);
