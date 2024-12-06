@@ -90,13 +90,16 @@ router.get('/nowplaying', (req, res) => {
 // Latest tweet endpoint
 router.get('/latest-tweet', async (req, res) => {
   try {
-    if (cachedTweet && Date.now() - lastTweetCheck > 60000) {
+    // Only return cached tweet if it exists AND cache isn't expired
+    if (cachedTweet && Date.now() - lastTweetCheck < 60000) {
       return res.json(cachedTweet);
     }
 
+    // Cache is expired or doesn't exist, read from file
     const data = await fs.readFile(LATEST_TWEET_FILE, 'utf8');
     const tweet = JSON.parse(data);
 
+    // Update cache and timestamp
     cachedTweet = tweet;
     lastTweetCheck = Date.now();
 
