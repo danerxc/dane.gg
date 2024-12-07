@@ -995,9 +995,10 @@ nav a:hover {
 .site-settings {
     position: fixed;
     right: 0;
-    bottom: 35%;
+    bottom: 20px;
     z-index: 1000;
     display: flex;
+    align-items: flex-end;
 }
 
 .settings-tab {
@@ -1009,14 +1010,16 @@ nav a:hover {
     border-right: none;
     border-radius: 5px 0 0 5px;
     font-size: 16px;
+    height: fit-content;
     position: relative;
     z-index: 1001;
+    margin-bottom: 0;
 }
 
 .settings-panel {
     position: absolute;
     right: -232px;
-    top: 0;
+    bottom: 0;
     width: 200px;
     background: #141414;
     border: 1px solid #fff;
