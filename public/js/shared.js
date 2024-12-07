@@ -304,7 +304,6 @@ class SnowFlake {
 
 class SnowSystem {
     constructor() {
-        console.log('Initializing SnowSystem');
         this.canvas = document.getElementById('rainCanvas');
         if (!this.canvas) {
             console.error('Canvas element not found');
@@ -418,7 +417,6 @@ class SnowSystem {
     }
 
     start() {
-        console.log('Starting animation');
         this.isAnimating = true;
         this.animate();
     }
