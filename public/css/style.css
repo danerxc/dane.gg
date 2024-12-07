@@ -387,14 +387,18 @@ chat-input button:hover {
     height: 60px;
     flex-shrink: 0;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .current-album-art {
-    width: 48px;
-    height: 48px;
+    width: 52px; 
+    height: 52px; 
     flex-shrink: 0;
     border: 2px solid rgba(255, 255, 255, 0.3);
     overflow: hidden;
+    box-sizing: border-box; 
 }
 
 .current-album-art img {
