@@ -278,7 +278,6 @@ function setupChat() {
                 message_color: null,
                 userUUID: userUUID
             });
-            console.log('Sending message:', message);
             ws.send(message);
             input.value = '';
             resetInactivityTimeout();
