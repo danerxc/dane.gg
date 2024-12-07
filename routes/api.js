@@ -114,4 +114,9 @@ router.get('/latest-tweet', async (req, res) => {
   }
 });
 
+router.get('/config/weather', async (req, res) => {
+    const defaultWeather = (process.env.DEFAULT_WEATHER || 'rain').toLowerCase();
+    res.json({ defaultWeather });
+});
+
 export default router;

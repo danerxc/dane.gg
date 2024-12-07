@@ -457,25 +457,39 @@ class WeatherManager {
         this.snowSystem = new SnowSystem();
     }
 
-    loadSettings() {
+    async loadSettings() {
         if (this.isFirstVisit) {
-            setCookie('rainEnabled', 'true');
-            setCookie('snowEnabled', 'false');
-            setCookie('weatherSpeed', '1.0');
-            setCookie('weatherPreferencesSet', 'true');
-            
-            const rainToggle = document.getElementById('rainToggle');
-            const snowToggle = document.getElementById('snowToggle');
-            const speedSlider = document.getElementById('weatherSpeed');
-            const speedValue = document.getElementById('speedValue');
+            try {
+                const response = await fetch('/api/config/weather');
+                const config = await response.json();
+                const useSnow = config.defaultWeather === 'snow';
+                
+                setCookie('rainEnabled', (!useSnow).toString());
+                setCookie('snowEnabled', useSnow.toString());
+                setCookie('weatherSpeed', '1.0');
+                setCookie('weatherPreferencesSet', 'true');
+                
+                const rainToggle = document.getElementById('rainToggle');
+                const snowToggle = document.getElementById('snowToggle');
+                const speedSlider = document.getElementById('weatherSpeed');
+                const speedValue = document.getElementById('speedValue');
 
-            rainToggle.checked = true;
-            snowToggle.checked = false;
-            speedSlider.value = 1.0;
-            speedValue.textContent = '1x';
+                rainToggle.checked = !useSnow;
+                snowToggle.checked = useSnow;
+                speedSlider.value = 1.0;
+                speedValue.textContent = '1x';
 
-            this.rainSystem.start();
-            return;
+                if (useSnow) {
+                    this.snowSystem.start();
+                } else {
+                    this.rainSystem.start();
+                }
+                return;
+            } catch (err) {
+                console.error('Failed to load weather config:', err);
+                this.rainSystem.start();
+                return;
+            }
         }
 
         const rainEnabled = getCookie('rainEnabled') === 'true';
