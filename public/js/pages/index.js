@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateServices();
     setInterval(updateServices, 7500);
     updateTweet();
-    setInterval(updateTweet, 300000);
+    setInterval(updateTweet, 60000);
     setupChat();
     openBtnHotlink();
     openAdditionalMobile();
@@ -136,6 +136,9 @@ async function updateTweet() {
         const usernameEl = document.querySelector('.username');
         const profileImageEl = document.querySelector('.profile-image img');
         
+        // Check for created_at instead of timestamp
+        const tweetDate = tweet.created_at ? new Date(tweet.created_at) : null;
+        
         if (tweetTextEl && tweet.text) {
             tweetTextEl.textContent = tweet.text;
         }
@@ -153,9 +156,10 @@ async function updateTweet() {
             profileImageEl.alt = tweet.accountName;
         }
         
-        if (postedDateEl && tweet.timestamp) {
-            const timestamp = new Date(tweet.timestamp).getTime() / 1000;
-            postedDateEl.textContent = timeAgoShort(timestamp);
+        if (postedDateEl && tweet.created_at) {
+            const timestamp = Math.floor(new Date(tweet.created_at).getTime() / 1000);
+            const timeAgo = timeAgoShort(timestamp);
+            postedDateEl.textContent = timeAgo;
         }
     } catch (err) {
         console.error('Failed to update tweet:', err);
@@ -394,17 +398,16 @@ function timeAgo(timestamp) {
 }
 
 function timeAgoShort(timestamp) {
-    const date = new Date(timestamp * 1000);
-    const now = Date.now();
+    const now = Math.floor(Date.now() / 1000);
+    const secondsPast = now - timestamp;
     
-    const secondsPast = Math.floor((now - date) / 1000);
-
-    if (secondsPast < 60) return `${secondsPast}s`;
+    if (secondsPast < 60) return `${Math.floor(secondsPast)}s`;
     if (secondsPast < 3600) return `${Math.floor(secondsPast / 60)}m`;
-    if (secondsPast < 86400) return `${Math.floor(secondsPast / 3600)}h`; 
+    if (secondsPast < 86400) return `${Math.floor(secondsPast / 3600)}h`;
     if (secondsPast < 604800) return `${Math.floor(secondsPast / 86400)}d`;
-    if (secondsPast < 31536000) return `${Math.floor(secondsPast / 604800)}w`;
-    return `${Math.floor(secondsPast / 31536000)}y`;
+    if (secondsPast < 2629800) return `${Math.floor(secondsPast / 604800)}w`;
+    if (secondsPast < 31557600) return `${Math.floor(secondsPast / 2629800)}mo`;
+    return `${Math.floor(secondsPast / 31557600)}y`;
 }
 
 // =======================================
