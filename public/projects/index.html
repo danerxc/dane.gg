@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>dane サイト</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <canvas id="rainCanvas"></canvas>
+    <div class="container">
+        <header>
+            <div class="ascii-container">
+                <div class="ascii-box">
+                     <pre>
+　　　　 ／＞　 フ 
+　　　　| 　_　 _|
+ 　　　／`ミ _x 彡
+　 　 /　　　 　 |
+　　 /　 ヽ　　 ﾉ
+／￣|　　 |　|　|
+| (￣ヽ＿_ヽ_)_)
+＼二つ 
+
+                    </pre>
+                    <pre>
+     _                  
+    | |                 
+  __| | __ _ _ __   ___ 
+ / _` |/ _` | '_ \ / _ \
+| (_| | (_| | | | |  __/
+ \__,_|\__,_|_| |_|\___|
+                        
+                   
+                    </pre>
+                </div>
+            </div>
+            <nav>
+                <div class="nav-container">
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/about">About</a></li>
+                        <li><a href="/projects">Projects</a></li>
+                        <li><a href="/blog">Blog</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+        <hr>
+        <div class="subpage-title">
+            <h1>My Projects</h1>
+        </div>
+        <div class="projects-grid" id="projects-grid">
+            
+        </div>
+    </div>
+    <div class="site-settings">
+        <div class="settings-tab">⚙</div>
+        <div class="settings-panel">
+            <h4>Weather Effects</h4>
+            <button id="disableWeather" class="weather-disable">Disable Weather</button>
+            <label>
+                <input type="checkbox" id="rainToggle" checked>
+                Rain
+            </label>
+            <label>
+                <input type="checkbox" id="snowToggle">
+                Snow
+            </label>
+            <div class="speed-control">
+                <label for="weatherSpeed">Speed</label>
+                <input type="range" id="weatherSpeed" min="0.2" max="3.0" step="0.1" value="1.0">
+                <span id="speedValue">1x</span>
+            </div>
+        </div>
+    </div>
+    <script src="../js/pages/projects.js"></script>
+    <script src="../js/shared.js"></script>
+    <!-- <script src="/public/js/oneko.js" data-cat="/public/assets/fonts/oneko.gif"></script> -->
+</body>
+
+</html>
