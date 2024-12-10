@@ -1396,3 +1396,19 @@ social-links a svg {
     opacity: 0.2;
     margin: 60px 0;
 }
+
+.project-tags {
+    margin: 10px 0;
+}
+
+.project-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    margin: 0 5px 5px 0;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 12px;
+    text-decoration: none;
+    cursor: default;
+    white-space: nowrap;
+}
