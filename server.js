@@ -47,10 +47,12 @@ app.use((req, res, next) => {
 import apiRoutes from './routes/api.js';
 import blogRoutes from './routes/blog.js';
 import webhookRoutes from './routes/webhooks.js';
+import projectRoutes from './routes/projects.js';
 
 // API routes
 app.use('/api', apiRoutes);
-app.use('/blog', blogRoutes);
+app.use('/services/blog', blogRoutes);
+app.use('/services/projects', projectRoutes);
 app.use('/webhooks', webhookRoutes);
 
 app.use((req, res, next) => {

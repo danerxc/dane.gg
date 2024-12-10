@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadPosts(page, limit) {
     try {
-        const response = await fetch(`/blog/posts?page=${page}&limit=${limit}`);
+        const response = await fetch(`/services/blog/posts?page=${page}&limit=${limit}`);
         const { posts, total } = await response.json();
         const grid = document.getElementById('blog-grid');
         const pagination = document.getElementById('pagination');
