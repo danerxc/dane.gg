@@ -1355,10 +1355,6 @@ social-links a svg {
     }
 }
 
-.category-title-divider {
-    background-color: #2a2a2a;
-}
-
 .subpage-title {
     padding: 5px;
     display: flex;
@@ -1374,4 +1370,38 @@ social-links a svg {
     padding: 10px;
     border: 2px solid #ffffff;
     border-radius: 10px;
+}
+
+/* Category header styles */
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    /* border-top: 1px solid #ffffff; */
+    border-bottom: 1px solid #ffffff;
+    padding: 10px;
+}
+
+.category-header h2 {
+    margin: 0;
+}
+
+.view-all-link {
+    font-size: 14px;
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.view-all-link:hover {
+    text-decoration: underline;
+}
+
+/* Category divider */
+.category-divider {
+    border: none;
+    height: 1px;
+    background-color: #ffffff;
+    opacity: 0.2;
+    margin: 60px 0;
 }
