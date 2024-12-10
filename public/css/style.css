@@ -849,6 +849,31 @@ nav a:hover {
     margin: 0 auto;
 }
 
+.card.about a {
+    text-decoration: underline;
+    color: #ffffff;
+}
+
+.card.about a:hover {
+    text-decoration: underline;
+    color: #e48f8f;
+}
+
+.about-facts-list {
+    margin-top: 15px;
+}
+
+.about-facts-list ul {
+    list-style: initial;
+    margin-top: 5px;
+    padding: 10px;
+
+}
+
+.blurred {
+    filter: blur(5px);
+}
+
 /* Blog Grid Layout */
 .blog-grid {
     column-count: 2;
