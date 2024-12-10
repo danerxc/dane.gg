@@ -8,10 +8,44 @@ const pool = new Pool({
 class ProjectService {
     async getAllProjects() {
         try {
-            const { rows } = await pool.query(
+            const { rows: projects } = await pool.query(
                 'SELECT * FROM website.projects ORDER BY created_at DESC'
             );
-            return rows;
+
+            const projectIds = projects.map(project => project.id);
+
+            if (projectIds.length > 0) {
+                const { rows: tags } = await pool.query(
+                    `SELECT pt.project_id, t.id, t.title, t.color
+                    FROM website.project_tags pt
+                    JOIN website.tags t ON pt.tag_id = t.id
+                    WHERE pt.project_id = ANY($1::uuid[])`,
+                    [projectIds]
+                );
+
+                const tagsByProjectId = {};
+                tags.forEach(tag => {
+                    const projectId = tag.project_id;
+                    if (!tagsByProjectId[projectId]) {
+                        tagsByProjectId[projectId] = [];
+                    }
+                    tagsByProjectId[projectId].push({
+                        id: tag.id,
+                        title: tag.title,
+                        color: tag.color
+                    });
+                });
+
+                projects.forEach(project => {
+                    project.tags = tagsByProjectId[project.id] || [];
+                });
+            } else {
+                projects.forEach(project => {
+                    project.tags = [];
+                });
+            }
+
+            return projects;
         } catch (err) {
             throw new Error('Failed to fetch projects: ' + err.message);
         }
@@ -19,10 +53,44 @@ class ProjectService {
 
     async getFeaturedProjects() {
         try {
-            const { rows } = await pool.query(
+            const { rows: projects } = await pool.query(
                 'SELECT * FROM website.projects WHERE featured = true ORDER BY created_at DESC'
             );
-            return rows;
+
+            const projectIds = projects.map(project => project.id);
+
+            if (projectIds.length > 0) {
+                const { rows: tags } = await pool.query(
+                    `SELECT pt.project_id, t.id, t.title, t.color
+                    FROM website.project_tags pt
+                    JOIN website.tags t ON pt.tag_id = t.id
+                    WHERE pt.project_id = ANY($1::uuid[])`,
+                    [projectIds]
+                );
+
+                const tagsByProjectId = {};
+                tags.forEach(tag => {
+                    const projectId = tag.project_id;
+                    if (!tagsByProjectId[projectId]) {
+                        tagsByProjectId[projectId] = [];
+                    }
+                    tagsByProjectId[projectId].push({
+                        id: tag.id,
+                        title: tag.title,
+                        color: tag.color
+                    });
+                });
+
+                projects.forEach(project => {
+                    project.tags = tagsByProjectId[project.id] || [];
+                });
+            } else {
+                projects.forEach(project => {
+                    project.tags = [];
+                });
+            }
+
+            return projects;
         } catch (err) {
             throw new Error('Failed to fetch featured projects: ' + err.message);
         }
@@ -30,16 +98,49 @@ class ProjectService {
 
     async getProjectsByCategory(category) {
         try {
-            const { rows } = await pool.query(
+            const { rows: projects } = await pool.query(
                 'SELECT * FROM website.projects WHERE category = $1 ORDER BY created_at DESC',
                 [category]
             );
-            return rows;
+
+            const projectIds = projects.map(project => project.id);
+
+            if (projectIds.length > 0) {
+                const { rows: tags } = await pool.query(
+                    `SELECT pt.project_id, t.id, t.title, t.color
+                    FROM website.project_tags pt
+                    JOIN website.tags t ON pt.tag_id = t.id
+                    WHERE pt.project_id = ANY($1::uuid[])`,
+                    [projectIds]
+                );
+
+                const tagsByProjectId = {};
+                tags.forEach(tag => {
+                    const projectId = tag.project_id;
+                    if (!tagsByProjectId[projectId]) {
+                        tagsByProjectId[projectId] = [];
+                    }
+                    tagsByProjectId[projectId].push({
+                        id: tag.id,
+                        title: tag.title,
+                        color: tag.color
+                    });
+                });
+
+                projects.forEach(project => {
+                    project.tags = tagsByProjectId[project.id] || [];
+                });
+            } else {
+                projects.forEach(project => {
+                    project.tags = [];
+                });
+            }
+
+            return projects;
         } catch (err) {
             throw new Error('Failed to fetch projects by category: ' + err.message);
         }
     }
 }
 
-// Export a single instance
 export default new ProjectService();
