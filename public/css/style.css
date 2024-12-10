@@ -1381,12 +1381,12 @@ social-links a svg {
 
 .view-all-link {
     font-size: 14px;
-    color: #007BFF;
+    color: #ffffff;
     text-decoration: none;
 }
 
 .view-all-link:hover {
-    text-decoration: underline;
+    color: #e48f8f;
 }
 
 .category-divider {
