@@ -1270,23 +1270,19 @@ social-links a svg {
     vertical-align: middle;
 }
 
-/* Category section */
 .category-section {
     margin-bottom: 40px;
 }
 
-/* Category heading */
 .category-section h2 {
     margin-bottom: 20px;
 }
 
-/* Projects row */
 .projects-row {
     column-count: 2;
     column-gap: 20px;
 }
 
-/* Project card */
 .project-card {
     display: inline-block;
     width: 100%;
@@ -1294,7 +1290,6 @@ social-links a svg {
     break-inside: avoid;
 }
 
-/* Project card styles */
 .project-card img {
     width: 100%;
     height: auto;
@@ -1335,10 +1330,9 @@ social-links a svg {
     cursor: pointer;
     text-decoration: none;
     display: inline-block;
-    font: inherit; /* Ensure font matches */
+    font: inherit;
 }
 
-/* Hover effect */
 .project-card-button:hover {
     background-color: #e48f8f;
 }
@@ -1372,13 +1366,11 @@ social-links a svg {
     border-radius: 10px;
 }
 
-/* Category header styles */
 .category-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    /* border-top: 1px solid #ffffff; */
     border-bottom: 1px solid #ffffff;
     padding: 10px;
 }
@@ -1397,7 +1389,6 @@ social-links a svg {
     text-decoration: underline;
 }
 
-/* Category divider */
 .category-divider {
     border: none;
     height: 1px;

@@ -13,7 +13,6 @@ async function loadProjects() {
         const grid = document.getElementById('projects-grid');
         grid.innerHTML = '';
 
-        // Group projects by category
         const groupedProjects = projects.reduce((acc, project) => {
             if (!acc[project.category]) {
                 acc[project.category] = [];
@@ -22,23 +21,18 @@ async function loadProjects() {
             return acc;
         }, {});
 
-        // Get an array of the category names
         const categories = Object.keys(groupedProjects);
 
-        // Loop through the categories with index
         categories.forEach((category, index) => {
             const categoryProjects = groupedProjects[category];
 
             const section = document.createElement('div');
             section.className = 'category-section';
 
-            // Capitalize category name
             const categoryNameCapitalized = category.charAt(0).toUpperCase() + category.slice(1);
 
-            // Encode the category name for URL
             const categoryURL = encodeURIComponent(category);
 
-            // Create the category header with "View All" link
             section.innerHTML = `
                 <div class="category-header">
                     <h2>${categoryNameCapitalized}</h2>
@@ -61,7 +55,6 @@ async function loadProjects() {
 
             grid.appendChild(section);
 
-            // Add event listeners to buttons
             const buttons = section.querySelectorAll('.project-card-button');
             buttons.forEach(button => {
                 button.addEventListener('click', () => {
@@ -72,7 +65,6 @@ async function loadProjects() {
                 });
             });
 
-            // Add a divider after each category except the last one
             if (index < categories.length - 1) {
                 const divider = document.createElement('hr');
                 divider.className = 'category-divider';
