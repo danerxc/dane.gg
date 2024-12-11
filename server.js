@@ -38,6 +38,7 @@ app.use((req, res, next) => {
   }
 });
 
+// Middleware to serve HTML files
 app.use((req, res, next) => {
   if (!path.extname(req.url)) {
     let sanitizedPath = path.normalize(req.url).replace(/^(\.\.[\/\\])+/, '').replace(/^\/+/, '');
@@ -63,6 +64,7 @@ app.use((req, res, next) => {
   }
 });
 
+// Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Import routes
@@ -76,6 +78,9 @@ app.use('/api', apiRoutes);
 app.use('/services/blog', blogRoutes);
 app.use('/services/projects', projectRoutes);
 app.use('/webhooks', webhookRoutes);
+
+// Blog routes
+app.use('/blog', blogRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
