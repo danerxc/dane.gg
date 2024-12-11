@@ -6,6 +6,8 @@ import dotenv from 'dotenv';
 import exphbs from 'express-handlebars';
 import setupWebSocket from './services/chat.js';
 import http from 'http';
+import { login, createUser } from './controllers/authController.js';
+import { authenticateToken } from './middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,6 +28,27 @@ app.set('views', path.join(__dirname, 'public/templates'));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Import routes
+import apiRoutes from './routes/api.js';
+import blogRoutes from './routes/blog.js';
+import projectRoutes from './routes/projects.js';
+import webhookRoutes from './routes/webhooks.js';
+
+// Auth routes
+app.post('/auth/login', login);
+
+// Admin routes
+app.post('/admin/users', authenticateToken, createUser);
+
+// API routes
+app.use('/api', apiRoutes);
+app.use('/services/blog', blogRoutes);
+app.use('/services/projects', projectRoutes);
+app.use('/webhooks', webhookRoutes);
+
+// Blog routes
+app.use('/blog', blogRoutes);
 
 // Middleware to remove trailing slashes
 app.use((req, res, next) => {
@@ -66,21 +89,6 @@ app.use((req, res, next) => {
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Import routes
-import apiRoutes from './routes/api.js';
-import blogRoutes from './routes/blog.js';
-import webhookRoutes from './routes/webhooks.js';
-import projectRoutes from './routes/projects.js';
-
-// API routes
-app.use('/api', apiRoutes);
-app.use('/services/blog', blogRoutes);
-app.use('/services/projects', projectRoutes);
-app.use('/webhooks', webhookRoutes);
-
-// Blog routes
-app.use('/blog', blogRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
