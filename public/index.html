@@ -10,26 +10,34 @@
 </head>
 
 <body>
+    <canvas id="rainCanvas"></canvas>
     <div class="container">
         <header>
             <div class="ascii-container">
                 <div class="ascii-box">
                     <pre>
-⠄⠄⠄⠄⠄⠄⢀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣜⠿⠿⣿⣿⣧⢓
-⠄⠄⠄⠄⠄⡠⢛⣿⣿⣿⡟⣿⣿⣽⣋⠻⢻⣿⣿⣿⣿⡻⣧⡠⣭⣭⣿⡧
-⠄⠄⠄⠄⠄⢠⣿⡟⣿⢻⠃⣻⣨⣻⠿⡀⣝⡿⣿⣿⣷⣜⣜⢿⣝⡿⡻⢔
-⠄⠄⠄⠄⠄⢸⡟⣷⢿⢈⣚⣓⡡⣻⣿⣶⣬⣛⣓⣉⡻⢿⣎⠢⠻⣴⡾⠫
-⠄⠄⠄⠄⠄⢸⠃⢹⡼⢸⣿⣿⣿⣦⣹⣿⣿⣿⠿⠿⠿⠷⣎⡼⠆⣿⠵⣫
-⠄⠄⠄⠄⠄⠈⠄⠸⡟⡜⣩⡄⠄⣿⣿⣿⣿⣶⢀⢀⣿⣷⣿⣿⡐⡇⡄⣿
-⠄⠄⠄⠄⠄⠄⠄⠄⠁⢶⢻⣧⣖⣿⣿⣿⣿⣿⣿⣿⣿⡏⣿⣇⡟⣇⣷⣿
-⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣆⣤⣽⣿⡿⠿⠿⣿⣿⣦⣴⡇⣿⢨⣾⣿⢹⢸
-⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠊⡛⢿⣿⣿⣿⣿⡿⣫⢱⢺⡇⡏⣿⣿⣸⡼
-⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⡿⠄⣿⣷⣾⡍⣭⣶⣿⣿⡌⣼⣹⢱⠹⣿⣇⣧
-⠄⠄⠄⠄⠄⠄⠄⠄⠄⣼⠁⣤⣭⣭⡌⢁⣼⣿⣿⣿⢹⡇⣭⣤⣶⣤⡝⡼
+　　　　 ／＞　 フ 
+　　　　| 　_　 _|
+ 　　　／`ミ _x 彡
+　 　 /　　　 　 |
+　　 /　 ヽ　　 ﾉ
+／￣|　　 |　|　|
+| (￣ヽ＿_ヽ_)_)
+＼二つ 
+
+                    </pre>
+                    <pre>
+     _                  
+    | |                 
+  __| | __ _ _ __   ___ 
+ / _` |/ _` | '_ \ / _ \
+| (_| | (_| | | | |  __/
+ \__,_|\__,_|_| |_|\___|
+                        
+                   
                     </pre>
                 </div>
             </div>
-            <h1>dane</h1>
             <nav>
                 <div class="nav-container">
                     <ul>
@@ -45,29 +53,33 @@
         <hr>
         <div class="layout">
             <!-- Left Column -->
+            <button class="left-column-toggle">Show Widgets</button>
             <div class="left-column">
                 <div class="card discord-status">
                     <div class="status-text">
-                      <span class="status-prefix">I'm</span>
-                      <div class="status-indicator">
-                        <span class="status-state">OFFLINE</span>
-                        <span class="status-exclaim">!</span>
-                      </div>
+                        <span class="status-prefix">I'm</span>
+                        <div class="status-indicator">
+                            <span class="status-state">OFFLINE</span>
+                            <span class="status-exclaim">!</span>
+                        </div>
                     </div>
                 </div>
                 <div class="card status">
                     <h3>Status</h3>
                     <div class="tweet-container">
                         <div class="profile-image">
-                            <img src="https://pbs.twimg.com/profile_images/1856299271210864640/o7e02-gj_400x400.jpg" alt="Profile Picture">
+                            <img src="https://pbs.twimg.com/profile_images/1856299271210864640/o7e02-gj_400x400.jpg"
+                                alt="Profile Picture">
                         </div>
                         <div class="tweet-content">
                             <div class="tweet-header">
                                 <span class="display-name">dane</span>
                                 <span class="username">(@danexrc)</span>
-                                <span>  •  </span><span class="posted-date">1d</span>
+                                <span> • </span><span class="posted-date">1d</span>
                             </div>
-                            <p class="tweet-text">This is a sample tweet that might be quite long and need to be truncated after two lines of text because it contains too much information to display in the limited space.</p>
+                            <p class="tweet-text">This is a sample tweet that might be quite long and need to be
+                                truncated after two lines of text because it contains too much information to display in
+                                the limited space.</p>
                         </div>
                     </div>
                 </div>
@@ -75,8 +87,7 @@
                     <h3 class="play-status">Recently played</h3>
                     <div class="track-container">
                         <div class="album-art">
-                            <img src="assets/img/misc/music-placeholder.jpg" alt="Album Art"
-                                class="current-album-art">
+                            <img src="assets/img/misc/music-placeholder.jpg" alt="Album Art" class="current-album-art">
                         </div>
                         <div class="track-info">
                             <span class="track-title">Track Title</span>
@@ -181,6 +192,27 @@
                             </a>
                     </div>
                 </div>
+                <div class="card 88x31">
+                    <div class="hotlink-container">
+                        <div class="small-image-container">
+                            <img src="assets/img/88x31.gif" alt="88x31">
+                            <div class="button-code">
+                                <code>&lt;a href="https://dane.gg"&gt;&lt;img src="https://dane.gg/assets/img/88x31.gif"&gt;&lt;/a&gt;</code>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hotlink-text">
+                        <p class="clickable">DO hotlink my button! [?]</p>
+                        <div class="dropdown-content">
+                            <p>I have endless bandwidth on my site & I want to be able to change my button any time I want, without having to ask people to change it.</p>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="mobile-widget-divider">
+                    <hr>
+                </div>
+                
             </div>
 
             <!-- Right Column -->
@@ -188,15 +220,27 @@
                 <div class="card about">
                     <h3>About me</h3>
                     <p>
-                        I am a Software Engineer from Manchester with expertise in backend development, microservices,
-                        and scalable infrastructure. Skilled in C#, DevOps practices, and tools like Docker and
-                        Kubernetes, I combine technical expertise with creative pursuits like music production, DJing,
-                        gaming, and graphic design, bringing innovation and passion to everything I do.
+                        Hi, I'm Dane! I'm a software engineer & freelance designer. You can read my full (more professional sounding) bio <a href="/about">here</a>!
                     </p>
+                    <div class="about-facts-list">
+                        <p><b>Some quick facts about me:</b></p>
+                        <ul>
+                            <li>I'm from Manchester in the UK.</li>
+                            <li>I currently work full-time as a software engineer @ <span class="blurred">REDACTED</span>.</li>
+                            <li>My main languages are <span style="color:#8965ff">C#</span>, <span style="color:#f7e025">JavaScript</span> & <span style="color:#2d79c7">TypeScript</span>.</li>
+                            <li>I first started coding at age 13, learning <span style="color:#8965ff">Visual Basic (VB .NET)</span>.</li>
+                            <li>In my free time, I design for and run a small clothing brand called <a href="https://partialspaces.co">Partial Spaces</a>.</li>
+                            <li>I like cats!</li>
+                            <li>I don't like coffee.</li>
+                            <li>I like hanging out on Discord and chatting to people - come say hi!</li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="card posts">
                     <h3>Recent posts</h3>
-                    <ul><div id="blog-index"></div></ul>
+                    <ul>
+                        <div id="blog-index"></div>
+                    </ul>
                 </div>
                 <div class="card status">
                     <h3>Status</h3>
@@ -229,7 +273,34 @@
             </div>
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <div class="site-settings">
+        <div class="settings-tab">⚙</div>
+        <div class="settings-panel">
+            <h4>Weather Effects</h4>
+            <button id="disableWeather" class="weather-disable">Disable Weather</button>
+            <label>
+                <input type="checkbox" id="rainToggle" checked>
+                Rain
+            </label>
+            <label>
+                <input type="checkbox" id="snowToggle">
+                Snow
+            </label>
+            <div class="speed-control">
+                <label for="weatherSpeed">Speed</label>
+                <input type="range" id="weatherSpeed" min="0.2" max="3.0" step="0.1" value="1.0">
+                <span id="speedValue">1x</span>
+            </div>
+            <hr>
+            <h4>Other</h4>
+            <label>
+                <input type="checkbox" id="chatSoundToggle" checked>
+                Chat Notification Sound
+            </label>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="js/pages/index.js"></script>
     <script src="js/shared.js"></script>
     <!-- <script src="/public/js/oneko.js" data-cat="/public/assets/fonts/oneko.gif"></script> -->

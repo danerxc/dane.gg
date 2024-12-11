@@ -90,13 +90,16 @@ router.get('/nowplaying', (req, res) => {
 // Latest tweet endpoint
 router.get('/latest-tweet', async (req, res) => {
   try {
-    if (cachedTweet && Date.now() - lastTweetCheck > 60000) {
+    // Only return cached tweet if it exists AND cache isn't expired
+    if (cachedTweet && Date.now() - lastTweetCheck < 60000) {
       return res.json(cachedTweet);
     }
 
+    // Cache is expired or doesn't exist, read from file
     const data = await fs.readFile(LATEST_TWEET_FILE, 'utf8');
     const tweet = JSON.parse(data);
 
+    // Update cache and timestamp
     cachedTweet = tweet;
     lastTweetCheck = Date.now();
 
@@ -109,6 +112,11 @@ router.get('/latest-tweet', async (req, res) => {
       res.status(500).json({ error: 'Failed to fetch tweet' });
     }
   }
+});
+
+router.get('/config/weather', async (req, res) => {
+    const defaultWeather = (process.env.DEFAULT_WEATHER || 'rain').toLowerCase();
+    res.json({ defaultWeather });
 });
 
 export default router;

@@ -1,9 +1,9 @@
-import express from 'express';
 import path from 'path';
+import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import exphbs from 'express-handlebars';
 import dotenv from 'dotenv';
+import exphbs from 'express-handlebars';
 import setupWebSocket from './services/chat.js';
 import http from 'http';
 
@@ -17,8 +17,8 @@ const server = http.createServer(app);
 
 // Handlebars
 app.engine('handlebars', exphbs.engine({
-    extname: '.handlebars',
-    defaultLayout: false,
+  extname: '.handlebars',
+  defaultLayout: false,
 }));
 
 app.set('view engine', 'handlebars');
@@ -26,15 +26,35 @@ app.set('views', path.join(__dirname, 'public/templates'));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware to dynamically serve .html files without the extension
+// Middleware to remove trailing slashes
+app.use((req, res, next) => {
+  if (req.path !== '/' && req.path.endsWith('/')) {
+    const query = req.url.slice(req.path.length);
+    const newPath = req.path.slice(0, -1);
+    res.redirect(301, newPath + query);
+  } else {
+    next();
+  }
+});
+
 app.use((req, res, next) => {
   if (!path.extname(req.url)) {
-    const htmlFilePath = path.join(__dirname, 'public', `${req.url}.html`);
-    
+    let sanitizedPath = path.normalize(req.url).replace(/^(\.\.[\/\\])+/, '').replace(/^\/+/, '');
+
+    if (!sanitizedPath) {
+      sanitizedPath = 'index';
+    }
+
+    if (sanitizedPath === 'projects') {
+      sanitizedPath = 'projects/index';
+    }
+
+    const htmlFilePath = path.join(__dirname, 'public', `${sanitizedPath}.html`);
+
     res.sendFile(htmlFilePath, (err) => {
       if (err) {
+        console.error(`Failed to send file: ${htmlFilePath}`, err);
         next();
       }
     });
@@ -43,20 +63,26 @@ app.use((req, res, next) => {
   }
 });
 
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Import routes
 import apiRoutes from './routes/api.js';
 import blogRoutes from './routes/blog.js';
 import webhookRoutes from './routes/webhooks.js';
+import projectRoutes from './routes/projects.js';
 
 // API routes
 app.use('/api', apiRoutes);
-app.use('/blog', blogRoutes);
+app.use('/services/blog', blogRoutes);
+app.use('/services/projects', projectRoutes);
 app.use('/webhooks', webhookRoutes);
 
+// 404 handler
 app.use((req, res, next) => {
   res.status(404).redirect(`/error.html?code=404`);
 });
 
+// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   const statusCode = err.status || 500;

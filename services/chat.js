@@ -22,14 +22,12 @@ function setupWebSocket(server) {
     });
 
     wss.on('connection', (ws) => {
-        console.log('Client connected to chat');
 
         sendMessageHistory(ws);
 
         ws.on('message', async (message) => {
             try {
                 const data = JSON.parse(message.toString());
-                console.log('Received message:', data);
 
                 const query = `
                     INSERT INTO website.messages (username, content, message_type, message_color, client_uuid)
@@ -43,7 +41,6 @@ function setupWebSocket(server) {
                     data.message_color,
                     data.userUUID
                 ]);
-                console.log('Saved message:', result.rows[0]);
 
                 const broadcastData = JSON.stringify({
                     type: 'message',
@@ -57,7 +54,6 @@ function setupWebSocket(server) {
                         isHistorical: false 
                     }
                 });
-                console.log('Broadcasting:', broadcastData);
 
                 wss.clients.forEach(function each(client) {
                     if (client.readyState === WebSocket.OPEN) {
@@ -70,7 +66,7 @@ function setupWebSocket(server) {
         });
 
         ws.on('close', () => {
-            console.log('Client disconnected from chat');
+            // Do nothing
         });
 
         ws.on('error', (error) => {

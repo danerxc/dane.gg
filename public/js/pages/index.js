@@ -3,14 +3,7 @@ let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 let inactivityTimeout;
 const messageSound = new Audio('/assets/sounds/notification.mp3');
-
-function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
+let isChatSoundEnabled = getCookie('chatSoundEnabled') !== 'false';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadPosts(1, 4);
@@ -21,12 +14,18 @@ document.addEventListener('DOMContentLoaded', () => {
     updateServices();
     setInterval(updateServices, 7500);
     updateTweet();
-    setInterval(updateTweet, 300000);
+    setInterval(updateTweet, 60000);
     setupChat();
+    openBtnHotlink();
+    openAdditionalMobile();
+    initializeChatSoundToggle();
 });
 
+// =======================================
+// >> BLOG SECTION
+// =======================================
 async function loadPosts(page = 1, limit = 4) {
-    const response = await fetch(`/blog/posts?page=${page}&limit=${limit}`);
+    const response = await fetch(`/services/blog/posts?page=${page}&limit=${limit}`);
     const { posts, total } = await response.json();
     const container = document.getElementById('blog-index');
 
@@ -46,6 +45,10 @@ async function loadPosts(page = 1, limit = 4) {
     }
 }
 
+// =======================================
+// >> ONLINE/OFFLINE STATUS
+// =======================================
+
 async function updateStatus() {
     try {
         const response = await fetch('/api/status');
@@ -62,6 +65,10 @@ async function updateStatus() {
         console.error('Failed to update Discord status:', err);
     }
 }
+
+// =======================================
+// >> SERVICE UPTIME TRACKING 
+// =======================================
 
 async function updateServices() {
     try {
@@ -83,6 +90,10 @@ async function updateServices() {
     }
 }
 
+// =======================================
+// >> LAST.FM NOW/RECENTLY PLAYED SONG
+// =======================================
+
 async function updateNowPlaying() {
     try {
         const response = await fetch('/api/nowplaying');
@@ -97,9 +108,9 @@ async function updateNowPlaying() {
             playStatus.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="2 0 12 12"><circle cx="8" cy="8" r="4" fill="green"/></svg> Now Playing';
             trackLastPlayed.style.display = 'none';
         } else {
-            playStatus.textContent = 'Recently played';
+            playStatus.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="2 0 12 12"><circle cx="8" cy="8" r="4" fill="gray"/></svg> Recently Played';
             trackLastPlayed.style.display = 'block';
-            trackLastPlayed.textContent = timeAgo(new Date(track.date.uts * 1000));
+            trackLastPlayed.innerHTML = `Last Played: ${timeAgo(track.date.uts * 1000)}`;
         }
         
         trackTitle.innerHTML = `<span><a href="${track.url}" target="_blank">${track.name || 'Track Title'}</a></span>`;
@@ -109,6 +120,10 @@ async function updateNowPlaying() {
         console.error('Failed to update now playing:', err);
     }
 }
+
+// =======================================
+// >> TWITTER LATEST TWEET
+// =======================================
 
 async function updateTweet() {
     try {
@@ -120,6 +135,9 @@ async function updateTweet() {
         const displayNameEl = document.querySelector('.display-name');
         const usernameEl = document.querySelector('.username');
         const profileImageEl = document.querySelector('.profile-image img');
+        
+        // Check for created_at instead of timestamp
+        const tweetDate = tweet.created_at ? new Date(tweet.created_at) : null;
         
         if (tweetTextEl && tweet.text) {
             tweetTextEl.textContent = tweet.text;
@@ -138,60 +156,26 @@ async function updateTweet() {
             profileImageEl.alt = tweet.accountName;
         }
         
-        if (postedDateEl && tweet.timestamp) {
-            const timestamp = new Date(tweet.timestamp).getTime() / 1000;
-            postedDateEl.textContent = timeAgoShort(timestamp);
+        if (postedDateEl && tweet.created_at) {
+            const timestamp = Math.floor(new Date(tweet.created_at).getTime() / 1000);
+            const timeAgo = timeAgoShort(timestamp);
+            postedDateEl.textContent = timeAgo;
         }
     } catch (err) {
         console.error('Failed to update tweet:', err);
     }
 }
 
-function timeAgo(timestamp) {
-    const now = new Date();
-    const secondsPast = (now.getTime() - timestamp) / 1000;
+// =======================================
+// >> WSS CHAT SYSTEM
+// =======================================
 
-    if (secondsPast < 60) {
-        return `${Math.floor(secondsPast)} seconds ago`;
-    }
-    if (secondsPast < 3600) {
-        return `${Math.floor(secondsPast / 60)} minutes ago`;
-    }
-    if (secondsPast < 86400) {
-        return `${Math.floor(secondsPast / 3600)} hours ago`;
-    }
-    if (secondsPast < 2592000) {
-        return `${Math.floor(secondsPast / 86400)} days ago`;
-    }
-    if (secondsPast < 31536000) {
-        return `${Math.floor(secondsPast / 2592000)} months ago`;
-    }
-    return `${Math.floor(secondsPast / 31536000)} years ago`;
-}
-
-function timeAgoShort(timestamp) {
-    const date = new Date(timestamp * 1000);
-    const now = Date.now();
-    
-    const secondsPast = Math.floor((now - date) / 1000);
-
-    if (secondsPast < 60) return `${secondsPast}s`;
-    if (secondsPast < 3600) return `${Math.floor(secondsPast / 60)}m`;
-    if (secondsPast < 86400) return `${Math.floor(secondsPast / 3600)}h`; 
-    if (secondsPast < 604800) return `${Math.floor(secondsPast / 86400)}d`;
-    if (secondsPast < 31536000) return `${Math.floor(secondsPast / 604800)}w`;
-    return `${Math.floor(secondsPast / 31536000)}y`;
-}
-
-function setCookie(name, value, days = 365) {
-    const expires = new Date();
-    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-}
-
-function getCookie(name) {
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return match ? match[2] : null;
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 }
 
 let userUUID = getCookie('userUUID');
@@ -294,7 +278,6 @@ function setupChat() {
                 message_color: null,
                 userUUID: userUUID
             });
-            console.log('Sending message:', message);
             ws.send(message);
             input.value = '';
             resetInactivityTimeout();
@@ -327,8 +310,10 @@ function setupChat() {
 }
 
 function playMessageSound() {
-    messageSound.currentTime = 0;
-    messageSound.play().catch(e => console.log('Error playing sound:', e));
+    if (isChatSoundEnabled) {
+        messageSound.currentTime = 0;
+        messageSound.play().catch(e => console.log('Error playing sound:', e));
+    }
 }
 
 function addMessage({ username, content, timestamp, message_type, message_color, userUUID, isHistorical }) {
@@ -383,4 +368,92 @@ function addMessage({ username, content, timestamp, message_type, message_color,
     `;
     }
     messages.scrollTop = messages.scrollHeight;
+}
+
+// =======================================
+// >> TIME HELPER FUNCTIONS 
+// =======================================
+
+function timeAgo(timestamp) {
+    const now = new Date();
+    const secondsPast = (now.getTime() - timestamp) / 1000;
+
+    if (secondsPast < 60) {
+        return `${Math.floor(secondsPast)} seconds ago`;
+    }
+    if (secondsPast < 3600) {
+        return `${Math.floor(secondsPast / 60)} minutes ago`;
+    }
+    if (secondsPast < 86400) {
+        return `${Math.floor(secondsPast / 3600)} hours ago`;
+    }
+    if (secondsPast < 2592000) {
+        return `${Math.floor(secondsPast / 86400)} days ago`;
+    }
+    if (secondsPast < 31536000) {
+        return `${Math.floor(secondsPast / 2592000)} months ago`;
+    }
+    return `${Math.floor(secondsPast / 31536000)} years ago`;
+}
+
+function timeAgoShort(timestamp) {
+    const now = Math.floor(Date.now() / 1000);
+    const secondsPast = now - timestamp;
+    
+    if (secondsPast < 60) return `${Math.floor(secondsPast)}s`;
+    if (secondsPast < 3600) return `${Math.floor(secondsPast / 60)}m`;
+    if (secondsPast < 86400) return `${Math.floor(secondsPast / 3600)}h`;
+    if (secondsPast < 604800) return `${Math.floor(secondsPast / 86400)}d`;
+    if (secondsPast < 2629800) return `${Math.floor(secondsPast / 604800)}w`;
+    if (secondsPast < 31557600) return `${Math.floor(secondsPast / 2629800)}mo`;
+    return `${Math.floor(secondsPast / 31557600)}y`;
+}
+
+// =======================================
+// >> COOKIE HELPER FUNCTIONS 
+// =======================================
+
+function setCookie(name, value, days = 365) {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+}
+
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+}
+
+// =======================================
+// >> BUTTON HELPER FUNCTIONS
+// =======================================
+
+function openBtnHotlink() {
+    const hotlinkText = document.querySelector('.hotlink-text .clickable');
+    const dropdown = document.querySelector('.dropdown-content');
+    
+    hotlinkText.addEventListener('click', () => {
+        dropdown.classList.toggle('active');
+    });
+}
+
+function openAdditionalMobile() {
+    const toggle = document.querySelector('.left-column-toggle');
+    const leftColumn = document.querySelector('.left-column');
+
+  toggle.addEventListener('click', () => {
+    leftColumn.classList.toggle('show');
+    toggle.classList.toggle('active');
+    toggle.textContent = leftColumn.classList.contains('show') ? 'Hide Widgets' : 'Show Widgets';
+  });
+}
+
+function initializeChatSoundToggle() {
+    const toggle = document.getElementById('chatSoundToggle');
+    toggle.checked = isChatSoundEnabled;
+    
+    toggle.addEventListener('change', (e) => {
+        isChatSoundEnabled = e.target.checked;
+        setCookie('chatSoundEnabled', isChatSoundEnabled);
+    });
 }

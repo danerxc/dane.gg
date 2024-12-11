@@ -9,24 +9,34 @@
 </head>
 
 <body>
+    <canvas id="rainCanvas"></canvas>
     <div class="container">
         <header>
             <div class="ascii-container">
                 <div class="ascii-box">
                     <pre>
-⣀⣀⣀⣀⣀⣀⣀⣀⣀⡀⢀⣀⣀⣀⣀⣀⡀⢀⣀⢀⣀⣀⣀⣀⣀⣀⣀⣀⠀
-⣿⣿⣿⣿⣿⣿⡏⢹⣿⠀⠀⣿⣿⣿⣿⣿⡇⠈⢿⣧⠫⣻⣿⣿⣿⣿⣿⣿⠀
-⣿⣿⣿⣿⣿⣿⠁⢾⣿⠀⢀⣹⣿⣿⣿⣿⣷⣄⡀⠙⢧⡈⢿⣿⣿⣿⣿⣿⠀
-⣿⣿⣿⣿⣿⡟⠒⠚⡟⡉⠁⠈⢻⣿⣿⣿⢻⡄⠀⣉⠉⠉⠚⣿⣿⣿⣿⣿⡀
-⣿⣿⣿⣿⣿⣷⣦⣤⣵⣄⠱⣀⠐⠹⢿⣿⣈⣷⡿⢿⣿⣿⣄⠯⣿⣿⣿⣿⡇
-⣿⣿⣿⣿⣿⡻⣿⢿⣿⣿⠑⠇⠀⠀⠱⠹⣇⢸⠛⠟⢿⠇⡽⠂⣿⡿⢿⣿⠃
-⣿⣿⣿⣿⣿⡕⠓⣄⡬⠊⠀⠀⠀⠀⠀⠀⠈⠀⠒⡰⡦⠥⠘⠀⣿⡇⠄⢿⠀
-⢹⣿⣿⣿⣿⣷⠴⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠀⢠⡟⡇⣠⣾⠀
-⠈⠉⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠈⠈⠉⠉⠀
+　　　　 ／＞　 フ 
+　　　　| 　_　 _|
+ 　　　／`ミ _x 彡
+　 　 /　　　 　 |
+　　 /　 ヽ　　 ﾉ
+／￣|　　 |　|　|
+| (￣ヽ＿_ヽ_)_)
+＼二つ 
+
+                    </pre>
+                    <pre>
+     _                  
+    | |                 
+  __| | __ _ _ __   ___ 
+ / _` |/ _` | '_ \ / _ \
+| (_| | (_| | | | |  __/
+ \__,_|\__,_|_| |_|\___|
+                        
+                   
                     </pre>
                 </div>
             </div>
-            <h1>[ dane ]</h1>
             <nav>
                 <div class="nav-container">
                     <ul>
@@ -40,7 +50,9 @@
             </nav>
         </header>
         <hr>
-        <h1>About Me</h1>
+        <div class="subpage-title">
+            <h1>About Me</h1>
+        </div>
         <div class="about-section">
             <p>I’m a software engineer based in Manchester. My primary focus
                 is on backend development, but I’m also skilled in frontend technologies. While C# is my main language,
@@ -305,6 +317,26 @@
                 <button class="next">&gt;</button>
             </div>
             <div class="slider-dots"></div>
+        </div>
+    </div>
+    <div class="site-settings">
+        <div class="settings-tab">⚙</div>
+        <div class="settings-panel">
+            <h4>Weather Effects</h4>
+            <button id="disableWeather" class="weather-disable">Disable Weather</button>
+            <label>
+                <input type="checkbox" id="rainToggle" checked>
+                Rain
+            </label>
+            <label>
+                <input type="checkbox" id="snowToggle">
+                Snow
+            </label>
+            <div class="speed-control">
+                <label for="weatherSpeed">Speed</label>
+                <input type="range" id="weatherSpeed" min="0.2" max="3.0" step="0.1" value="1.0">
+                <span id="speedValue">1x</span>
+            </div>
         </div>
     </div>
     <script src="js/pages/about.js"></script>
