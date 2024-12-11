@@ -4,3 +4,13 @@ npm-debug.log
 Dockerfile
 docker-compose.yml
 .env
+
+# Admin/React
+admin/node_modules
+admin/build
+admin/coverage
+admin/npm-debug.log*
+admin/yarn-debug.log*
+admin/yarn-error.log*
+admin/.env*
+admin/*.log

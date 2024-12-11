@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import exphbs from 'express-handlebars';
 import setupWebSocket from './services/chat.js';
 import http from 'http';
-import { login, createUser } from './controllers/authController.js';
+import { login, createUser, getUsers, updateUser, deleteUser } from './controllers/authController.js';
 import { authenticateToken } from './middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,20 +35,27 @@ import blogRoutes from './routes/blog.js';
 import projectRoutes from './routes/projects.js';
 import webhookRoutes from './routes/webhooks.js';
 
-// Auth routes
+// Auth & API routes first
 app.post('/auth/login', login);
 
-// Admin routes
-app.post('/admin/users', authenticateToken, createUser);
+// Protected API routes
+app.get('/admin/api/users', authenticateToken, getUsers);
+app.post('/admin/api/users', authenticateToken, createUser);
+app.put('/admin/api/users/:id', authenticateToken, updateUser);
+app.delete('/admin/api/users/:id', authenticateToken, deleteUser);
 
-// API routes
+// Other API routes
 app.use('/api', apiRoutes);
 app.use('/services/blog', blogRoutes);
 app.use('/services/projects', projectRoutes);
 app.use('/webhooks', webhookRoutes);
-
-// Blog routes
 app.use('/blog', blogRoutes);
+
+// Static/SPA routes last
+app.use('/admin', express.static(path.join(__dirname, 'admin/build')));
+app.get(['/admin', '/admin/*'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin/build/index.html'));
+});
 
 // Middleware to remove trailing slashes
 app.use((req, res, next) => {
@@ -63,6 +70,10 @@ app.use((req, res, next) => {
 
 // Middleware to serve HTML files
 app.use((req, res, next) => {
+  if (req.path.startsWith('/admin')) {
+    return next();
+  }
+  
   if (!path.extname(req.url)) {
     let sanitizedPath = path.normalize(req.url).replace(/^(\.\.[\/\\])+/, '').replace(/^\/+/, '');
 

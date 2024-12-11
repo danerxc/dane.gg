@@ -39,3 +39,16 @@ desktop.ini
 # Coverage
 coverage/
 .nyc_output/
+
+# React/Admin
+admin/build/
+admin/coverage/
+admin/node_modules/
+admin/.env
+admin/.env.local
+admin/.env.development.local
+admin/.env.test.local
+admin/.env.production.local
+admin/npm-debug.log*
+admin/yarn-debug.log*
+admin/yarn-error.log*
