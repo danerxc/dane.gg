@@ -41,11 +41,52 @@ CREATE TABLE website.messages (
     COLUMN client_uuid UUID;
 );
 
+CREATE TABLE website.projects (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    featured BOOLEAN DEFAULT false,
+    image_url VARCHAR(255),
+    project_url VARCHAR(255),
+    project_text VARCHAR(50) DEFAULT 'View Project',
+    repo_url VARCHAR(255),
+    repo_text VARCHAR(50) DEFAULT 'View Repository',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the tags table
+CREATE TABLE website.tags (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(50) NOT NULL,
+    color VARCHAR(7) NOT NULL, -- Hex code for the color
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the project_tags table for the many-to-many relationship
+CREATE TABLE website.project_tags (
+    project_id UUID REFERENCES website.projects(id) ON DELETE CASCADE,
+    tag_id UUID REFERENCES website.tags(id) ON DELETE CASCADE,
+    PRIMARY KEY (project_id, tag_id)
+);
+
+-- Insert tags
+INSERT INTO website.tags (title, color) VALUES
+('JavaScript', '#F0DB4F'),
+('Node.js', '#43853D'),
+('Express', '#000000'),
+('React', '#61DAFB'),
+('CSS', '#2965f1'),
+('HTML', '#e34c26');
+
 -- Rest of schema with explicit references
 CREATE INDEX idx_posts_slug ON website.posts(slug);
 CREATE INDEX idx_posts_author ON website.posts(author_id);
 CREATE INDEX idx_posts_published ON website.posts(published) WHERE published = true;
 CREATE INDEX idx_messages_client_uuid ON website.messages(client_uuid);
+CREATE INDEX idx_projects_featured ON website.projects(featured);
+CREATE INDEX idx_projects_category ON website.projects(category);
 
 -- Function and trigger
 CREATE OR REPLACE FUNCTION website.update_updated_at_column()
