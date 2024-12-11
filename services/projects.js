@@ -1,9 +1,4 @@
-import pg from 'pg';
-const { Pool } = pg;
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
+import pool from '../db.js';
 
 class ProjectService {
     async getAllProjects() {
@@ -138,7 +133,7 @@ class ProjectService {
 
             return projects;
         } catch (err) {
-            throw new Error('Failed to fetch projects by category: ' + err.message);
+            throw new Error('Failed to fetch projects: ' + err.message);
         }
     }
 }

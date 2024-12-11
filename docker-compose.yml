@@ -13,6 +13,8 @@ services:
       - LASTFM_USERNAME=$LASTFM_USERNAME
       - LASTFM_API_KEY=$LASTFM_API_KEY
       - WEBHOOK_AUTH_TOKEN=$WEBHOOK_AUTH_TOKEN
+      - DEFAULT_WEATHER=$DEFAULT_WEATHER
+      - JWT_SECRET=$JWT_SECRET
     # depends_on:
     #   - db
     volumes:

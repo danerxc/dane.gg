@@ -1,11 +1,5 @@
-// services/blog.js
-import pg from 'pg';
+import pool from '../db.js';
 import { marked } from 'marked';
-const { Pool } = pg;
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
 
 class BlogService {
     async getAllPosts(limit, offset = 0) {
