@@ -17,6 +17,8 @@ import {
   TextField,
   CircularProgress,
   Alert,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axiosInstance from '../services/axios';
@@ -189,6 +191,18 @@ export const BlogPosts = () => {
             value={currentPost.content || ''}
             onChange={handleInputChange}
             margin="normal"
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={currentPost.published || false}
+                onChange={(e) => setCurrentPost(prev => ({
+                  ...prev,
+                  published: e.target.checked
+                }))}
+              />
+            }
+            label="Published"
           />
         </DialogContent>
         <DialogActions>

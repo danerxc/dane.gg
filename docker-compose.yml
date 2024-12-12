@@ -19,7 +19,7 @@ services:
       - PORT=3000
     volumes:
       - .:/app
-      - /app/admin/build
+      - /app/admin
       - /app/node_modules
       - /app/admin/node_modules
 
