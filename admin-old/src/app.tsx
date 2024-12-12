@@ -1,7 +1,8 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { Login } from './pages/login';
-import Dashboard from './pages/dashboard';
+import { Dashboard } from './pages/dashboard';
 import { ProtectedRoute } from './components/protectedRoute';
 
 const theme = createTheme({

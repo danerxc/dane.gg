@@ -41,10 +41,10 @@ import adminBlogRoutes from './routes/blogApi.js';
 app.post('/auth/login', login);
 
 // Protected API routes
-app.get('/admin/api/users', authenticateToken, getUsers);
-app.post('/admin/api/users', authenticateToken, createUser);
-app.put('/admin/api/users/:id', authenticateToken, updateUser);
-app.delete('/admin/api/users/:id', authenticateToken, deleteUser);
+app.get('/api/admin/users', authenticateToken, getUsers);
+app.post('/api/admin/users', authenticateToken, createUser);
+app.put('/api/admin/users/:id', authenticateToken, updateUser);
+app.delete('/api/admin/users/:id', authenticateToken, deleteUser);
 
 // API routes before static handling
 app.use('/api/blog', adminBlogRoutes);
@@ -53,10 +53,10 @@ app.use('/api', apiRoutes);
 app.use('/webhooks', webhookRoutes);
 
 // Admin SPA routes
-  app.use('/admin', express.static(path.join(__dirname, 'admin', 'build')));
-  app.get('/admin/*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin', 'build', 'index.html'));
-  });
+app.use('/admin', express.static(path.join(__dirname, 'admin/dist')));
+app.get('/admin/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin/dist/index.html'));
+});
 
 // Public blog routes
 app.use('/blog', blogRoutes);
@@ -119,6 +119,14 @@ app.use((err, req, res, next) => {
   const statusCode = err.status || 500;
   res.status(statusCode).redirect(`/error.html?code=${statusCode}`);
 });
+
+if (process.env.NODE_ENV === 'development') {
+  app.use('/admin', createProxyMiddleware({ 
+    target: 'http://localhost:3001',
+    changeOrigin: true,
+    ws: true
+  }));
+}
 
 setupWebSocket(server);
 

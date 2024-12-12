@@ -40,15 +40,28 @@ desktop.ini
 coverage/
 .nyc_output/
 
-# React/Admin
-admin/build/
+# Vite/Admin specific
+admin/dist/
+admin/.vite/
+admin/dev-dist/
+admin/*.local
+admin/stats.html
 admin/coverage/
-admin/node_modules/
-admin/.env
-admin/.env.local
-admin/.env.development.local
-admin/.env.test.local
-admin/.env.production.local
-admin/npm-debug.log*
-admin/yarn-debug.log*
-admin/yarn-error.log*
+admin/logs/
+admin/tmp/
+admin/.env*
+admin/pnpm-debug.log*
+
+# Testing
+admin/coverage/
+admin/cypress/videos/
+admin/cypress/screenshots/
+
+# Editor directories and files
+admin/.vscode/*
+admin/.idea/
+admin/*.suo
+admin/*.ntvs*
+admin/*.njsproj
+admin/*.sln
+admin/*.sw?

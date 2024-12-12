@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -42,7 +42,7 @@ export const Users = () => {
     try {
       setLoading(true);
       setError(null);
-      const { data } = await axiosInstance.get('/api/admin/users');
+      const { data } = await axiosInstance.get('/admin/api/users');
       setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
       setError('Failed to fetch users');
@@ -56,7 +56,7 @@ export const Users = () => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         setError(null);
-        await axiosInstance.delete(`/api/admin/users/${id}`);
+        await axiosInstance.delete(`/admin/api/users/${id}`);
         await fetchUsers();
       } catch (err) {
         setError('Failed to delete user');
@@ -69,13 +69,13 @@ export const Users = () => {
     try {
       setError(null);
       if (isEditing) {
-        await axiosInstance.put(`/api/admin/users/${currentUser.id}`, {
+        await axiosInstance.put(`/admin/api/users/${currentUser.id}`, {
           username: currentUser.username,
           password: currentUser.password,
           isAdmin: currentUser.is_admin
         });
       } else {
-        await axiosInstance.post('/api/admin/users', {
+        await axiosInstance.post('/admin/api/users', {
           username: currentUser.username,
           password: currentUser.password,
           isAdmin: currentUser.is_admin

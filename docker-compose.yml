@@ -11,6 +11,7 @@ services:
       - "3001:3001"
     environment:
       NODE_ENV: development
+      VITE_API_URL: http://localhost:3001
       DATABASE_URL: ${DATABASE_URL}
       LASTFM_USERNAME: ${LASTFM_USERNAME}
       LASTFM_API_KEY: ${LASTFM_API_KEY}
@@ -21,6 +22,11 @@ services:
       - .:/app
       - /app/node_modules
       - /app/admin/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # db:
   #   image: postgres:16

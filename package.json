@@ -7,8 +7,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "concurrently \"nodemon server.js\" \"PUBLIC_URL=/admin PORT=3001 npm start --prefix admin\"",
-    "build:admin": "npm run build --prefix admin"
+    "dev": "concurrently \"nodemon server.js\" \"cd admin && npm run dev\"",
+    "build:admin": "npm run build --prefix admin",
+    "build": "cd admin && npm run build"
   },
   "keywords": [],
   "author": "",
@@ -24,11 +25,13 @@
     "marked": "^11.1.0",
     "node-fetch": "^2.6.7",
     "pg": "^8.11.3",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "concurrently": "^7.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/node-fetch": "^2.6.12",
-    "concurrently": "^8.0.0",
-    "nodemon": "^2.0.0"
+    "nodemon": "^2.0.15",
+    "vite": "^4.0.0"
   }
 }

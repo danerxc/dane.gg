@@ -14,7 +14,7 @@ export const Login = () => {
     try {
       await auth.login(username, password);
       navigate('/admin');
-    } catch {
+    } catch (err) {
       setError('Invalid credentials');
     }
   };

@@ -4,6 +4,12 @@ interface LoginResponse {
   token: string;
 }
 
+interface User {
+  username: string;
+  password: string;
+  isAdmin?: boolean;
+}
+
 export const auth = {
   login: async (username: string, password: string): Promise<LoginResponse> => {
     const response = await axios.post<LoginResponse>('/auth/login', { username, password });

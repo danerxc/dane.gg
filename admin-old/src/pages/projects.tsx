@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -44,7 +44,7 @@ export const Projects = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const fetchProjects = async () => {
-    const { data } = await axios.get('/api/projects');
+    const { data } = await axios.get('/services/projects');
     setProjects(data);
   };
 
@@ -54,9 +54,9 @@ export const Projects = () => {
 
   const handleSave = async () => {
     if (isEditing) {
-      await axios.put(`/api/projects/${currentProject.id}`, currentProject);
+      await axios.put(`/services/projects/${currentProject.id}`, currentProject);
     } else {
-      await axios.post('/api/projects', currentProject);
+      await axios.post('/services/projects', currentProject);
     }
     setOpen(false);
     fetchProjects();
@@ -64,7 +64,7 @@ export const Projects = () => {
 
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this project?')) {
-      await axios.delete(`/api/projects/${id}`);
+      await axios.delete(`/services/projects/${id}`);
       fetchProjects();
     }
   };

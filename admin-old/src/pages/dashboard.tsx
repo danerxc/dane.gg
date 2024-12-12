@@ -1,45 +1,48 @@
-import { useState } from 'react';
-import { useNavigate, Routes, Route } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import {
-  AppBar,
   Box,
-  CssBaseline,
-  Drawer,
-  IconButton,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
+  AppBar,
   Toolbar,
   Typography,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import LogoutIcon from '@mui/icons-material/Logout';
+import {
+  Menu as MenuIcon,
+  Article as ArticleIcon,
+  Code as CodeIcon,
+  Person as PersonIcon,
+  Logout as LogoutIcon,
+} from '@mui/icons-material';
+import { auth } from '../services/auth';
 import { BlogPosts } from './blog';
 import { Projects } from './projects';
 import { Users } from './users';
-import { auth } from '../services/auth';
 
 const drawerWidth = 240;
 
-const Dashboard = () => {
-  const [open, setOpen] = useState(false);
+export const Dashboard = () => {
+  const [open, setOpen] = useState(true);
   const navigate = useNavigate();
+
+  const menuItems = [
+    { text: 'Blog Posts', icon: <ArticleIcon />, path: 'blog' },
+    { text: 'Projects', icon: <CodeIcon />, path: 'projects' },
+    { text: 'Users', icon: <PersonIcon />, path: 'users' },
+  ];
 
   const handleLogout = () => {
     auth.logout();
     navigate('/admin/login');
   };
 
-  const menuItems = [
-    { text: 'Blog Posts', path: '/admin/blog', icon: <MenuIcon /> },
-    { text: 'Projects', path: '/admin/projects', icon: <MenuIcon /> },
-    { text: 'Users', path: '/admin/users', icon: <MenuIcon /> },
-  ];
-
   return (
     <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <IconButton
@@ -73,10 +76,10 @@ const Dashboard = () => {
         <Toolbar />
         <List>
           {menuItems.map((item) => (
-            <ListItemButton key={item.text} onClick={() => navigate(item.path)}>
+            <ListItem button key={item.text} onClick={() => navigate(item.path)}>
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
-            </ListItemButton>
+            </ListItem>
           ))}
         </List>
       </Drawer>
@@ -95,14 +98,11 @@ const Dashboard = () => {
       >
         <Toolbar />
         <Routes>
-          <Route path="/blog/*" element={<BlogPosts />} />
-          <Route path="/projects/*" element={<Projects />} />
-          <Route path="/users/*" element={<Users />} />
-          <Route path="/" element={<BlogPosts />} /> {/* Default route */}
+          <Route path="blog/*" element={<BlogPosts />} />
+          <Route path="projects/*" element={<Projects />} />
+          <Route path="users/*" element={<Users />} />
         </Routes>
       </Box>
     </Box>
   );
 };
-
-export default Dashboard;
