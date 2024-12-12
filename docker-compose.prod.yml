@@ -6,15 +6,16 @@ services:
       context: .
       target: production
     ports:
-      - "3000:3000"
+      - "443:3000"
+      - "80:3000"
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=$DATABASE_URL
-      - LASTFM_USERNAME=$LASTFM_USERNAME
-      - LASTFM_API_KEY=$LASTFM_API_KEY
-      - WEBHOOK_AUTH_TOKEN=$WEBHOOK_AUTH_TOKEN
-      - DEFAULT_WEATHER=$DEFAULT_WEATHER
-      - JWT_SECRET=$JWT_SECRET
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      LASTFM_USERNAME: ${LASTFM_USERNAME}
+      LASTFM_API_KEY: ${LASTFM_API_KEY}
+      WEBHOOK_AUTH_TOKEN: ${WEBHOOK_AUTH_TOKEN}
+      DEFAULT_WEATHER: ${DEFAULT_WEATHER}
+      JWT_SECRET: ${JWT_SECRET}
     restart: unless-stopped
     depends_on:
       - db

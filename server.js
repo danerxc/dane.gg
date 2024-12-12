@@ -8,6 +8,7 @@ import setupWebSocket from './services/chat.js';
 import http from 'http';
 import { login, createUser, getUsers, updateUser, deleteUser } from './controllers/authController.js';
 import { authenticateToken } from './middleware/auth.js';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -52,10 +53,10 @@ app.use('/api', apiRoutes);
 app.use('/webhooks', webhookRoutes);
 
 // Admin SPA routes
-app.use('/admin', express.static(path.join(__dirname, 'admin/build')));
-app.get(['/admin', '/admin/*'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin/build/index.html'));
-});
+  app.use('/admin', express.static(path.join(__dirname, 'admin', 'build')));
+  app.get('/admin/*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin', 'build', 'index.html'));
+  });
 
 // Public blog routes
 app.use('/blog', blogRoutes);
@@ -103,6 +104,9 @@ app.use((req, res, next) => {
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // 404 handler
 app.use((req, res, next) => {

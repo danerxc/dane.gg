@@ -19,7 +19,7 @@ function App() {
         <Routes>
           <Route path="/admin/login" element={<Login />} />
           <Route
-            path="/admin/*"
+            path="/*"
             element={
               <ProtectedRoute>
                 <Dashboard />

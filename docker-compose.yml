@@ -8,18 +8,17 @@ services:
       target: development
     ports:
       - "3000:3000"
+      - "3001:3001"
     environment:
-      - NODE_ENV=development
-      - DATABASE_URL=$DATABASE_URL
-      - LASTFM_USERNAME=$LASTFM_USERNAME
-      - LASTFM_API_KEY=$LASTFM_API_KEY
-      - WEBHOOK_AUTH_TOKEN=$WEBHOOK_AUTH_TOKEN
-      - DEFAULT_WEATHER=$DEFAULT_WEATHER
-      - JWT_SECRET=$JWT_SECRET
-      - PORT=3000
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL}
+      LASTFM_USERNAME: ${LASTFM_USERNAME}
+      LASTFM_API_KEY: ${LASTFM_API_KEY}
+      WEBHOOK_AUTH_TOKEN: ${WEBHOOK_AUTH_TOKEN}
+      DEFAULT_WEATHER: ${DEFAULT_WEATHER}
+      JWT_SECRET: ${JWT_SECRET}
     volumes:
       - .:/app
-      - /app/admin
       - /app/node_modules
       - /app/admin/node_modules
 

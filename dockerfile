@@ -1,38 +1,38 @@
-# Base dependencies
+# Base stage
 FROM node:20-slim AS base
-WORKDIR /app
-COPY package*.json ./
-COPY admin/package*.json admin/
-RUN npm install
-RUN cd admin && npm install --legacy-peer-deps
 
-# Development with hot reload
-FROM base AS development
 WORKDIR /app
+
+# Copy package.json files
+COPY package*.json ./
+COPY admin/package*.json ./admin/
+
+# Install dependencies
+RUN npm install
+RUN cd admin && npm install
+
+# Copy application code
 COPY . .
-RUN cd admin && npm run build
-EXPOSE 3000
+
+# Development stage
+FROM base AS development
+
+EXPOSE 3000 3001
+
+ENV NODE_ENV=development
+
+# Start both servers for development
 CMD ["npm", "run", "dev"]
 
-# Build stage for React
-FROM base AS production-build
-WORKDIR /app
-COPY . .
-RUN cd admin && npm run build
+# Production stage
+FROM base AS production
 
-# Production with optimizations
-FROM node:20-slim AS production
-WORKDIR /app
-# Install production dependencies only
-COPY package*.json ./
-RUN npm install --production
-# Copy built React app and server files
-COPY --from=production-build /app/admin/build ./admin/build
-COPY public ./public
-COPY server.js .
-COPY routes ./routes
-COPY services ./services
-COPY middleware ./middleware
-COPY controllers ./controllers
+ENV NODE_ENV=production
+RUN cd admin && npm run build
+RUN npm prune --production
+RUN cd admin && npm prune --production
+
 EXPOSE 3000
+
+# Start the server
 CMD ["npm", "start"]
