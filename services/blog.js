@@ -2,19 +2,45 @@ import pool from '../db.js';
 import { marked } from 'marked';
 
 class BlogService {
-    async getAllPosts(limit, offset = 0) {
+    async getPublishedPosts(limit, offset = 0) {
         try {
-            // Get total count
             const countResult = await pool.query(
                 'SELECT COUNT(*) FROM website.posts WHERE published = true'
             );
             const total = parseInt(countResult.rows[0].count);
 
-            // Build query with pagination
             const query = `
-                SELECT id, title, slug, content, created_at, thumbnail 
+                SELECT id, title, slug, content, created_at, thumbnail
+                FROM website.posts
+                WHERE published = true
+                ORDER BY created_at DESC
+                LIMIT $1 OFFSET $2
+            `;
+            
+            const { rows } = await pool.query(query, [limit, offset]);
+
+            return {
+                posts: rows,
+                total,
+                hasMore: total > offset + limit,
+                currentPage: Math.floor(offset / limit) + 1,
+                totalPages: Math.ceil(total / limit)
+            };
+        } catch (err) {
+            throw new Error('Failed to fetch posts: ' + err.message);
+        }
+    }
+
+    async getAllPosts(limit, offset = 0) {
+        try {
+            const countResult = await pool.query(
+                'SELECT COUNT(*) FROM website.posts'
+            );
+            const total = parseInt(countResult.rows[0].count);
+
+            const query = `
+                SELECT id, title, slug, content, created_at, published, thumbnail 
                 FROM website.posts 
-                WHERE published = true 
                 ORDER BY created_at DESC
                 LIMIT $1 OFFSET $2
             `;
@@ -59,6 +85,17 @@ class BlogService {
             return post;
         } catch (err) {
             throw new Error('Failed to fetch post: ' + err.message);
+        }
+    }
+
+    async getAllPostsAdmin() {
+        try {
+            const { rows } = await pool.query(
+                'SELECT * FROM website.posts ORDER BY created_at DESC'
+            );
+            return rows;
+        } catch (err) {
+            throw new Error('Failed to fetch posts: ' + err.message);
         }
     }
 

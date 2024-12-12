@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // >> BLOG SECTION
 // =======================================
 async function loadPosts(page = 1, limit = 4) {
-    const response = await fetch(`/services/blog/posts?page=${page}&limit=${limit}`);
+    const response = await fetch(`/api/blog/posts/published?page=${page}&limit=${limit}`);
     const { posts, total } = await response.json();
     const container = document.getElementById('blog-index');
 

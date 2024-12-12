@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import {
   Box,
   Button,
@@ -15,9 +15,11 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import axios from 'axios';
+import axiosInstance from '../services/axios';
 
 interface BlogPost {
   id: number;
@@ -29,47 +31,102 @@ interface BlogPost {
 
 export const BlogPosts = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [currentPost, setCurrentPost] = useState<Partial<BlogPost>>({});
   const [isEditing, setIsEditing] = useState(false);
 
   const fetchPosts = async () => {
-    const { data } = await axios.get('/services/blog/posts');
-    setPosts(data.posts);
+    try {
+      setLoading(true);
+      setError(null);
+      const { data } = await axiosInstance.get('/api/blog/posts');
+      setPosts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError('Failed to fetch posts');
+      console.error('Failed to fetch posts:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
+  const handleCreate = () => {
+    setCurrentPost({});
+    setIsEditing(false);
+    setOpen(true);
+  };
+
+  const handleEdit = (post: BlogPost) => {
+    setCurrentPost(post);
+    setIsEditing(true);
+    setOpen(true);
+  };
+
+  const generateSlug = (title: string): string => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setCurrentPost(prev => {
+      // Auto-generate slug from title if title field changes
+      if (name === 'title' && !prev.slug) {
+        return {
+          ...prev,
+          [name]: value,
+          slug: generateSlug(value)
+        };
+      }
+      return {
+        ...prev,
+        [name]: value
+      };
+    });
+  };
+
   const handleSave = async () => {
-    if (isEditing) {
-      await axios.put(`/services/blog/posts/${currentPost.slug}`, currentPost);
-    } else {
-      await axios.post('/services/blog/posts', currentPost);
+    try {
+      setError(null);
+      if (isEditing) {
+        await axiosInstance.put(`/api/blog/posts/${currentPost.slug}`, currentPost);
+      } else {
+        await axiosInstance.post('/api/blog/posts', currentPost);
+      }
+      setOpen(false);
+      await fetchPosts();
+    } catch (err) {
+      setError('Failed to save post');
+      console.error('Failed to save post:', err);
     }
-    setOpen(false);
-    fetchPosts();
   };
 
   const handleDelete = async (slug: string) => {
     if (window.confirm('Are you sure you want to delete this post?')) {
-      await axios.delete(`/services/blog/posts/${slug}`);
-      fetchPosts();
+      try {
+        setError(null);
+        await axiosInstance.delete(`/api/blog/posts/${slug}`);
+        await fetchPosts();
+      } catch (err) {
+        setError('Failed to delete post');
+        console.error('Failed to delete post:', err);
+      }
     }
   };
 
+  if (loading) return <CircularProgress />;
+  if (error) return <Alert severity="error">{error}</Alert>;
+
   return (
     <Box>
-      <Button
-        variant="contained"
-        onClick={() => {
-          setCurrentPost({});
-          setIsEditing(false);
-          setOpen(true);
-        }}
-        sx={{ mb: 2 }}
-      >
+      <Button variant="contained" onClick={handleCreate} sx={{ mb: 2 }}>
         Create New Post
       </Button>
 
@@ -90,13 +147,7 @@ export const BlogPosts = () => {
                 <TableCell>{post.slug}</TableCell>
                 <TableCell>{post.published ? 'Yes' : 'No'}</TableCell>
                 <TableCell>
-                  <IconButton
-                    onClick={() => {
-                      setCurrentPost(post);
-                      setIsEditing(true);
-                      setOpen(true);
-                    }}
-                  >
+                  <IconButton onClick={() => handleEdit(post)}>
                     <EditIcon />
                   </IconButton>
                   <IconButton onClick={() => handleDelete(post.slug)}>
@@ -114,18 +165,29 @@ export const BlogPosts = () => {
         <DialogContent>
           <TextField
             fullWidth
+            name="title"
             label="Title"
             value={currentPost.title || ''}
-            onChange={(e) => setCurrentPost({ ...currentPost, title: e.target.value })}
+            onChange={handleInputChange}
             margin="normal"
           />
           <TextField
             fullWidth
+            name="slug"
+            label="Slug"
+            value={currentPost.slug || ''}
+            onChange={handleInputChange}
+            helperText="URL-friendly post link"
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            name="content"
             label="Content"
             multiline
             rows={10}
             value={currentPost.content || ''}
-            onChange={(e) => setCurrentPost({ ...currentPost, content: e.target.value })}
+            onChange={handleInputChange}
             margin="normal"
           />
         </DialogContent>

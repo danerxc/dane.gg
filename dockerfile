@@ -10,6 +10,7 @@ RUN cd admin && npm install --legacy-peer-deps
 FROM base AS development
 WORKDIR /app
 COPY . .
+RUN cd admin && npm run build
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
@@ -24,7 +25,7 @@ FROM node:20-slim AS production
 WORKDIR /app
 # Install production dependencies only
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --production
 # Copy built React app and server files
 COPY --from=production-build /app/admin/build ./admin/build
 COPY public ./public

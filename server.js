@@ -34,8 +34,9 @@ import apiRoutes from './routes/api.js';
 import blogRoutes from './routes/blog.js';
 import projectRoutes from './routes/projects.js';
 import webhookRoutes from './routes/webhooks.js';
+import adminBlogRoutes from './routes/blogApi.js';
 
-// Auth & API routes first
+// Auth routes first
 app.post('/auth/login', login);
 
 // Protected API routes
@@ -44,18 +45,20 @@ app.post('/admin/api/users', authenticateToken, createUser);
 app.put('/admin/api/users/:id', authenticateToken, updateUser);
 app.delete('/admin/api/users/:id', authenticateToken, deleteUser);
 
-// Other API routes
+// API routes before static handling
+app.use('/api/blog', adminBlogRoutes);
+app.use('/api/projects', projectRoutes);
 app.use('/api', apiRoutes);
-app.use('/services/blog', blogRoutes);
-app.use('/services/projects', projectRoutes);
 app.use('/webhooks', webhookRoutes);
-app.use('/blog', blogRoutes);
 
-// Static/SPA routes last
+// Admin SPA routes
 app.use('/admin', express.static(path.join(__dirname, 'admin/build')));
 app.get(['/admin', '/admin/*'], (req, res) => {
   res.sendFile(path.join(__dirname, 'admin/build/index.html'));
 });
+
+// Public blog routes
+app.use('/blog', blogRoutes);
 
 // Middleware to remove trailing slashes
 app.use((req, res, next) => {
