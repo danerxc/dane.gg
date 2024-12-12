@@ -1,31 +1,19 @@
 import { useState, useEffect, ChangeEvent } from 'react';
-import {
-  Box,
-  Button,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  CircularProgress,
-  Alert,
-  Switch,
-  FormControlLabel,
-  Typography
-} from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axiosInstance from '../services/axios';
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Paper, IconButton, Dialog, DialogTitle, DialogContent, TextField,
+  FormControlLabel, Switch, Button, Typography, DialogActions, Box,  CircularProgress,
+  Alert
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import MdEditor from 'react-markdown-editor-lite';
+import { marked } from 'marked';
+import 'react-markdown-editor-lite/lib/index.css';
 
 interface BlogPost {
-  id: number;
+  id?: string;
   title: string;
   slug: string;
   content: string;
@@ -34,11 +22,11 @@ interface BlogPost {
 
 export const BlogPosts = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
   const [currentPost, setCurrentPost] = useState<Partial<BlogPost>>({});
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPosts = async () => {
     try {
@@ -101,6 +89,27 @@ export const BlogPosts = () => {
     });
   };
 
+  const handleDelete = async (slug: string) => {
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      try {
+        setError(null);
+        await axiosInstance.delete(`/api/blog/posts/${slug}`);
+        await fetchPosts();
+      } catch (err) {
+        setError('Failed to delete post');
+        console.error('Failed to delete post:', err);
+      }
+    }
+  };
+
+
+  const handleEditorChange = ({ text }: { text: string }) => {
+    setCurrentPost(prev => ({
+      ...prev,
+      content: text
+    }));
+  };
+
   const handleSave = async () => {
     try {
       setError(null);
@@ -117,19 +126,6 @@ export const BlogPosts = () => {
     }
   };
 
-  const handleDelete = async (slug: string) => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      try {
-        setError(null);
-        await axiosInstance.delete(`/api/blog/posts/${slug}`);
-        await fetchPosts();
-      } catch (err) {
-        setError('Failed to delete post');
-        console.error('Failed to delete post:', err);
-      }
-    }
-  };
-
   const getBaseURL = () => {
     const { protocol, hostname, port } = window.location;
     return `${protocol}//${hostname}${port ? `:${port}` : ''}`;
@@ -143,7 +139,6 @@ export const BlogPosts = () => {
       <Button variant="contained" onClick={handleCreate} sx={{ mb: 2 }}>
         Create New Post
       </Button>
-
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -185,7 +180,7 @@ export const BlogPosts = () => {
             onChange={handleInputChange}
             margin="normal"
           />
-           <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
             <Typography variant="body1" style={{ marginRight: 8, flexShrink: 0, marginTop: 8 }}>
               {getBaseURL()}/blog/
             </Typography>
@@ -198,15 +193,11 @@ export const BlogPosts = () => {
               margin="normal"
             />
           </div>
-          <TextField
-            fullWidth
-            name="content"
-            label="Content"
-            multiline
-            rows={10}
+          <MdEditor
             value={currentPost.content ?? ''}
-            onChange={handleInputChange}
-            margin="normal"
+            style={{ height: '500px' }}
+            renderHTML={(text) => marked(text)}
+            onChange={handleEditorChange}
           />
           <FormControlLabel
             control={
@@ -231,3 +222,5 @@ export const BlogPosts = () => {
     </Box>
   );
 };
+
+export default BlogPosts;
