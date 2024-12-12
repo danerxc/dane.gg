@@ -19,6 +19,7 @@ import {
   Alert,
   Switch,
   FormControlLabel,
+  Typography
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axiosInstance from '../services/axios';
@@ -79,12 +80,18 @@ export const BlogPosts = () => {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setCurrentPost(prev => {
-      // Auto-generate slug from title if title field changes
-      if (name === 'title' && !prev.slug) {
+      if (name === 'title') {
+        const slug = prev.slug && prev.slug !== generateSlug(prev.title || '') ? prev.slug : generateSlug(value);
         return {
           ...prev,
           [name]: value,
-          slug: generateSlug(value)
+          slug
+        };
+      }
+      if (name === 'slug') {
+        return {
+          ...prev,
+          [name]: value.replace(/\s+/g, '-')
         };
       }
       return {
@@ -121,6 +128,11 @@ export const BlogPosts = () => {
         console.error('Failed to delete post:', err);
       }
     }
+  };
+
+  const getBaseURL = () => {
+    const { protocol, hostname, port } = window.location;
+    return `${protocol}//${hostname}${port ? `:${port}` : ''}`;
   };
 
   if (loading) return <CircularProgress />;
@@ -169,26 +181,30 @@ export const BlogPosts = () => {
             fullWidth
             name="title"
             label="Title"
-            value={currentPost.title || ''}
+            value={currentPost.title ?? ''}
             onChange={handleInputChange}
             margin="normal"
           />
-          <TextField
-            fullWidth
-            name="slug"
-            label="Slug"
-            value={currentPost.slug || ''}
-            onChange={handleInputChange}
-            helperText="URL-friendly post link"
-            margin="normal"
-          />
+           <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
+            <Typography variant="body1" style={{ marginRight: 8, flexShrink: 0, marginTop: 8 }}>
+              {getBaseURL()}/blog/
+            </Typography>
+            <TextField
+              fullWidth
+              name="slug"
+              label="Link"
+              value={currentPost.slug ?? ''}
+              onChange={handleInputChange}
+              margin="normal"
+            />
+          </div>
           <TextField
             fullWidth
             name="content"
             label="Content"
             multiline
             rows={10}
-            value={currentPost.content || ''}
+            value={currentPost.content ?? ''}
             onChange={handleInputChange}
             margin="normal"
           />
