@@ -12,6 +12,11 @@ import MdEditor from 'react-markdown-editor-lite';
 import { marked } from 'marked';
 import 'react-markdown-editor-lite/lib/index.css';
 
+marked.setOptions({ 
+  gfm: true,
+  breaks: true,
+});
+
 interface BlogPost {
   id?: string;
   title: string;
@@ -202,7 +207,7 @@ export const BlogPosts = () => {
           <FormControlLabel
             control={
               <Switch
-                checked={currentPost.published || false}
+                checked={currentPost.published || true}
                 onChange={(e) => setCurrentPost(prev => ({
                   ...prev,
                   published: e.target.checked
