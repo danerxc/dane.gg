@@ -1,13 +1,14 @@
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent, useRef } from 'react';
 import axiosInstance from '../services/axios';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, IconButton, Dialog, DialogTitle, DialogContent, TextField,
-  FormControlLabel, Switch, Button, Typography, DialogActions, Box,  CircularProgress,
-  Alert
+  FormControlLabel, Switch, Button, Typography, DialogActions, Box, CircularProgress,
+  Alert, Radio, RadioGroup, FormControl, FormLabel, FormControlLabel as MuiFormControlLabel
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import MdEditor from 'react-markdown-editor-lite';
 import { marked } from 'marked';
 import 'react-markdown-editor-lite/lib/index.css';
@@ -33,7 +34,11 @@ export const BlogPosts = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [open, setOpen] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailSource, setThumbnailSource] = useState<'url' | 'upload'>('url');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadComplete, setUploadComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const fetchPosts = async () => {
     try {
@@ -127,14 +132,21 @@ export const BlogPosts = () => {
   const handleThumbnailUpload = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
+    setUploadProgress(0);
+    setUploadComplete(false);
     try {
       const { data } = await axiosInstance.post('/api/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: (progressEvent) => {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(progress);
         }
       });
       console.log('File uploaded:', data.filePath);
       setCurrentPost(prev => ({ ...prev, thumbnail: data.filePath }));
+      setUploadComplete(true);
     } catch (err) {
       console.error('Failed to upload thumbnail:', err);
       setError('Failed to upload thumbnail');
@@ -231,21 +243,43 @@ export const BlogPosts = () => {
             renderHTML={(text) => marked(text)}
             onChange={handleEditorChange}
           />
-          <TextField
-            label="Thumbnail URL"
-            fullWidth
-            value={currentPost.thumbnail ?? ''}
-            onChange={(e) => setCurrentPost({ ...currentPost, thumbnail: e.target.value })}
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleThumbnailChange}
-          />
+          <FormControl component="fieldset" margin="normal">
+            <FormLabel component="legend">Thumbnail Source</FormLabel>
+            <RadioGroup
+              row
+              value={thumbnailSource}
+              onChange={(e) => setThumbnailSource(e.target.value as 'url' | 'upload')}
+            >
+              <MuiFormControlLabel value="url" control={<Radio />} label="URL" />
+              <MuiFormControlLabel value="upload" control={<Radio />} label="Upload" />
+            </RadioGroup>
+          </FormControl>
+          {thumbnailSource === 'url' ? (
+            <TextField
+              label="Thumbnail URL"
+              fullWidth
+              value={currentPost.thumbnail ?? ''}
+              onChange={(e) => setCurrentPost({ ...currentPost, thumbnail: e.target.value })}
+              margin="normal"
+            />
+          ) : (
+            <Box display="flex" alignItems="center">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleThumbnailChange}
+                ref={fileInputRef}
+                style={{ display: 'block', margin: '16px 0' }}
+              />
+              {thumbnailFile && <Typography variant="body2" style={{ marginLeft: 8 }}>{thumbnailFile.name}</Typography>}
+              {uploadProgress > 0 && uploadProgress < 100 && <CircularProgress size={24} style={{ marginLeft: 8 }} />}
+              {uploadComplete && <CheckCircleIcon color="success" style={{ marginLeft: 8 }} />}
+            </Box>
+          )}
           <FormControlLabel
             control={
               <Switch
-                checked={currentPost.published || true}
+                checked={currentPost.published ?? false}
                 onChange={(e) => setCurrentPost(prev => ({
                   ...prev,
                   published: e.target.checked
