@@ -20,6 +20,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
     volumes:
       - .:/app
+      - user_uploads:/public/assets/uploads
       - /app/node_modules
       - /app/admin/node_modules
     healthcheck:
@@ -40,5 +41,6 @@ services:
   #     - pgdata:/var/lib/postgresql/data
   #     - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
-# volumes:
+volumes:
+    user_uploads:
 #   pgdata:

@@ -33,8 +33,8 @@ async function getPublishedPosts(req, res) {
 
 async function createPost(req, res) {
   try {
-    const { title, content, slug, published } = req.body;
-    const post = await blogService.createPost({ title, content, slug, published });
+    const { title, content, slug, thumbnail, published } = req.body;
+    const post = await blogService.createPost({ title, content, slug, thumbnail, published });
     res.status(201).json(post);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -43,8 +43,8 @@ async function createPost(req, res) {
 
 async function updatePost(req, res) {
   try {
-    const { title, content, published } = req.body;
-    const post = await blogService.updatePost(req.params.slug, { title, content, published });
+    const { title, content, thumbnail, published } = req.body;
+    const post = await blogService.updatePost(req.params.slug, { title, content, thumbnail, published });
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     }

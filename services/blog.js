@@ -99,13 +99,13 @@ class BlogService {
         }
     }
 
-    async createPost({ title, content, slug, published = true }) {
+    async createPost({ title, content, slug, thumbnail, published = true }) {
         try {
             const { rows } = await pool.query(
-                `INSERT INTO website.posts (title, content, slug, published) 
-                 VALUES ($1, $2, $3, $4) 
+                `INSERT INTO website.posts (title, content, slug, thumbnail, published) 
+                 VALUES ($1, $2, $3, $4, $5) 
                  RETURNING *`,
-                [title, content, slug, published]
+                [title, content, slug, thumbnail, published]
             );
             return rows[0];
         } catch (err) {
@@ -113,13 +113,14 @@ class BlogService {
         }
     }
 
-    async updatePost(slug, { title, content, published }) {
+    async updatePost(slug, { title, content, thumbnail, published }) {
         try {
             const { rows } = await pool.query(
                 `UPDATE website.posts 
                  SET title = COALESCE($1, title),
                      content = COALESCE($2, content),
-                     published = COALESCE($3, published),
+                     thumbnail = COALESCE($3, thumbnail),
+                     published = COALESCE($4, published),
                      updated_at = CURRENT_TIMESTAMP
                  WHERE slug = $4
                  RETURNING *`,

@@ -22,6 +22,7 @@ interface BlogPost {
   title: string;
   slug: string;
   content: string;
+  thumbnail?: string;
   published: boolean;
 }
 
@@ -31,6 +32,7 @@ export const BlogPosts = () => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [open, setOpen] = useState(false);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPosts = async () => {
@@ -107,7 +109,6 @@ export const BlogPosts = () => {
     }
   };
 
-
   const handleEditorChange = ({ text }: { text: string }) => {
     setCurrentPost(prev => ({
       ...prev,
@@ -115,13 +116,39 @@ export const BlogPosts = () => {
     }));
   };
 
+  const handleThumbnailChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      console.log('File selected:', e.target.files[0]);
+      setThumbnailFile(e.target.files[0]);
+      handleThumbnailUpload(e.target.files[0]);
+    }
+  };
+
+  const handleThumbnailUpload = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const { data } = await axiosInstance.post('/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      console.log('File uploaded:', data.filePath);
+      setCurrentPost(prev => ({ ...prev, thumbnail: data.filePath }));
+    } catch (err) {
+      console.error('Failed to upload thumbnail:', err);
+      setError('Failed to upload thumbnail');
+    }
+  };
+
   const handleSave = async () => {
     try {
       setError(null);
+      const postData = { ...currentPost };
       if (isEditing) {
-        await axiosInstance.put(`/api/blog/posts/${currentPost.slug}`, currentPost);
+        await axiosInstance.put(`/api/blog/posts/${currentPost.slug}`, postData);
       } else {
-        await axiosInstance.post('/api/blog/posts', currentPost);
+        await axiosInstance.post('/api/blog/posts', postData);
       }
       setOpen(false);
       await fetchPosts();
@@ -203,6 +230,17 @@ export const BlogPosts = () => {
             style={{ height: '500px' }}
             renderHTML={(text) => marked(text)}
             onChange={handleEditorChange}
+          />
+          <TextField
+            label="Thumbnail URL"
+            fullWidth
+            value={currentPost.thumbnail ?? ''}
+            onChange={(e) => setCurrentPost({ ...currentPost, thumbnail: e.target.value })}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleThumbnailChange}
           />
           <FormControlLabel
             control={
