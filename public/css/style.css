@@ -1470,38 +1470,6 @@ social-links a svg {
   margin: 0.5rem 0;
 }
 
-/* Code Blocks Container */
-.post-content pre {
-  background: #1a1a1a;
-  padding: 2rem 1rem 1rem;
-  margin: 2rem 0 1.5rem;
-  border-radius: 4px;
-  overflow: visible;
-  position: relative;
-  border: 1px solid #333;
-}
-
-/* Code Block Content */
-.post-content code {
-  font-family: 'Consolas', 'Monaco', monospace;
-  font-size: 0.9em;
-  display: block;
-}
-
-/* Language Label */
-.code-language-label {
-  position: absolute;
-  top: 0.5rem;
-  left: 1rem;
-  font-size: 0.8em;
-  color: #888;
-  font-family: 'Consolas', 'Monaco', monospace;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-  z-index: 1;
-}
-
 .post-content blockquote {
   border-left: 4px solid #e48f8f;
   margin: 1.5rem 0;
@@ -1557,15 +1525,6 @@ social-links a svg {
   margin: 2rem 0;
 }
 
-/* Code Language Label */
-.code-language-label {
-  font-size: 0.8em;
-  color: #666;
-  text-align: right;
-  margin-bottom: -0.5rem;
-  padding-right: 1rem;
-}
-
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .post-content {
@@ -1580,4 +1539,48 @@ social-links a svg {
   .post-content blockquote {
     padding: 0.75rem 1rem;
   }
+}
+
+/* Code Blocks */
+.post-content pre {
+    background: #1a1a1a; /* Dark gray background */
+    padding: 2rem 1rem 1rem;
+    margin: 2rem 0 1.5rem;
+    border-radius: 4px;
+    overflow: visible;
+    position: relative;
+    border: 1px solid #333;
+}
+
+/* Code Block Content */
+.post-content pre code {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    color: #ffffff;
+    display: block;
+    line-height: 1.5;
+    background-color: #1a1a1a;
+}
+
+.post-content code:not(pre code) {
+    background: #292929;
+    color: #ffffff;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-family: 'Consolas', 'Monaco', monospace;
+}
+
+/* Language Label */
+.code-language-label {
+    position: absolute;
+    top: 0.5rem;
+    left: 1rem;
+    font-size: 0.8em;
+    color: #888;
+    font-family: 'Consolas', 'Monaco', monospace;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    z-index: 1;
 }
