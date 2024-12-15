@@ -99,7 +99,7 @@ class BlogService {
         }
     }
 
-    async createPost({ title, content, slug, thumbnail, published = true }) {
+    async createPost({ title, content, slug, thumbnail, published }) {
         try {
             const { rows } = await pool.query(
                 `INSERT INTO website.posts (title, content, slug, thumbnail, published) 
@@ -122,9 +122,9 @@ class BlogService {
                      thumbnail = COALESCE($3, thumbnail),
                      published = COALESCE($4, published),
                      updated_at = CURRENT_TIMESTAMP
-                 WHERE slug = $4
+                 WHERE slug = $5
                  RETURNING *`,
-                [title, content, published, slug]
+                [title, content, thumbnail, published, slug]
             );
             return rows[0] || null;
         } catch (err) {
