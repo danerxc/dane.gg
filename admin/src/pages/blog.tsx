@@ -153,6 +153,24 @@ export const BlogPosts = () => {
     }
   };
 
+  const handleImageUpload = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const { data } = await axiosInstance.post('/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      console.log('Image uploaded:', data.filePath);
+      return `${data.filePath}`;
+    } catch (err) {
+      console.error('Failed to upload image:', err);
+      setError('Failed to upload image');
+      return '';
+    }
+  };
+
   const handleSave = async () => {
     try {
       setError(null);
@@ -174,6 +192,12 @@ export const BlogPosts = () => {
     const { protocol, hostname, port } = window.location;
     return `${protocol}//${hostname}${port ? `:${port}` : ''}`;
   };
+
+  useEffect(() => {
+    if (thumbnailSource === 'upload' && fileInputRef.current && thumbnailFile) {
+      fileInputRef.current.value = '';
+    }
+  }, [thumbnailSource, thumbnailFile]);
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
@@ -242,6 +266,10 @@ export const BlogPosts = () => {
             style={{ height: '500px' }}
             renderHTML={(text) => marked(text)}
             onChange={handleEditorChange}
+            onImageUpload={async (file) => {
+              const imageUrl = await handleImageUpload(file);
+              return imageUrl;
+            }}
           />
           <FormControl component="fieldset" margin="normal">
             <FormLabel component="legend">Thumbnail Source</FormLabel>
