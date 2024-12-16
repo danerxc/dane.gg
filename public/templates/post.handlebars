@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}} - dane サイト</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
 </head>
 
 <body>
@@ -106,6 +107,19 @@
             </div>
         </div>
     </div>
-    <script src="/js/shared.js" defer></script>
+    <script src="../js/shared.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+                const language = block.result.language || 'plaintext';
+                const languageLabel = document.createElement('div');
+                languageLabel.className = 'code-language-label';
+                languageLabel.textContent = language;
+                block.parentNode.insertBefore(languageLabel, block);
+            });
+        });
+    </script>
 </body>
 </html>

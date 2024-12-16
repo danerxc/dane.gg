@@ -2,19 +2,45 @@ import pool from '../db.js';
 import { marked } from 'marked';
 
 class BlogService {
-    async getAllPosts(limit, offset = 0) {
+    async getPublishedPosts(limit, offset = 0) {
         try {
-            // Get total count
             const countResult = await pool.query(
                 'SELECT COUNT(*) FROM website.posts WHERE published = true'
             );
             const total = parseInt(countResult.rows[0].count);
 
-            // Build query with pagination
             const query = `
-                SELECT id, title, slug, content, created_at, thumbnail 
+                SELECT id, title, slug, content, created_at, thumbnail
+                FROM website.posts
+                WHERE published = true
+                ORDER BY created_at DESC
+                LIMIT $1 OFFSET $2
+            `;
+            
+            const { rows } = await pool.query(query, [limit, offset]);
+
+            return {
+                posts: rows,
+                total,
+                hasMore: total > offset + limit,
+                currentPage: Math.floor(offset / limit) + 1,
+                totalPages: Math.ceil(total / limit)
+            };
+        } catch (err) {
+            throw new Error('Failed to fetch posts: ' + err.message);
+        }
+    }
+
+    async getAllPosts(limit, offset = 0) {
+        try {
+            const countResult = await pool.query(
+                'SELECT COUNT(*) FROM website.posts'
+            );
+            const total = parseInt(countResult.rows[0].count);
+
+            const query = `
+                SELECT id, title, slug, content, created_at, published, thumbnail 
                 FROM website.posts 
-                WHERE published = true 
                 ORDER BY created_at DESC
                 LIMIT $1 OFFSET $2
             `;
@@ -62,13 +88,24 @@ class BlogService {
         }
     }
 
-    async createPost({ title, content, slug, published = true }) {
+    async getAllPostsAdmin() {
         try {
             const { rows } = await pool.query(
-                `INSERT INTO website.posts (title, content, slug, published) 
-                 VALUES ($1, $2, $3, $4) 
+                'SELECT * FROM website.posts ORDER BY created_at DESC'
+            );
+            return rows;
+        } catch (err) {
+            throw new Error('Failed to fetch posts: ' + err.message);
+        }
+    }
+
+    async createPost({ title, content, slug, thumbnail, published }) {
+        try {
+            const { rows } = await pool.query(
+                `INSERT INTO website.posts (title, content, slug, thumbnail, published) 
+                 VALUES ($1, $2, $3, $4, $5) 
                  RETURNING *`,
-                [title, content, slug, published]
+                [title, content, slug, thumbnail, published]
             );
             return rows[0];
         } catch (err) {
@@ -76,17 +113,18 @@ class BlogService {
         }
     }
 
-    async updatePost(slug, { title, content, published }) {
+    async updatePost(slug, { title, content, thumbnail, published }) {
         try {
             const { rows } = await pool.query(
                 `UPDATE website.posts 
                  SET title = COALESCE($1, title),
                      content = COALESCE($2, content),
-                     published = COALESCE($3, published),
+                     thumbnail = COALESCE($3, thumbnail),
+                     published = COALESCE($4, published),
                      updated_at = CURRENT_TIMESTAMP
-                 WHERE slug = $4
+                 WHERE slug = $5
                  RETURNING *`,
-                [title, content, published, slug]
+                [title, content, thumbnail, published, slug]
             );
             return rows[0] || null;
         } catch (err) {

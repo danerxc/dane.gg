@@ -3,4 +3,24 @@ package-lock.json
 npm-debug.log
 Dockerfile
 docker-compose.yml
+docker-compose.prod.yml
 .env
+
+# Admin/Vite
+admin/node_modules
+admin/dist
+admin/.vite
+admin/dev-dist
+admin/coverage
+admin/stats.html
+admin/logs
+admin/tmp
+admin/*.local
+admin/pnpm-debug.log*
+admin/npm-debug.log*
+admin/yarn-debug.log*
+admin/yarn-error.log*
+admin/.env*
+admin/*.log
+admin/cypress/videos
+admin/cypress/screenshots

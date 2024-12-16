@@ -6,8 +6,9 @@ import dotenv from 'dotenv';
 import exphbs from 'express-handlebars';
 import setupWebSocket from './services/chat.js';
 import http from 'http';
-import { login, createUser } from './controllers/authController.js';
+import { login, createUser, getUsers, updateUser, deleteUser } from './controllers/authController.js';
 import { authenticateToken } from './middleware/auth.js';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -34,20 +35,30 @@ import apiRoutes from './routes/api.js';
 import blogRoutes from './routes/blog.js';
 import projectRoutes from './routes/projects.js';
 import webhookRoutes from './routes/webhooks.js';
+import adminBlogRoutes from './routes/blogApi.js';
 
-// Auth routes
+// Auth routes first
 app.post('/auth/login', login);
 
-// Admin routes
-app.post('/admin/users', authenticateToken, createUser);
+// Protected API routes
+app.get('/api/admin/users', authenticateToken, getUsers);
+app.post('/api/admin/users', authenticateToken, createUser);
+app.put('/api/admin/users/:id', authenticateToken, updateUser);
+app.delete('/api/admin/users/:id', authenticateToken, deleteUser);
 
-// API routes
+// API routes before static handling
+app.use('/api/blog', adminBlogRoutes);
+app.use('/api/projects', projectRoutes);
 app.use('/api', apiRoutes);
-app.use('/services/blog', blogRoutes);
-app.use('/services/projects', projectRoutes);
 app.use('/webhooks', webhookRoutes);
 
-// Blog routes
+// Admin SPA routes
+app.use('/admin', express.static(path.join(__dirname, 'admin/dist')));
+app.get('/admin/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin/dist/index.html'));
+});
+
+// Public blog routes
 app.use('/blog', blogRoutes);
 
 // Middleware to remove trailing slashes
@@ -63,6 +74,10 @@ app.use((req, res, next) => {
 
 // Middleware to serve HTML files
 app.use((req, res, next) => {
+  if (req.path.startsWith('/admin')) {
+    return next();
+  }
+  
   if (!path.extname(req.url)) {
     let sanitizedPath = path.normalize(req.url).replace(/^(\.\.[\/\\])+/, '').replace(/^\/+/, '');
 
@@ -89,6 +104,9 @@ app.use((req, res, next) => {
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // 404 handler
 app.use((req, res, next) => {
@@ -101,6 +119,14 @@ app.use((err, req, res, next) => {
   const statusCode = err.status || 500;
   res.status(statusCode).redirect(`/error.html?code=${statusCode}`);
 });
+
+if (process.env.NODE_ENV === 'development') {
+  app.use('/admin', createProxyMiddleware({ 
+    target: 'http://localhost:3001',
+    changeOrigin: true,
+    ws: true
+  }));
+}
 
 setupWebSocket(server);
 

@@ -1,9 +1,9 @@
 import express from 'express';
 import { promises as fs } from 'fs';
-import path from 'path';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import blogService from '../services/blog.js';
+import path, { dirname } from 'path';
+import { upload } from '../services/upload.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -118,5 +118,23 @@ router.get('/config/weather', async (req, res) => {
     const defaultWeather = (process.env.DEFAULT_WEATHER || 'rain').toLowerCase();
     res.json({ defaultWeather });
 });
+
+router.post('/upload', authenticateToken, (req, res) => {
+  upload(req, res, (err) => {
+    if (err) {
+      res.status(400).json({ message: err });
+    } else {
+      if (req.file == undefined) {
+        res.status(400).json({ message: 'No file selected!' });
+      } else {
+        res.status(200).json({
+          message: 'File uploaded!',
+          filePath: `/assets/uploads/${req.file.filename}`
+        });
+      }
+    }
+  });
+});
+
 
 export default router;

@@ -17,7 +17,7 @@ logs/
 # Build/Distribution
 dist/
 build/
-public/assets/
+public/assets/uploads/
 
 # IDE - VSCode
 .vscode/*
@@ -39,3 +39,29 @@ desktop.ini
 # Coverage
 coverage/
 .nyc_output/
+
+# Vite/Admin specific
+admin/dist/
+admin/.vite/
+admin/dev-dist/
+admin/*.local
+admin/stats.html
+admin/coverage/
+admin/logs/
+admin/tmp/
+admin/.env*
+admin/pnpm-debug.log*
+
+# Testing
+admin/coverage/
+admin/cypress/videos/
+admin/cypress/screenshots/
+
+# Editor directories and files
+admin/.vscode/*
+admin/.idea/
+admin/*.suo
+admin/*.ntvs*
+admin/*.njsproj
+admin/*.sln
+admin/*.sw?
