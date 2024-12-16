@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadProjects() {
     try {
-        const response = await fetch('/services/projects');
+        const response = await fetch('/api/projects');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
