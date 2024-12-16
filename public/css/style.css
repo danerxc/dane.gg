@@ -1267,8 +1267,10 @@ a[href^="mailto"] svg {
 .social-links {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
     margin-top: 15px;
+    list-style: none;
+    padding: 0;
 }
 
 .social-links a {
@@ -1278,16 +1280,17 @@ a[href^="mailto"] svg {
     color: #ffffff;
     text-decoration: none;
     font-size: 14px;
-    margin-bottom: 10px;
+    padding: 4px;
+    transition: color 0.2s ease;
 }
 
 .social-links a:hover {
     color: #e48f8f;
 }
 
-social-links a svg {
-    width: 16px;
-    height: 16px;
+.social-links a svg {
+    width: 14px; /* Match font size */
+    height: 14px; /* Match font size */
     vertical-align: middle;
 }
 
@@ -1301,7 +1304,6 @@ social-links a svg {
 
 .projects-row {
     column-count: 2;
-    column-gap: 20px;
 }
 
 .project-card {
@@ -1413,9 +1415,10 @@ social-links a svg {
 .category-divider {
     border: none;
     height: 1px;
-    background-color: #ffffff;
-    opacity: 0.2;
-    margin: 60px 0;
+    background-color: #b4b4b4;
+    opacity: 0.5;
+    margin-top: 10px;
+    margin-bottom: 15px;
 }
 
 .project-tags {
@@ -1478,7 +1481,6 @@ social-links a svg {
   font-style: italic;
 }
 
-/* Links */
 .post-content a {
   color: #e48f8f;
   text-decoration: none;
@@ -1490,7 +1492,6 @@ social-links a svg {
   border-bottom-style: solid;
 }
 
-/* Images */
 .post-content img {
   max-width: 100%;
   height: auto;
@@ -1499,7 +1500,6 @@ social-links a svg {
   border-radius: 4px;
 }
 
-/* Tables */
 .post-content table {
   width: 100%;
   border-collapse: collapse;
@@ -1518,14 +1518,12 @@ social-links a svg {
   font-weight: 600;
 }
 
-/* Horizontal Rule */
 .post-content hr {
   border: none;
   border-top: 1px solid #333;
   margin: 2rem 0;
 }
 
-/* Responsive Adjustments */
 @media (max-width: 768px) {
   .post-content {
     font-size: 15px;
@@ -1541,9 +1539,8 @@ social-links a svg {
   }
 }
 
-/* Code Blocks */
 .post-content pre {
-    background: #1a1a1a; /* Dark gray background */
+    background: #1a1a1a;
     padding: 2rem 1rem 1rem;
     margin: 2rem 0 1.5rem;
     border-radius: 4px;
@@ -1552,7 +1549,6 @@ social-links a svg {
     border: 1px solid #333;
 }
 
-/* Code Block Content */
 .post-content pre code {
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 0.9em;
@@ -1583,4 +1579,21 @@ social-links a svg {
     padding: 0;
     margin: 0;
     z-index: 1;
+}
+
+.miku-footer {
+    margin-top: 15px;
+}
+
+.miku-footer img {
+    width: 100%;
+    max-width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.miku-footer p {
+    text-align: center;
+    margin-top: 10px;
 }
