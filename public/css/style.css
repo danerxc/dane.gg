@@ -1267,8 +1267,10 @@ a[href^="mailto"] svg {
 .social-links {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
     margin-top: 15px;
+    list-style: none;
+    padding: 0;
 }
 
 .social-links a {
@@ -1278,16 +1280,17 @@ a[href^="mailto"] svg {
     color: #ffffff;
     text-decoration: none;
     font-size: 14px;
-    margin-bottom: 10px;
+    padding: 4px;
+    transition: color 0.2s ease;
 }
 
 .social-links a:hover {
     color: #e48f8f;
 }
 
-social-links a svg {
-    width: 16px;
-    height: 16px;
+.social-links a svg {
+    width: 14px; /* Match font size */
+    height: 14px; /* Match font size */
     vertical-align: middle;
 }
 
@@ -1583,4 +1586,21 @@ social-links a svg {
     padding: 0;
     margin: 0;
     z-index: 1;
+}
+
+.miku-footer {
+    margin-top: 15px;
+}
+
+.miku-footer img {
+    width: 100%;
+    max-width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.miku-footer p {
+    text-align: center;
+    margin-top: 10px;
 }
