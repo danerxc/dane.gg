@@ -17,7 +17,7 @@ logs/
 # Build/Distribution
 dist/
 build/
-public/assets/
+public/assets/uploads/
 
 # IDE - VSCode
 .vscode/*
