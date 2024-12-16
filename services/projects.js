@@ -136,6 +136,36 @@ class ProjectService {
             throw new Error('Failed to fetch projects: ' + err.message);
         }
     }
+
+    async createProject(projectData) {
+        const { title, description, category, featured, image_url, project_url, project_text, repo_url, repo_text } = projectData;
+        const { rows } = await pool.query(
+            `INSERT INTO website.projects 
+            (title, description, category, featured, image_url, project_url, project_text, repo_url, repo_text) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            RETURNING *`,
+            [title, description, category, featured, image_url, project_url, project_text, repo_url, repo_text]
+        );
+        return rows[0];
+    }
+
+    async updateProject(id, projectData) {
+        const { title, description, category, featured, image_url, project_url, project_text, repo_url, repo_text } = projectData;
+        const { rows } = await pool.query(
+            `UPDATE website.projects 
+            SET title = $1, description = $2, category = $3, featured = $4, 
+                image_url = $5, project_url = $6, project_text = $7, repo_url = $8, repo_text = $9
+            WHERE id = $10 
+            RETURNING *`,
+            [title, description, category, featured, image_url, project_url, project_text, repo_url, repo_text, id]
+        );
+        return rows[0];
+    }
+
+    async deleteProject(id) {
+        const { rowCount } = await pool.query('DELETE FROM website.projects WHERE id = $1', [id]);
+        return rowCount > 0;
+    }
 }
 
 export default new ProjectService();
