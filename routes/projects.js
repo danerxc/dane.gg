@@ -128,4 +128,83 @@ router.delete('/category/:id', authenticateToken, async (req, res) => {
     }
 });
 
+router.get('/tags', async (req, res) => {
+    try {
+        const tags = await projectService.getAllTags();
+        res.json(tags);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/tags', authenticateToken, async (req, res) => {
+    if (!req.user.isAdmin) {
+        return res.status(403).json({ message: 'Access denied' });
+    }
+    try {
+        const tag = await projectService.createTag(req.body);
+        res.status(201).json(tag);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.put('/tags/:id', authenticateToken, async (req, res) => {
+    if (!req.user.isAdmin) {
+        return res.status(403).json({ message: 'Access denied' });
+    }
+    try {
+        const tag = await projectService.updateTag(req.params.id, req.body);
+        if (!tag) {
+            return res.status(404).json({ error: 'Tag not found' });
+        }
+        res.json(tag);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.delete('/tags/:id', authenticateToken, async (req, res) => {
+    if (!req.user.isAdmin) {
+        return res.status(403).json({ message: 'Access denied' });
+    }
+    try {
+        const success = await projectService.deleteTag(req.params.id);
+        if (!success) {
+            return res.status(404).json({ error: 'Tag not found' });
+        }
+        res.json({ message: 'Tag deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Project tag assignment endpoints
+router.post('/:projectId/tags', authenticateToken, async (req, res) => {
+    if (!req.user.isAdmin) {
+        return res.status(403).json({ message: 'Access denied' });
+    }
+    try {
+        const result = await projectService.assignTagsToProject(req.params.projectId, req.body.tagIds);
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.delete('/:projectId/tags/:tagId', authenticateToken, async (req, res) => {
+    if (!req.user.isAdmin) {
+        return res.status(403).json({ message: 'Access denied' });
+    }
+    try {
+        const success = await projectService.removeTagFromProject(req.params.projectId, req.params.tagId);
+        if (!success) {
+            return res.status(404).json({ error: 'Project or tag not found' });
+        }
+        res.json({ message: 'Tag removed from project successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 export default router;

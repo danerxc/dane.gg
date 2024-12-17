@@ -141,7 +141,7 @@ class ProjectService {
         }
     }
 
-    async createProject(projectData) {
+        async createProject(projectData) {
         const { 
             title, 
             description, 
@@ -151,17 +151,37 @@ class ProjectService {
             project_url, 
             project_text, 
             repo_url, 
-            repo_text 
+            repo_text,
+            tagIds = []
         } = projectData;
         
-        const { rows } = await pool.query(
-            `INSERT INTO website.projects 
-            (title, description, category_id, featured, image_url, project_url, project_text, repo_url, repo_text) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-            RETURNING *`,
-            [title, description, category_id, featured, image_url, project_url, project_text, repo_url, repo_text]
-        );
-        return rows[0];
+        try {
+            await pool.query('BEGIN');
+            
+            const { rows } = await pool.query(
+                `INSERT INTO website.projects 
+                (title, description, category_id, featured, image_url, project_url, project_text, repo_url, repo_text) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+                RETURNING *`,
+                [title, description, category_id, featured, image_url, project_url, project_text, repo_url, repo_text]
+            );
+    
+            const project = rows[0];
+    
+            // Assign tags if provided
+            for (const tagId of tagIds) {
+                await pool.query(
+                    'INSERT INTO website.project_tags (project_id, tag_id) VALUES ($1, $2)',
+                    [project.id, tagId]
+                );
+            }
+    
+            await pool.query('COMMIT');
+            return project;
+        } catch (err) {
+            await pool.query('ROLLBACK');
+            throw new Error('Failed to create project: ' + err.message);
+        }
     }
 
     async updateProject(id, projectData) {
@@ -237,6 +257,100 @@ class ProjectService {
             return rowCount > 0;
         } catch (err) {
             throw new Error('Failed to delete category: ' + err.message);
+        }
+    }
+
+        async getAllTags() {
+        try {
+            const { rows } = await pool.query(
+                'SELECT * FROM website.tags ORDER BY title'
+            );
+            return rows;
+        } catch (err) {
+            throw new Error('Failed to fetch tags: ' + err.message);
+        }
+    }
+    
+    async createTag({ title, color }) {
+        try {
+            const { rows } = await pool.query(
+                'INSERT INTO website.tags (title, color) VALUES ($1, $2) RETURNING *',
+                [title, color]
+            );
+            return rows[0];
+        } catch (err) {
+            throw new Error('Failed to create tag: ' + err.message);
+        }
+    }
+    
+    async updateTag(id, { title, color }) {
+        try {
+            const { rows } = await pool.query(
+                'UPDATE website.tags SET title = $1, color = $2 WHERE id = $3 RETURNING *',
+                [title, color, id]
+            );
+            return rows[0];
+        } catch (err) {
+            throw new Error('Failed to update tag: ' + err.message);
+        }
+    }
+    
+    async deleteTag(id) {
+        try {
+            const { rowCount } = await pool.query(
+                'DELETE FROM website.tags WHERE id = $1',
+                [id]
+            );
+            return rowCount > 0;
+        } catch (err) {
+            throw new Error('Failed to delete tag: ' + err.message);
+        }
+    }
+    
+    async assignTagsToProject(projectId, tagIds) {
+        try {
+            await pool.query('BEGIN');
+    
+            await pool.query(
+                'DELETE FROM website.project_tags WHERE project_id = $1',
+                [projectId]
+            );
+    
+            for (const tagId of tagIds) {
+                await pool.query(
+                    'INSERT INTO website.project_tags (project_id, tag_id) VALUES ($1, $2)',
+                    [projectId, tagId]
+                );
+            }
+    
+            await pool.query('COMMIT');
+    
+            const { rows: projects } = await pool.query(
+                `SELECT p.*, array_agg(json_build_object('id', t.id, 'title', t.title, 'color', t.color)) as tags
+                 FROM website.projects p
+                 LEFT JOIN website.project_tags pt ON p.id = pt.project_id
+                 LEFT JOIN website.tags t ON pt.tag_id = t.id
+                 WHERE p.id = $1
+                 GROUP BY p.id`,
+                [projectId]
+            );
+    
+            return projects[0];
+        } catch (err) {
+            await pool.query('ROLLBACK');
+            throw new Error('Failed to assign tags to project: ' + err.message);
+        }
+    }
+    
+    async removeTagFromProject(projectId, tagId) {
+        try {
+            const { rowCount } = await pool.query(
+                'DELETE FROM website.project_tags WHERE project_id = $1 AND tag_id = $2',
+                [projectId, tagId]
+            );
+            return rowCount > 0;
+        } catch (err) {
+            throw new Error('Failed to remove tag from project: ' + err.message);
         }
     }
 }
