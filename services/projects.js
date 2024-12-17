@@ -96,7 +96,7 @@ class ProjectService {
             const { rows: projects } = await pool.query(
                 `SELECT p.*, c.name as category_name 
                  FROM website.projects p 
-                 JOIN website.categories c ON p.category_id = c.id 
+                 JOIN website.project_categories c ON p.category_id = c.id 
                  WHERE p.category_id = $1 
                  ORDER BY p.created_at DESC`,
                 [categoryId]

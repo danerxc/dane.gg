@@ -52,15 +52,6 @@ app.use('/api/projects', projectRoutes);
 app.use('/api', apiRoutes);
 app.use('/webhooks', webhookRoutes);
 
-// Admin SPA routes
-app.use('/admin', express.static(path.join(__dirname, 'admin/dist')));
-app.get('/admin/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin/dist/index.html'));
-});
-
-// Public blog routes
-app.use('/blog', blogRoutes);
-
 // Middleware to remove trailing slashes
 app.use((req, res, next) => {
   if (req.path !== '/' && req.path.endsWith('/')) {
@@ -72,14 +63,16 @@ app.use((req, res, next) => {
   }
 });
 
-// Middleware to serve HTML files
+// Serve static files without redirecting directories
+app.use(express.static(path.join(__dirname, 'public'), { redirect: false }));
+
+// Handle non-extension URLs
 app.use((req, res, next) => {
-  if (req.path.startsWith('/admin')) {
-    return next();
-  }
-  
   if (!path.extname(req.url)) {
-    let sanitizedPath = path.normalize(req.url).replace(/^(\.\.[\/\\])+/, '').replace(/^\/+/, '');
+    let sanitizedPath = path
+      .normalize(req.url)
+      .replace(/^(\.\.[\/\\])+/, '')
+      .replace(/^\/+/, '');
 
     if (!sanitizedPath) {
       sanitizedPath = 'index';
@@ -102,11 +95,14 @@ app.use((req, res, next) => {
   }
 });
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Admin SPA routes
+app.use('/admin', express.static(path.join(__dirname, 'admin/dist')));
+app.get('/admin/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin/dist/index.html'));
 });
+
+// Public blog routes
+app.use('/blog', blogRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

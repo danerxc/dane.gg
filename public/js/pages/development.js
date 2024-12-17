@@ -4,30 +4,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadDevelopmentProjects() {
     try {
-        const response = await fetch('/api/projects/category/development');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        const categoriesResponse = await fetch('/api/projects/categories');
+        if (!categoriesResponse.ok) {
+            throw new Error(`Failed to fetch categories. Status: ${categoriesResponse.status}`);
         }
-        
+        const categories = await categoriesResponse.json();
+
+        const developmentCategory = categories.find(
+            (category) => category.name.toLowerCase() === 'development'
+        );
+
+        if (!developmentCategory) {
+            throw new Error("Development category not found.");
+        }
+
+        const developmentCategoryId = developmentCategory.id;
+
+        const response = await fetch(`/api/projects/category/${developmentCategoryId}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch projects. Status: ${response.status}`);
+        }
+
         const projects = await response.json();
+
         const grid = document.getElementById('projects-grid');
         grid.innerHTML = '';
 
         grid.innerHTML = `
             <div class="projects-row">
                 ${projects.map(project => `
-                    <div class="card project-card ${project.featured ? 'featured' : ''}" data-category="${project.category}">
+                    <div class="card project-card" data-category="${project.category_name}">
                         ${project.image_url ? `<img src="${project.image_url}" alt="${project.title}">` : ''}
                         <h3>${project.title}</h3>
                         <div class="project-tags">
-                            ${project.tags.map(tag => `
+                            ${project.tags ? project.tags.map(tag => `
                                 <span class="project-tag" style="background-color: ${tag.color};">${tag.title}</span>
-                            `).join('')}
+                            `).join('') : ''}
                         </div>
                         <p>${project.description}</p>
                         <div class="project-links">
-                            ${project.project_url ? `<button class="project-card-button" data-url="${project.project_url}">${project.project_text || 'View Project'}</button>` : ''}
-                            ${project.repo_url ? `<button class="project-card-button" data-url="${project.repo_url}">${project.repo_text || 'View Repository'}</button>` : ''}
+                            ${project.project_url ? `<button class="project-card-button" data-url="${project.project_url}">
+                                ${project.project_text || 'View Project'}
+                            </button>` : ''}
+                            ${project.repo_url ? `<button class="project-card-button" data-url="${project.repo_url}">
+                                ${project.repo_text || 'View Repository'}
+                            </button>` : ''}
                         </div>
                     </div>
                 `).join('')}
@@ -45,6 +66,7 @@ async function loadDevelopmentProjects() {
         });
     } catch (err) {
         console.error('Failed to load projects:', err);
+        const grid = document.getElementById('projects-grid');
         grid.innerHTML = '<div class="error-message">Failed to load projects. Please try again later.</div>';
     }
 }

@@ -74,10 +74,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 });
 
-router.get('/categories', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
+router.get('/categories', async (req, res) => {
     try {
         const categories = await projectService.getCategories();
         res.json(categories);
