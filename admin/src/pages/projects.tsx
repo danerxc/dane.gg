@@ -88,6 +88,10 @@ export const Projects = () => {
   const [tagError, setTagError] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
 
+  // Add state for editing
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editedCategoryName, setEditedCategoryName] = useState('');
+
   const fetchProjects = async () => {
     try {
       setLoading(true);
@@ -229,6 +233,21 @@ export const Projects = () => {
       setTags(tags.filter(tag => tag.id !== tagId));
     } catch (error) {
       console.error('Failed to delete tag:', error);
+    }
+  };
+
+  // Add edit handler
+  const handleEditCategory = async (categoryId: string) => {
+    try {
+      await axiosInstance.put(`/api/projects/category/${categoryId}`, { 
+        name: editedCategoryName 
+      });
+      setCategories(categories.map(cat => 
+        cat.id === categoryId ? { ...cat, name: editedCategoryName } : cat
+      ));
+      setEditingCategoryId(null);
+    } catch (error) {
+      console.error('Failed to update category:', error);
     }
   };
 
@@ -505,16 +524,51 @@ export const Projects = () => {
           <List>
             {categories.map((category) => (
               <ListItem key={category.id}>
-                <ListItemText primary={category.name} />
-                <ListItemSecondaryAction>
-                  <IconButton 
-                    edge="end" 
-                    color="error"
-                    onClick={() => handleDeleteCategory(category.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
+                {editingCategoryId === category.id ? (
+                  <>
+                    <TextField
+                      value={editedCategoryName}
+                      onChange={(e) => setEditedCategoryName(e.target.value)}
+                      size="small"
+                      autoFocus
+                      fullWidth
+                    />
+                    <IconButton 
+                      onClick={() => handleEditCategory(category.id)}
+                      color="primary"
+                    >
+                      <CheckCircleIcon />
+                    </IconButton>
+                    <IconButton 
+                      onClick={() => setEditingCategoryId(null)}
+                      color="default"
+                    >
+                      <CancelIcon />
+                    </IconButton>
+                  </>
+                ) : (
+                  <>
+                    <ListItemText primary={category.name} />
+                    <ListItemSecondaryAction>
+                      <IconButton
+                        edge="end"
+                        onClick={() => {
+                          setEditingCategoryId(category.id);
+                          setEditedCategoryName(category.name);
+                        }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        edge="end"
+                        color="error"
+                        onClick={() => handleDeleteCategory(category.id)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </>
+                )}
               </ListItem>
             ))}
           </List>
