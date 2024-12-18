@@ -25,6 +25,11 @@ import {
   TableRow,
   TextField,
   Typography,
+  List, 
+  ListItem, 
+  ListItemText, 
+  ListItemSecondaryAction,
+  Divider
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -81,6 +86,7 @@ export const Projects = () => {
   const [tagDialogOpen, setTagDialogOpen] = useState(false);
   const [newTag, setNewTag] = useState({ title: '', color: '#000000' });
   const [tagError, setTagError] = useState<string | null>(null);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   const fetchProjects = async () => {
     try {
@@ -194,6 +200,25 @@ export const Projects = () => {
         setError('Failed to delete project');
         console.error('Failed to delete project:', error);
       }
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    try {
+      await axiosInstance.delete(`/api/projects/category/${categoryId}`);
+      setCategories(categories.filter(cat => cat.id !== categoryId));
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+    }
+  };
+  
+  const handleCreateCategory = async () => {
+    try {
+      const response = await axiosInstance.post('/api/projects/category', { name: newCategoryName });
+      setCategories([...categories, response.data]);
+      setNewCategoryName('');
+    } catch (error) {
+      console.error('Failed to create category:', error);
     }
   };
 
@@ -446,20 +471,46 @@ export const Projects = () => {
       </Dialog>
 
       <Dialog open={categoryDialogOpen} onClose={() => setCategoryDialogOpen(false)}>
-        <DialogTitle>Add New Category</DialogTitle>
+        <DialogTitle>Manage Categories</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Category Name"
-            fullWidth
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-          />
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              label="New Category Name"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              fullWidth
+              size="small"
+              sx={{ mt: 1 }}
+            />
+            <Button 
+              variant="contained"
+              onClick={handleCreateCategory}
+              disabled={!newCategoryName}
+              sx={{ mt: 1 }}
+            >
+              Add Category
+            </Button>
+          </Box>
+          <Divider sx={{ my: 2 }} />
+          <List>
+            {categories.map((category) => (
+              <ListItem key={category.id}>
+                <ListItemText primary={category.name} />
+                <ListItemSecondaryAction>
+                  <IconButton 
+                    edge="end" 
+                    color="error"
+                    onClick={() => handleDeleteCategory(category.id)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCategoryDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleAddCategory} variant="contained">Add</Button>
+          <Button onClick={() => setCategoryDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
 
