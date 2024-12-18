@@ -19,6 +19,7 @@ import {
   FormControlLabel,
   CircularProgress,
   Alert,
+  Typography,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axiosInstance from '../services/axios';
@@ -121,7 +122,13 @@ export const Users = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users && users.length > 0 ? (
+            {users.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  <Typography variant="body1">No users</Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
               users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.username}</TableCell>
@@ -145,12 +152,6 @@ export const Users = () => {
                   </TableCell>
                 </TableRow>
               ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4} align="center">
-                  No users found
-                </TableCell>
-              </TableRow>
             )}
           </TableBody>
         </Table>

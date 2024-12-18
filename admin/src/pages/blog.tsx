@@ -218,21 +218,29 @@ export const BlogPosts = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {posts.map((post) => (
-              <TableRow key={post.id}>
-                <TableCell>{post.title}</TableCell>
-                <TableCell>{post.slug}</TableCell>
-                <TableCell>{post.published ? 'Yes' : 'No'}</TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleEdit(post)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(post.slug)}>
-                    <DeleteIcon />
-                  </IconButton>
+            {posts.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  <Typography variant="body1">No blog posts</Typography>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              posts.map((post) => (
+                <TableRow key={post.id}>
+                  <TableCell>{post.title}</TableCell>
+                  <TableCell>{post.slug}</TableCell>
+                  <TableCell>{post.published ? 'Yes' : 'No'}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleEdit(post)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(post.slug)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>

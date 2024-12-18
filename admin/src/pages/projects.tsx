@@ -226,59 +226,67 @@ export const Projects = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {projects.map((project) => (
-              <TableRow key={project.id}>
-                <TableCell>{project.title}</TableCell>
-                <TableCell>
-                  {categories.find(c => c.id === project.category_id)?.name || 'Uncategorized'}
-                </TableCell>
-                <TableCell>
-                  {project.featured ? <CheckCircleIcon color="success" /> : <CancelIcon color="error" />}
-                </TableCell>
-                <TableCell>
-                  {project.tags && project.tags.length > 0 ? (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {project.tags.map((tag) => (
-                        <Chip
-                          key={tag.id}
-                          label={tag.title}
-                          size="small"
-                          sx={{
-                            backgroundColor: tag.color,
-                            color: theme => theme.palette.getContrastText(tag.color),
-                            '&:hover': {
-                              backgroundColor: tag.color,
-                              opacity: 0.9
-                            }
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      No tags
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    onClick={() => {
-                      setCurrentProject({
-                        ...project,
-                        tagIds: project.tags?.map(tag => tag.id) || []
-                      });
-                      setIsEditing(true);
-                      setOpen(true);
-                    }}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(project.id)}>
-                    <DeleteIcon />
-                  </IconButton>
+            {projects.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  <Typography variant="body1">No projects</Typography>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              projects.map((project) => (
+                <TableRow key={project.id}>
+                  <TableCell>{project.title}</TableCell>
+                  <TableCell>
+                    {categories.find(c => c.id === project.category_id)?.name || 'Uncategorized'}
+                  </TableCell>
+                  <TableCell>
+                    {project.featured ? <CheckCircleIcon color="success" /> : <CancelIcon color="error" />}
+                  </TableCell>
+                  <TableCell>
+                    {project.tags && project.tags.length > 0 ? (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {project.tags.map((tag) => (
+                          <Chip
+                            key={tag.id}
+                            label={tag.title}
+                            size="small"
+                            sx={{
+                              backgroundColor: tag.color,
+                              color: theme => theme.palette.getContrastText(tag.color),
+                              '&:hover': {
+                                backgroundColor: tag.color,
+                                opacity: 0.9
+                              }
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No tags
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      onClick={() => {
+                        setCurrentProject({
+                          ...project,
+                          tagIds: project.tags?.map(tag => tag.id) || []
+                        });
+                        setIsEditing(true);
+                        setOpen(true);
+                      }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(project.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
