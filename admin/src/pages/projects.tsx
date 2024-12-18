@@ -87,10 +87,10 @@ export const Projects = () => {
   const [newTag, setNewTag] = useState({ title: '', color: '#000000' });
   const [tagError, setTagError] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
-
-  // Add state for editing
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editedCategoryName, setEditedCategoryName] = useState('');
+  const [editingTagId, setEditingTagId] = useState<string | null>(null);
+  const [editedTag, setEditedTag] = useState({ title: '', color: '' });
 
   const fetchProjects = async () => {
     try {
@@ -248,6 +248,19 @@ export const Projects = () => {
       setEditingCategoryId(null);
     } catch (error) {
       console.error('Failed to update category:', error);
+    }
+  };
+
+  // Add tag edit handler
+  const handleEditTag = async (tagId: string) => {
+    try {
+      await axiosInstance.put(`/api/projects/tags/${tagId}`, editedTag);
+      setTags(tags.map(tag => 
+        tag.id === tagId ? { ...tag, ...editedTag } : tag
+      ));
+      setEditingTagId(null);
+    } catch (error) {
+      console.error('Failed to update tag:', error);
     }
   };
 
@@ -614,28 +627,71 @@ export const Projects = () => {
           <Divider sx={{ my: 2 }} />
           <List>
             {tags.map((tag) => (
-              <ListItem 
-                key={tag.id}
-                secondaryAction={
-                  <IconButton
-                    edge="end"
-                    color="error"
-                    onClick={() => handleDeleteTag(tag.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                }
-              >
-                <Chip
-                  label={tag.title}
-                  sx={{
-                    backgroundColor: tag.color,
-                    color: theme => theme.palette.getContrastText(tag.color),
-                    '& .MuiChip-label': {
-                      fontSize: '0.875rem',
-                    }
-                  }}
-                />
+              <ListItem key={tag.id}>
+                {editingTagId === tag.id ? (
+                  <>
+                    <Grid container spacing={2} alignItems="center">
+                      <Grid item xs={6}>
+                        <TextField
+                          value={editedTag.title}
+                          onChange={(e) => setEditedTag({ ...editedTag, title: e.target.value })}
+                          size="small"
+                          fullWidth
+                          autoFocus
+                        />
+                      </Grid>
+                      <Grid item xs={4}>
+                        <TextField
+                          type="color"
+                          value={editedTag.color}
+                          onChange={(e) => setEditedTag({ ...editedTag, color: e.target.value })}
+                          size="small"
+                          fullWidth
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <IconButton 
+                          onClick={() => handleEditTag(tag.id)}
+                          color="primary"
+                        >
+                          <CheckCircleIcon />
+                        </IconButton>
+                        <IconButton 
+                          onClick={() => setEditingTagId(null)}
+                        >
+                          <CancelIcon />
+                        </IconButton>
+                      </Grid>
+                    </Grid>
+                  </>
+                ) : (
+                  <>
+                    <Chip
+                      label={tag.title}
+                      sx={{
+                        backgroundColor: tag.color,
+                        color: theme => theme.palette.getContrastText(tag.color),
+                        '& .MuiChip-label': { fontSize: '0.875rem' }
+                      }}
+                    />
+                    <ListItemSecondaryAction>
+                      <IconButton
+                        onClick={() => {
+                          setEditingTagId(tag.id);
+                          setEditedTag({ title: tag.title, color: tag.color });
+                        }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDeleteTag(tag.id)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </>
+                )}
               </ListItem>
             ))}
           </List>
