@@ -222,6 +222,16 @@ export const Projects = () => {
     }
   };
 
+  // Add delete handler function
+  const handleDeleteTag = async (tagId: string) => {
+    try {
+      await axiosInstance.delete(`/api/projects/tags/${tagId}`);
+      setTags(tags.filter(tag => tag.id !== tagId));
+    } catch (error) {
+      console.error('Failed to delete tag:', error);
+    }
+  };
+
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
 
@@ -515,7 +525,7 @@ export const Projects = () => {
       </Dialog>
 
       <Dialog open={tagDialogOpen} onClose={() => setTagDialogOpen(false)}>
-        <DialogTitle>Add New Tag</DialogTitle>
+        <DialogTitle>Manage Tags</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={12}>
@@ -539,10 +549,45 @@ export const Projects = () => {
               />
             </Grid>
           </Grid>
+          <Button 
+            onClick={handleAddTag} 
+            variant="contained" 
+            sx={{ mt: 2, mb: 2 }}
+            fullWidth
+          >
+            Add New Tag
+          </Button>
+          <Divider sx={{ my: 2 }} />
+          <List>
+            {tags.map((tag) => (
+              <ListItem 
+                key={tag.id}
+                secondaryAction={
+                  <IconButton
+                    edge="end"
+                    color="error"
+                    onClick={() => handleDeleteTag(tag.id)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                }
+              >
+                <Chip
+                  label={tag.title}
+                  sx={{
+                    backgroundColor: tag.color,
+                    color: theme => theme.palette.getContrastText(tag.color),
+                    '& .MuiChip-label': {
+                      fontSize: '0.875rem',
+                    }
+                  }}
+                />
+              </ListItem>
+            ))}
+          </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setTagDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleAddTag} variant="contained">Add</Button>
+          <Button onClick={() => setTagDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
     </Box>
