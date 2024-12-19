@@ -17,6 +17,9 @@ services:
       DEFAULT_WEATHER: ${DEFAULT_WEATHER}
       JWT_SECRET: ${JWT_SECRET}
     restart: unless-stopped
+    volumes:
+      - user_uploads:/public/assets/uploads
+      - widget_data:/data
     depends_on:
       - db
 
