@@ -31,7 +31,10 @@ import {
   ListItemSecondaryAction,
   Divider,
   Popper,
-  ClickAwayListener
+  ClickAwayListener,
+  FormLabel,
+  RadioGroup,
+  Radio
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -43,7 +46,7 @@ import {
   Save as SaveIcon
 } from '@mui/icons-material';
 import { ChromePicker } from 'react-color';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import axiosInstance from '../services/axios';
 
 interface Tag {
@@ -109,6 +112,12 @@ export const Projects = () => {
   const [inlineEditingTagId, setInlineEditingTagId] = useState<string | null>(null);
   const [inlineEditTag, setInlineEditTag] = useState({ title: '', color: '' });
   const [inlineColorPickerOpen, setInlineColorPickerOpen] = useState(false);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailSource, setThumbnailSource] = useState<'url' | 'upload'>('url');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadComplete, setUploadComplete] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [displayFilename, setDisplayFilename] = useState<string>('');
 
   const fetchProjects = async () => {
     try {
@@ -148,7 +157,14 @@ export const Projects = () => {
     fetchProjects();
     fetchCategories();
     fetchTags();
-  }, []);
+    if (currentProject?.image_url) {
+      setDisplayFilename(getFilenameFromPath(currentProject.image_url));
+      setThumbnailSource(currentProject.image_url.startsWith('/uploads/') ? 'upload' : 'url');
+    } else {
+      setDisplayFilename('');
+      setThumbnailSource('url');
+    }
+  }, [currentProject?.image_url]);
 
   const handleAddTag = async () => {
     try {
@@ -253,6 +269,40 @@ export const Projects = () => {
     } catch (error) {
       console.error('Failed to update tag:', error);
     }
+  };
+
+  const handleThumbnailChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setThumbnailFile(file);
+      setDisplayFilename(file.name);
+      const formData = new FormData();
+      formData.append('file', e.target.files[0]);
+      setUploadProgress(0);
+      setUploadComplete(false);
+
+      try {
+        const { data } = await axiosInstance.post('/api/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          onUploadProgress: (progressEvent) => {
+            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(progress);
+          }
+        });
+        setCurrentProject(prev => ({ ...prev, image_url: data.filePath }));
+        setUploadComplete(true);
+      } catch (err) {
+        setError('Failed to upload thumbnail');
+        console.error('Failed to upload thumbnail:', err);
+      }
+    }
+  };
+
+  const getFilenameFromPath = (path: string) => {
+    if (!path) return '';
+    return path.split('/').pop() || '';
   };
 
   if (loading) return <CircularProgress />;
@@ -414,13 +464,46 @@ export const Projects = () => {
                 label="Featured"
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Image URL"
-                value={currentProject.image_url || ''}
-                onChange={(e) => setCurrentProject({ ...currentProject, image_url: e.target.value })}
-              />
+            <Grid item xs={12}>
+              <FormControl component="fieldset" margin="normal">
+                <FormLabel component="legend">Thumbnail Source</FormLabel>
+                <RadioGroup
+                  row
+                  value={thumbnailSource}
+                  onChange={(e) => setThumbnailSource(e.target.value as 'url' | 'upload')}
+                >
+                  <FormControlLabel value="url" control={<Radio />} label="URL" />
+                  <FormControlLabel value="upload" control={<Radio />} label="Upload" />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              {thumbnailSource === 'url' ? (
+                <TextField
+                  fullWidth
+                  label="Image URL"
+                  value={currentProject.image_url || ''}
+                  onChange={(e) => setCurrentProject({ ...currentProject, image_url: e.target.value })}
+                />
+              ) : (
+                <Box display="flex" alignItems="center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleThumbnailChange}
+                    ref={fileInputRef}
+                    style={{ display: 'block', margin: '16px 0' }}
+                  />
+                  {displayFilename && (
+                    <Typography variant="body2" style={{ marginLeft: 8 }}>
+                      {displayFilename}
+                    </Typography>
+                  )}
+                  {uploadProgress > 0 && uploadProgress < 100 && <CircularProgress size={24} style={{ marginLeft: 8 }} />}
+                  {uploadComplete && <CheckCircleIcon color="success" style={{ marginLeft: 8 }} />}
+                </Box>
+              )}
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -745,7 +828,7 @@ export const Projects = () => {
                       size="small"
                       value={inlineEditTag.title}
                       onChange={(e) => setInlineEditTag({ ...inlineEditTag, title: e.target.value })}
-                      sx={{ 
+                      sx={{
                         flexGrow: 1,
                         maxWidth: '50%'
                       }}
@@ -770,7 +853,7 @@ export const Projects = () => {
                         ),
                       }}
                     />
-                    <IconButton 
+                    <IconButton
                       size="small"
                       onClick={(e) => {
                         setInlineColorPickerOpen(true);
@@ -779,8 +862,8 @@ export const Projects = () => {
                     >
                       <ColorLensIcon fontSize="small" />
                     </IconButton>
-                    <IconButton 
-                      size="small" 
+                    <IconButton
+                      size="small"
                       onClick={async () => {
                         await handleUpdateTag({
                           id: tag.id,
@@ -794,8 +877,8 @@ export const Projects = () => {
                     >
                       <CheckCircleIcon fontSize="small" color="success" />
                     </IconButton>
-                    <IconButton 
-                      size="small" 
+                    <IconButton
+                      size="small"
                       onClick={() => {
                         setInlineEditingTagId(null);
                         setInlineEditTag({ title: '', color: '' });
