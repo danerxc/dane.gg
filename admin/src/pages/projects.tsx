@@ -29,15 +29,20 @@ import {
   ListItem, 
   ListItemText, 
   ListItemSecondaryAction,
-  Divider
+  Divider,
+  Popper,
+  ClickAwayListener
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon
+  Cancel as CancelIcon,
+  ColorLens as ColorLensIcon,
+  Save as SaveIcon
 } from '@mui/icons-material';
+import { ChromePicker } from 'react-color';
 import { useState, useEffect } from 'react';
 import axiosInstance from '../services/axios';
 
@@ -71,6 +76,14 @@ interface Project {
   }>;
 }
 
+const getContrastText = (hexcolor) => {
+  const r = parseInt(hexcolor.substr(1,2), 16);
+  const g = parseInt(hexcolor.substr(3,2), 16);
+  const b = parseInt(hexcolor.substr(5,2), 16);
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return (yiq >= 128) ? '#000000' : '#ffffff';
+};
+
 export const Projects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [open, setOpen] = useState(false);
@@ -80,17 +93,19 @@ export const Projects = () => {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const [newCategory, setNewCategory] = useState('');
-  const [categoryError, setCategoryError] = useState<string | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
   const [tagDialogOpen, setTagDialogOpen] = useState(false);
   const [newTag, setNewTag] = useState({ title: '', color: '#000000' });
-  const [tagError, setTagError] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editedCategoryName, setEditedCategoryName] = useState('');
-  const [editingTagId, setEditingTagId] = useState<string | null>(null);
-  const [editedTag, setEditedTag] = useState({ title: '', color: '' });
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const [editingTag, setEditingTag] = useState(null);
+  const [pickerPosition, setPickerPosition] = useState({ x: 0, y: 0 });
+  const [feedback, setFeedback] = useState<{
+    message: string;
+    severity: 'success' | 'error';
+  } | null>(null);
 
   const fetchProjects = async () => {
     try {
@@ -126,25 +141,6 @@ export const Projects = () => {
     }
   };
 
-  const handleAddCategory = async () => {
-    try {
-      if (!newCategory.trim()) {
-        setCategoryError('Category name is required');
-        return;
-      }
-      await axiosInstance.post('/api/projects/category', { name: newCategory.trim() });
-      await fetchCategories();
-
-      setNewCategory('');
-      setCategoryError(null);
-      setCategoryDialogOpen(false);
-
-    } catch (error) {
-      console.error('Failed to create category:', error);
-      setCategoryError('Failed to create category. Please try again.');
-    }
-  };
-
   useEffect(() => {
     fetchProjects();
     fetchCategories();
@@ -153,18 +149,13 @@ export const Projects = () => {
 
   const handleAddTag = async () => {
     try {
-      if (!newTag.title.trim()) {
-        setTagError('Tag name is required');
-        return;
-      }
-      await axiosInstance.post('/api/projects/tags', newTag);
-      await fetchTags();
+      const response = await axiosInstance.post('/api/projects/tags', newTag);
+      setTags([...tags, response.data]);
       setNewTag({ title: '', color: '#000000' });
-      setTagError(null);
-      setTagDialogOpen(false);
+      // Optional: Close dialog or show success message
     } catch (error) {
       console.error('Failed to create tag:', error);
-      setTagError('Failed to create tag. Please try again.');
+      // Show error message to user
     }
   };
 
@@ -237,30 +228,34 @@ export const Projects = () => {
   };
 
   // Add edit handler
-  const handleEditCategory = async (categoryId: string) => {
+  const handleEditCategory = async (category: Category) => {
     try {
-      await axiosInstance.put(`/api/projects/category/${categoryId}`, { 
-        name: editedCategoryName 
+      await axiosInstance.put(`/api/projects/category/${category.id}`, {
+        name: category.name
       });
-      setCategories(categories.map(cat => 
-        cat.id === categoryId ? { ...cat, name: editedCategoryName } : cat
+      setCategories(categories.map(c => 
+        c.id === category.id ? category : c
       ));
       setEditingCategoryId(null);
     } catch (error) {
       console.error('Failed to update category:', error);
+      // Show error message to user
     }
   };
 
   // Add tag edit handler
-  const handleEditTag = async (tagId: string) => {
+  const handleUpdateTag = async (tag: Tag) => {
     try {
-      await axiosInstance.put(`/api/projects/tags/${tagId}`, editedTag);
-      setTags(tags.map(tag => 
-        tag.id === tagId ? { ...tag, ...editedTag } : tag
-      ));
-      setEditingTagId(null);
+      await axiosInstance.put(`/api/projects/tags/${tag.id}`, {
+        title: tag.title,
+        color: tag.color
+      });
+      setTags(tags.map(t => t.id === tag.id ? tag : t));
+      setEditingTag(null);
+      setColorPickerOpen(false);
     } catch (error) {
       console.error('Failed to update tag:', error);
+      // Show error message to user
     }
   };
 
@@ -269,6 +264,15 @@ export const Projects = () => {
 
   return (
     <Box>
+      {feedback && (
+        <Alert 
+          severity={feedback.severity}
+          onClose={() => setFeedback(null)}
+          sx={{ mb: 2 }}
+        >
+          {feedback.message}
+        </Alert>
+      )}
       <Button
         variant="contained"
         onClick={() => {
@@ -475,7 +479,7 @@ export const Projects = () => {
                               label={tag.title}
                               sx={{
                                 backgroundColor: tag.color,
-                                color: theme => theme.palette.getContrastText(tag.color)
+                                color: getContrastText(tag.color)
                               }}
                             />
                           ) : null;
@@ -490,7 +494,7 @@ export const Projects = () => {
                           label={tag.title}
                           sx={{
                             backgroundColor: tag.color,
-                            color: theme => theme.palette.getContrastText(tag.color),
+                            color: getContrastText(tag.color),
                             mr: 1
                           }}
                         />
@@ -547,7 +551,10 @@ export const Projects = () => {
                       fullWidth
                     />
                     <IconButton 
-                      onClick={() => handleEditCategory(category.id)}
+                      onClick={() => handleEditCategory({
+                        id: category.id,
+                        name: editedCategoryName
+                      })}
                       color="primary"
                     >
                       <CheckCircleIcon />
@@ -594,107 +601,201 @@ export const Projects = () => {
       <Dialog open={tagDialogOpen} onClose={() => setTagDialogOpen(false)}>
         <DialogTitle>Manage Tags</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                autoFocus
-                margin="dense"
-                label="Tag Name"
-                fullWidth
-                value={newTag.title}
-                onChange={(e) => setNewTag({ ...newTag, title: e.target.value })}
-              />
+          {!editingTag ? (
+            <Grid container spacing={2}>
+              <Grid item xs={10}>
+                <TextField
+                  autoFocus
+                  margin="dense"
+                  label="Tag Name"
+                  fullWidth
+                  value={newTag.title}
+                  onChange={(e) => setNewTag({ ...newTag, title: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={10}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <TextField
+                    margin="dense"
+                    label="Tag Color"
+                    fullWidth
+                    value={newTag.color}
+                    onChange={(e) => setNewTag({ ...newTag, color: e.target.value })}
+                    InputProps={{
+                      startAdornment: (
+                        <Box
+                          sx={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 1,
+                            backgroundColor: newTag.color,
+                            border: '1px solid #ccc',
+                            mr: 1
+                          }}
+                        />
+                      ),
+                    }}
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={2} sx={{ display: 'flex', alignItems: 'center' }}>
+                <IconButton 
+                  onClick={(e) => {
+                    setColorPickerOpen(true);
+                    setPickerPosition({ x: e.clientX, y: e.clientY });
+                  }}
+                >
+                  <ColorLensIcon />
+                </IconButton>
+              </Grid>
+              <Grid item xs={12}>
+                <Button 
+                  onClick={handleAddTag} 
+                  variant="contained" 
+                  sx={{ mt: 2 }}
+                  fullWidth
+                >
+                  Add New Tag
+                </Button>
+              </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                type="color"
-                margin="dense"
-                label="Tag Color"
-                fullWidth
-                value={newTag.color}
-                onChange={(e) => setNewTag({ ...newTag, color: e.target.value })}
-              />
+          ) : (
+            <Grid container spacing={2}>
+              <Grid item xs={10}>
+                <TextField
+                  autoFocus
+                  margin="dense"
+                  label="Edit Tag Name"
+                  fullWidth
+                  value={newTag.title}
+                  onChange={(e) => setNewTag({ ...newTag, title: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={10}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <TextField
+                    margin="dense"
+                    label="Edit Tag Color"
+                    fullWidth
+                    value={newTag.color}
+                    onChange={(e) => setNewTag({ ...newTag, color: e.target.value })}
+                    InputProps={{
+                      startAdornment: (
+                        <Box
+                          sx={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 1,
+                            backgroundColor: newTag.color,
+                            border: '1px solid #ccc',
+                            mr: 1
+                          }}
+                        />
+                      ),
+                    }}
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={2} sx={{ display: 'flex', alignItems: 'center' }}>
+                <IconButton 
+                  onClick={(e) => {
+                    setColorPickerOpen(true);
+                    setPickerPosition({ x: e.clientX, y: e.clientY });
+                  }}
+                >
+                  <ColorLensIcon />
+                </IconButton>
+              </Grid>
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  <Button 
+                    onClick={() => handleUpdateTag({
+                      id: editingTag.id,
+                      ...newTag
+                    })} 
+                    variant="contained"
+                  >
+                    Update
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setEditingTag(null);
+                      setNewTag({ title: '', color: '#000000' });
+                    }}
+                    variant="outlined"
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              </Grid>
             </Grid>
-          </Grid>
-          <Button 
-            onClick={handleAddTag} 
-            variant="contained" 
-            sx={{ mt: 2, mb: 2 }}
-            fullWidth
-          >
-            Add New Tag
-          </Button>
+          )}
+
           <Divider sx={{ my: 2 }} />
-          <List>
+          
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 2 }}>
             {tags.map((tag) => (
-              <ListItem key={tag.id}>
-                {editingTagId === tag.id ? (
-                  <>
-                    <Grid container spacing={2} alignItems="center">
-                      <Grid item xs={6}>
-                        <TextField
-                          value={editedTag.title}
-                          onChange={(e) => setEditedTag({ ...editedTag, title: e.target.value })}
-                          size="small"
-                          fullWidth
-                          autoFocus
-                        />
-                      </Grid>
-                      <Grid item xs={4}>
-                        <TextField
-                          type="color"
-                          value={editedTag.color}
-                          onChange={(e) => setEditedTag({ ...editedTag, color: e.target.value })}
-                          size="small"
-                          fullWidth
-                        />
-                      </Grid>
-                      <Grid item xs={2}>
-                        <IconButton 
-                          onClick={() => handleEditTag(tag.id)}
-                          color="primary"
-                        >
-                          <CheckCircleIcon />
-                        </IconButton>
-                        <IconButton 
-                          onClick={() => setEditingTagId(null)}
-                        >
-                          <CancelIcon />
-                        </IconButton>
-                      </Grid>
-                    </Grid>
-                  </>
-                ) : (
-                  <>
-                    <Chip
-                      label={tag.title}
-                      sx={{
-                        backgroundColor: tag.color,
-                        color: theme => theme.palette.getContrastText(tag.color),
-                        '& .MuiChip-label': { fontSize: '0.875rem' }
-                      }}
-                    />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        onClick={() => {
-                          setEditingTagId(tag.id);
-                          setEditedTag({ title: tag.title, color: tag.color });
-                        }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDeleteTag(tag.id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </>
-                )}
-              </ListItem>
+              <Box 
+                key={tag.id}
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  gap: 1
+                }}
+              >
+                <Chip
+                  label={tag.title}
+                  sx={{
+                    flexGrow: 1,
+                    backgroundColor: tag.color,
+                    color: getContrastText(tag.color),
+                  }}
+                />
+                <IconButton 
+                  size="small" 
+                  onClick={() => {
+                    setEditingTag(tag);
+                    setNewTag({ title: tag.title, color: tag.color });
+                  }}
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton 
+                  size="small" 
+                  onClick={() => handleDeleteTag(tag.id)}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Box>
             ))}
-          </List>
+          </Box>
+
+          {colorPickerOpen && (
+            <Popper
+              open={colorPickerOpen}
+              anchorEl={null}
+              style={{
+                position: 'absolute',
+                left: pickerPosition.x,
+                top: pickerPosition.y,
+                zIndex: 1500,
+              }}
+            >
+              <ClickAwayListener onClickAway={() => setColorPickerOpen(false)}>
+                <div>
+                  <ChromePicker
+                    color={newTag.color}
+                    onChange={(color) => {
+                      setNewTag({ ...newTag, color: color.hex });
+                    }}
+                    onChangeComplete={(color) => {
+                      setNewTag({ ...newTag, color: color.hex });
+                    }}
+                  />
+                </div>
+              </ClickAwayListener>
+            </Popper>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setTagDialogOpen(false)}>Close</Button>
