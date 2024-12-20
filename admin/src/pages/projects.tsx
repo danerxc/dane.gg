@@ -44,8 +44,9 @@ import {
   CloudUpload as CloudUploadIcon
 } from '@mui/icons-material';
 import { ChromePicker } from 'react-color';
-import { useState, useEffect, useRef, ChangeEvent, useCallback } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import axiosInstance from '../services/axios';
+import { useFileUpload } from '../hooks/upload';
 
 interface Tag {
   id: string;
@@ -110,11 +111,7 @@ export const Projects = () => {
   const [inlineEditingTagId, setInlineEditingTagId] = useState<string | null>(null);
   const [inlineEditTag, setInlineEditTag] = useState({ title: '', color: '' });
   const [inlineColorPickerOpen, setInlineColorPickerOpen] = useState(false);
-  const [thumbnailSource, setThumbnailSource] = useState<'url' | 'upload'>('url');
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [uploadComplete, setUploadComplete] = useState<boolean>(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [displayFilename, setDisplayFilename] = useState<string>('');
+  const { uploadProgress, uploadComplete, fileInputRef, handleFileUpload, resetUploadState } = useFileUpload();
 
 
   const fetchProjects = async () => {
@@ -155,14 +152,11 @@ export const Projects = () => {
     fetchProjects();
     fetchCategories();
     fetchTags();
-    if (currentProject?.image_url) {
-      setDisplayFilename(getFilenameFromPath(currentProject.image_url));
-      setThumbnailSource(currentProject.image_url.startsWith('/uploads/') ? 'upload' : 'url');
-    } else {
-      setDisplayFilename('');
-      setThumbnailSource('url');
-    }
-  }, [currentProject?.image_url]);
+  }, []);
+
+  useEffect(() => {
+    resetUploadState();
+  }, [open, resetUploadState]);
 
   const handleAddTag = async () => {
     try {
@@ -269,44 +263,11 @@ export const Projects = () => {
     }
   };
 
-  const handleThumbnailChange = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
-
-    setUploadProgress(0);
-    setUploadComplete(false);
-
-    try {
-      const { data } = await axiosInstance.post('/api/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(progress);
-          }
-        }
-      });
-
-      setCurrentProject(prev => ({ ...prev, image_url: data.filePath }));
-      setUploadComplete(true);
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    } catch (err) {
-      setError('Failed to upload thumbnail');
-      console.error('Upload error:', err);
+  const handleThumbnailChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const filePath = await handleFileUpload(e);
+    if (filePath) {
+      setCurrentProject(prev => ({ ...prev, image_url: filePath }));
     }
-  }, [setCurrentProject, setError]);
-
-  const getFilenameFromPath = (path: string) => {
-    if (!path) return '';
-    return path.split('/').pop() || '';
   };
 
   if (loading) return <CircularProgress />;
