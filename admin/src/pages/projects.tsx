@@ -32,9 +32,7 @@ import {
   Divider,
   Popper,
   ClickAwayListener,
-  FormLabel,
-  RadioGroup,
-  Radio
+  LinearProgress
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -43,10 +41,10 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   ColorLens as ColorLensIcon,
-  Save as SaveIcon
+  CloudUpload as CloudUploadIcon
 } from '@mui/icons-material';
 import { ChromePicker } from 'react-color';
-import { useState, useEffect, useRef, ChangeEvent } from 'react';
+import { useState, useEffect, useRef, ChangeEvent, useCallback } from 'react';
 import axiosInstance from '../services/axios';
 
 interface Tag {
@@ -79,10 +77,10 @@ interface Project {
   }>;
 }
 
-const getContrastText = (hexcolor) => {
-  const r = parseInt(hexcolor.substr(1, 2), 16);
-  const g = parseInt(hexcolor.substr(3, 2), 16);
-  const b = parseInt(hexcolor.substr(5, 2), 16);
+const getContrastText = (hexcolor: string) => {
+  const r = parseInt(hexcolor.substring(1, 3), 16);
+  const g = parseInt(hexcolor.substring(3, 5), 16);
+  const b = parseInt(hexcolor.substring(5, 7), 16);
   const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
   return (yiq >= 128) ? '#000000' : '#ffffff';
 };
@@ -103,7 +101,7 @@ export const Projects = () => {
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editedCategoryName, setEditedCategoryName] = useState('');
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
-  const [editingTag, setEditingTag] = useState(null);
+  const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [pickerPosition, setPickerPosition] = useState({ x: 0, y: 0 });
   const [feedback, setFeedback] = useState<{
     message: string;
@@ -112,12 +110,12 @@ export const Projects = () => {
   const [inlineEditingTagId, setInlineEditingTagId] = useState<string | null>(null);
   const [inlineEditTag, setInlineEditTag] = useState({ title: '', color: '' });
   const [inlineColorPickerOpen, setInlineColorPickerOpen] = useState(false);
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailSource, setThumbnailSource] = useState<'url' | 'upload'>('url');
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadComplete, setUploadComplete] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadComplete, setUploadComplete] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [displayFilename, setDisplayFilename] = useState<string>('');
+
 
   const fetchProjects = async () => {
     try {
@@ -271,34 +269,40 @@ export const Projects = () => {
     }
   };
 
-  const handleThumbnailChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setThumbnailFile(file);
-      setDisplayFilename(file.name);
-      const formData = new FormData();
-      formData.append('file', e.target.files[0]);
-      setUploadProgress(0);
-      setUploadComplete(false);
+  const handleThumbnailChange = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
 
-      try {
-        const { data } = await axiosInstance.post('/api/upload', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          },
-          onUploadProgress: (progressEvent) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setUploadProgress(0);
+    setUploadComplete(false);
+
+    try {
+      const { data } = await axiosInstance.post('/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
             const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             setUploadProgress(progress);
           }
-        });
-        setCurrentProject(prev => ({ ...prev, image_url: data.filePath }));
-        setUploadComplete(true);
-      } catch (err) {
-        setError('Failed to upload thumbnail');
-        console.error('Failed to upload thumbnail:', err);
+        }
+      });
+
+      setCurrentProject(prev => ({ ...prev, image_url: data.filePath }));
+      setUploadComplete(true);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
+    } catch (err) {
+      setError('Failed to upload thumbnail');
+      console.error('Upload error:', err);
     }
-  };
+  }, [setCurrentProject, setError]);
 
   const getFilenameFromPath = (path: string) => {
     if (!path) return '';
@@ -465,43 +469,38 @@ export const Projects = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <FormControl component="fieldset" margin="normal">
-                <FormLabel component="legend">Thumbnail Source</FormLabel>
-                <RadioGroup
-                  row
-                  value={thumbnailSource}
-                  onChange={(e) => setThumbnailSource(e.target.value as 'url' | 'upload')}
-                >
-                  <FormControlLabel value="url" control={<Radio />} label="URL" />
-                  <FormControlLabel value="upload" control={<Radio />} label="Upload" />
-                </RadioGroup>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12}>
-              {thumbnailSource === 'url' ? (
+              <Box display="flex" gap={1} alignItems="center">
                 <TextField
                   fullWidth
-                  label="Image URL"
+                  label="Image URL/Path"
                   value={currentProject.image_url || ''}
                   onChange={(e) => setCurrentProject({ ...currentProject, image_url: e.target.value })}
                 />
-              ) : (
-                <Box display="flex" alignItems="center">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleThumbnailChange}
-                    ref={fileInputRef}
-                    style={{ display: 'block', margin: '16px 0' }}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={() => fileInputRef.current?.click()}
+                  startIcon={<CloudUploadIcon />}
+                >
+                  Upload
+                </Button>
+              </Box>
+              {uploadProgress > 0 && (
+                <Box sx={{ mt: 1, width: '100%' }}>
+                  <LinearProgress
+                    variant="determinate"
+                    value={uploadProgress}
+                    sx={{ mb: 1 }}
                   />
-                  {displayFilename && (
-                    <Typography variant="body2" style={{ marginLeft: 8 }}>
-                      {displayFilename}
-                    </Typography>
-                  )}
-                  {uploadProgress > 0 && uploadProgress < 100 && <CircularProgress size={24} style={{ marginLeft: 8 }} />}
-                  {uploadComplete && <CheckCircleIcon color="success" style={{ marginLeft: 8 }} />}
+                  <Typography variant="caption" color="text.secondary">
+                    {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
+                  </Typography>
                 </Box>
               )}
             </Grid>
