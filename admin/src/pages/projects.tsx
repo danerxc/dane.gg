@@ -48,6 +48,26 @@ import { useState, useEffect, ChangeEvent } from 'react';
 import axiosInstance from '../services/axios';
 import { useFileUpload } from '../hooks/upload';
 
+const PROJECT_TEXT_OPTIONS = [
+  'View Project',
+  'View Website',
+  'Visit Website',
+  'View Demo',
+  'View App',
+  'View Snippet',
+  'Listen Now',
+  'Watch Now',
+];
+
+const REPO_TEXT_OPTIONS = [
+  'View Source',
+  'View Code',
+  'View Repository',
+  'View on GitHub',
+  'View on GitLab',
+  'View on Bitbucket'
+];
+
 interface Tag {
   id: string;
   title: string;
@@ -66,9 +86,7 @@ interface Project {
   category_id: string;
   image_url?: string;
   project_url?: string;
-  project_text?: string;
   repo_url?: string;
-  repo_text?: string;
   tagIds?: string[];
   featured: boolean;
   tags?: Array<{
@@ -76,6 +94,8 @@ interface Project {
     title: string;
     color: string;
   }>;
+  project_text?: typeof PROJECT_TEXT_OPTIONS[number];
+  repo_text?: typeof REPO_TEXT_OPTIONS[number];
 }
 
 const getContrastText = (hexcolor: string) => {
@@ -474,12 +494,20 @@ export const Projects = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Project Text"
-                value={currentProject.project_text || ''}
-                onChange={(e) => setCurrentProject({ ...currentProject, project_text: e.target.value })}
-              />
+              <FormControl fullWidth>
+                <InputLabel>Project Text</InputLabel>
+                <Select
+                  value={currentProject.project_text || ''}
+                  onChange={(e) => setCurrentProject({ ...currentProject, project_text: e.target.value })}
+                  label="Project Text"
+                >
+                  {PROJECT_TEXT_OPTIONS.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -490,12 +518,20 @@ export const Projects = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Repository Text"
-                value={currentProject.repo_text || ''}
-                onChange={(e) => setCurrentProject({ ...currentProject, repo_text: e.target.value })}
-              />
+              <FormControl fullWidth>
+                <InputLabel>Repository Text</InputLabel>
+                <Select
+                  value={currentProject.repo_text || ''}
+                  onChange={(e) => setCurrentProject({ ...currentProject, repo_text: e.target.value })}
+                  label="Repository Text"
+                >
+                  {REPO_TEXT_OPTIONS.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12}>
               <Box sx={{ display: 'flex', gap: 1 }}>
