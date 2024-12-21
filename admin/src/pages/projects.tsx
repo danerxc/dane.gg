@@ -47,6 +47,7 @@ import { ChromePicker } from 'react-color';
 import { useState, useEffect, ChangeEvent } from 'react';
 import axiosInstance from '../services/axios';
 import { useFileUpload } from '../hooks/upload';
+import { ImagePreview } from '../components/imagePreview';
 
 const PROJECT_TEXT_OPTIONS = [
   'View Project',
@@ -450,40 +451,39 @@ export const Projects = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <Box display="flex" gap={1} alignItems="center">
-                <TextField
-                  fullWidth
-                  label="Image URL/Path"
-                  value={currentProject.image_url || ''}
-                  onChange={(e) => setCurrentProject({ ...currentProject, image_url: e.target.value })}
-                />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleThumbnailChange}
-                  ref={fileInputRef}
-                  style={{ display: 'none' }}
-                />
-                <Button
-                  variant="contained"
-                  onClick={() => fileInputRef.current?.click()}
-                  startIcon={<CloudUploadIcon />}
-                >
-                  Upload
-                </Button>
-              </Box>
-              {uploadProgress > 0 && (
-                <Box sx={{ mt: 1, width: '100%' }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={uploadProgress}
-                    sx={{ mb: 1 }}
+              <Box display="flex" gap={2} flexDirection="column">
+                <Box display="flex" gap={1} alignItems="center">
+                  <TextField
+                    fullWidth
+                    label="Image URL/Path"
+                    value={currentProject.image_url || ''}
+                    onChange={(e) => setCurrentProject({ ...currentProject, image_url: e.target.value })}
                   />
-                  <Typography variant="caption" color="text.secondary">
-                    {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
-                  </Typography>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleThumbnailChange}
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={() => fileInputRef.current?.click()}
+                    startIcon={<CloudUploadIcon />}
+                  >
+                    Upload
+                  </Button>
                 </Box>
-              )}
+                {uploadProgress > 0 && (
+                  <Box sx={{ width: '100%' }}>
+                    <LinearProgress variant="determinate" value={uploadProgress} />
+                    <Typography variant="caption" color="textSecondary">
+                      {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
+                    </Typography>
+                  </Box>
+                )}
+                <ImagePreview src={currentProject.image_url} />
+              </Box>
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField

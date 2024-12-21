@@ -13,6 +13,7 @@ import MdEditor from 'react-markdown-editor-lite';
 import { marked } from 'marked';
 import 'react-markdown-editor-lite/lib/index.css';
 import { useFileUpload } from '../hooks/upload';
+import { ImagePreview } from '../components/imagePreview';
 
 marked.setOptions({
   gfm: true,
@@ -174,149 +175,152 @@ export const BlogPosts = () => {
 
   return (
     <Box>
-    <Grid container spacing={3}>
-      <Grid item xs={12}>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
           <Button variant="contained" onClick={handleCreate}>
             Create New Post
           </Button>
-      </Grid>
+        </Grid>
 
-      <Grid item xs={12}>
-        <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Slug</TableCell>
-              <TableCell>Published</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {posts.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} align="center">
-                  <Typography variant="body1">No blog posts</Typography>
-                </TableCell>
-              </TableRow>
-            ) : (
-              posts.map((post) => (
-                <TableRow key={post.id}>
-                  <TableCell>{post.title}</TableCell>
-                  <TableCell>{post.slug}</TableCell>
-                  <TableCell>{post.published ? 'Yes' : 'No'}</TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => handleEdit(post)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={() => handleDelete(post.slug)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
+        <Grid item xs={12}>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Title</TableCell>
+                  <TableCell>Slug</TableCell>
+                  <TableCell>Published</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      </Grid>
+              </TableHead>
+              <TableBody>
+                {posts.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center">
+                      <Typography variant="body1">No blog posts</Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  posts.map((post) => (
+                    <TableRow key={post.id}>
+                      <TableCell>{post.title}</TableCell>
+                      <TableCell>{post.slug}</TableCell>
+                      <TableCell>{post.published ? 'Yes' : 'No'}</TableCell>
+                      <TableCell>
+                        <IconButton onClick={() => handleEdit(post)}>
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton onClick={() => handleDelete(post.slug)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>{isEditing ? 'Edit Post' : 'Create Post'}</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2}>
-            {/* Title Field */}
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Title"
-                name="title"
-                value={currentPost.title ?? ''}
-                onChange={handleInputChange}
-              />
-            </Grid>
-
-            {/* Slug Field */}
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Slug"
-                name="slug"
-                value={currentPost.slug ?? ''}
-                onChange={handleInputChange}
-              />
-            </Grid>
-
-            {/* Thumbnail Upload Section */}
-            <Grid item xs={12}>
-              <Box display="flex" gap={1} alignItems="center">
+        <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
+          <DialogTitle>{isEditing ? 'Edit Post' : 'Create Post'}</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2}>
+              {/* Title Field */}
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Image URL/Path"
-                  value={currentPost.thumbnail || ''}
-                  onChange={(e) => setCurrentPost({ ...currentPost, thumbnail: e.target.value })}
+                  label="Title"
+                  name="title"
+                  value={currentPost.title ?? ''}
+                  onChange={handleInputChange}
                 />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleThumbnailChange}
-                  ref={fileInputRef}
-                  style={{ display: 'none' }}
+              </Grid>
+
+              {/* Slug Field */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Slug"
+                  name="slug"
+                  value={currentPost.slug ?? ''}
+                  onChange={handleInputChange}
                 />
-                <Button
-                  variant="contained"
-                  onClick={() => fileInputRef.current?.click()}
-                  startIcon={<CloudUploadIcon />}
-                >
-                  Upload
-                </Button>
-              </Box>
-              {uploadProgress > 0 && (
-                <Box sx={{ mt: 1, width: '100%' }}>
-                  <LinearProgress variant="determinate" value={uploadProgress} />
-                  <Typography variant="caption" color="text.secondary">
-                    {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
-                  </Typography>
+              </Grid>
+
+              {/* Thumbnail Upload Section */}
+              <Grid item xs={12}>
+                <Box display="flex" gap={2} flexDirection="column">
+                  <Box display="flex" gap={1} alignItems="center">
+                    <TextField
+                      fullWidth
+                      label="Image URL/Path"
+                      value={currentPost.thumbnail || ''}
+                      onChange={(e) => setCurrentPost({ ...currentPost, thumbnail: e.target.value })}
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleThumbnailChange}
+                      ref={fileInputRef}
+                      style={{ display: 'none' }}
+                    />
+                    <Button
+                      variant="contained"
+                      onClick={() => fileInputRef.current?.click()}
+                      startIcon={<CloudUploadIcon />}
+                    >
+                      Upload
+                    </Button>
+                  </Box>
+                  {uploadProgress > 0 && (
+                    <Box sx={{ width: '100%' }}>
+                      <LinearProgress variant="determinate" value={uploadProgress} />
+                      <Typography variant="caption" color="textSecondary">
+                        {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
+                      </Typography>
+                    </Box>
+                  )}
+                  <ImagePreview src={currentPost.thumbnail} />
                 </Box>
-              )}
-            </Grid>
+              </Grid>
 
-            {/* Editor Section */}
-            <Grid item xs={12}>
-              <MdEditor
-                value={currentPost.content ?? ''}
-                style={{ height: '500px' }}
-                renderHTML={(text) => marked(text)}
-                onChange={handleEditorChange}
-                onImageUpload={handleImageUpload}
-              />
-            </Grid>
+              {/* Editor Section */}
+              <Grid item xs={12}>
+                <MdEditor
+                  value={currentPost.content ?? ''}
+                  style={{ height: '500px' }}
+                  renderHTML={(text) => marked(text)}
+                  onChange={handleEditorChange}
+                  onImageUpload={handleImageUpload}
+                />
+              </Grid>
 
-            {/* Published Switch */}
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={currentPost.published ?? false}
-                    onChange={(e) => setCurrentPost(prev => ({
-                      ...prev,
-                      published: e.target.checked
-                    }))}
-                  />
-                }
-                label="Published"
-              />
+              {/* Published Switch */}
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={currentPost.published ?? false}
+                      onChange={(e) => setCurrentPost(prev => ({
+                        ...prev,
+                        published: e.target.checked
+                      }))}
+                    />
+                  }
+                  label="Published"
+                />
+              </Grid>
             </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained" color="primary">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} variant="contained" color="primary">
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Grid>
     </Box>
   );
 };
