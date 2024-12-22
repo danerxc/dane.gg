@@ -29,6 +29,8 @@ interface User {
   username: string;
   is_admin: boolean;
   created_at: string;
+  password?: string;
+  changePassword?: boolean;
 }
 
 export const Users = () => {
@@ -167,12 +169,39 @@ export const Users = () => {
             onChange={(e) => setCurrentUser({ ...currentUser, username: e.target.value })}
             margin="normal"
           />
-          {!isEditing && (
+          {isEditing ? (
+            <>
+              <FormControlLabel
+                control={
+                  <Switch
+                    onChange={(e) => setCurrentUser({ 
+                      ...currentUser, 
+                      changePassword: e.target.checked,
+                      password: e.target.checked ? currentUser.password : undefined
+                    })}
+                  />
+                }
+                label="Change Password"
+                sx={{ mt: 1 }}
+              />
+              {currentUser.changePassword && (
+                <TextField
+                  fullWidth
+                  label="New Password"
+                  type="password"
+                  value={currentUser.password ?? ''}
+                  onChange={(e) => setCurrentUser({ ...currentUser, password: e.target.value })}
+                  margin="normal"
+                />
+              )}
+            </>
+          ) : (
             <TextField
               fullWidth
               label="Password"
               type="password"
-              value={currentUser.password || ''}
+              required
+              value={currentUser.password ?? ''}
               onChange={(e) => setCurrentUser({ ...currentUser, password: e.target.value })}
               margin="normal"
             />
@@ -180,7 +209,7 @@ export const Users = () => {
           <FormControlLabel
             control={
               <Switch
-                checked={currentUser.is_admin || false}
+                checked={currentUser.is_admin ?? false}
                 onChange={(e) => setCurrentUser({ ...currentUser, is_admin: e.target.checked })}
               />
             }
