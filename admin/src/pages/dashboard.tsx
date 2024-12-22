@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Routes, Route } from 'react-router-dom';
 import {
   AppBar,
@@ -18,13 +18,18 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { BlogPosts } from './blog';
 import { Projects } from './projects';
 import { Users } from './users';
-import { auth } from '../services/auth';
+import { auth, setNavigate } from '../services/auth';
+import { TokenExpirationChecker } from '../components/tokenExpirationCheck';
 
 const drawerWidth = 240;
 
 const Dashboard = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setNavigate(navigate);
+  }, [navigate]);
 
   const handleLogout = () => {
     auth.logout();
@@ -39,6 +44,7 @@ const Dashboard = () => {
 
   return (
     <Box sx={{ display: 'flex' }}>
+      <TokenExpirationChecker />
       <CssBaseline />
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
