@@ -130,23 +130,26 @@ export const BlogPosts = () => {
     }
   };
 
-  const handleImageUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const { data } = await axiosInstance.post('/api/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      console.log('Image uploaded:', data.filePath);
-      return `${data.filePath}`;
-    } catch (err) {
-      console.error('Failed to upload image:', err);
-      setError('Failed to upload image');
-      return '';
-    }
-  };
+const handleImageUpload = async (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  try {
+    const { data } = await axiosInstance.post('/api/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    const encodedPath = encodeURI(data.filePath);
+    console.log('Image uploaded:', encodedPath);
+    return encodedPath;
+  } catch (err) {
+    console.error('Failed to upload image:', err);
+    setError('Failed to upload image');
+    return '';
+  }
+};
 
   const handleSave = async () => {
     try {
