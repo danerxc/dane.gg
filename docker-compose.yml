@@ -21,6 +21,7 @@ services:
     volumes:
       - .:/app
       - user_uploads:/public/assets/uploads
+      - widget_data:/data
       - /app/node_modules
       - /app/admin/node_modules
     healthcheck:
@@ -42,5 +43,6 @@ services:
   #     - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
 volumes:
+    widget_data:
     user_uploads:
 #   pgdata:

@@ -1,19 +1,21 @@
-import { useState, useEffect, ChangeEvent, useRef } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import axiosInstance from '../services/axios';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, IconButton, Dialog, DialogTitle, DialogContent, TextField,
+  Paper, Grid, IconButton, Dialog, DialogTitle, DialogContent, TextField,
   FormControlLabel, Switch, Button, Typography, DialogActions, Box, CircularProgress,
-  Alert, Radio, RadioGroup, FormControl, FormLabel, FormControlLabel as MuiFormControlLabel
+  Alert, LinearProgress,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import MdEditor from 'react-markdown-editor-lite';
 import { marked } from 'marked';
 import 'react-markdown-editor-lite/lib/index.css';
+import { useFileUpload } from '../hooks/upload';
+import { ImagePreview } from '../components/imagePreview';
 
-marked.setOptions({ 
+marked.setOptions({
   gfm: true,
   breaks: true,
 });
@@ -33,12 +35,8 @@ export const BlogPosts = () => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [open, setOpen] = useState(false);
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [thumbnailSource, setThumbnailSource] = useState<'url' | 'upload'>('url');
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadComplete, setUploadComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { uploadProgress, uploadComplete, fileInputRef, handleFileUpload, resetUploadState } = useFileUpload();
 
   const fetchPosts = async () => {
     try {
@@ -57,6 +55,10 @@ export const BlogPosts = () => {
   useEffect(() => {
     fetchPosts();
   }, []);
+
+  useEffect(() => {
+    resetUploadState();
+  }, [open, resetUploadState]);
 
   const handleCreate = () => {
     setCurrentPost({});
@@ -121,55 +123,33 @@ export const BlogPosts = () => {
     }));
   };
 
-  const handleThumbnailChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      console.log('File selected:', e.target.files[0]);
-      setThumbnailFile(e.target.files[0]);
-      handleThumbnailUpload(e.target.files[0]);
+  const handleThumbnailChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const filePath = await handleFileUpload(e);
+    if (filePath) {
+      setCurrentPost(prev => ({ ...prev, thumbnail: filePath }));
     }
   };
 
-  const handleThumbnailUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    setUploadProgress(0);
-    setUploadComplete(false);
-    try {
-      const { data } = await axiosInstance.post('/api/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        onUploadProgress: (progressEvent) => {
-          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(progress);
-        }
-      });
-      console.log('File uploaded:', data.filePath);
-      setCurrentPost(prev => ({ ...prev, thumbnail: data.filePath }));
-      setUploadComplete(true);
-    } catch (err) {
-      console.error('Failed to upload thumbnail:', err);
-      setError('Failed to upload thumbnail');
-    }
-  };
-
-  const handleImageUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const { data } = await axiosInstance.post('/api/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      console.log('Image uploaded:', data.filePath);
-      return `${data.filePath}`;
-    } catch (err) {
-      console.error('Failed to upload image:', err);
-      setError('Failed to upload image');
-      return '';
-    }
-  };
+const handleImageUpload = async (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  try {
+    const { data } = await axiosInstance.post('/api/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    const encodedPath = encodeURI(data.filePath);
+    console.log('Image uploaded:', encodedPath);
+    return encodedPath;
+  } catch (err) {
+    console.error('Failed to upload image:', err);
+    setError('Failed to upload image');
+    return '';
+  }
+};
 
   const handleSave = async () => {
     try {
@@ -193,137 +173,157 @@ export const BlogPosts = () => {
     return `${protocol}//${hostname}${port ? `:${port}` : ''}`;
   };
 
-  useEffect(() => {
-    if (thumbnailSource === 'upload' && fileInputRef.current && thumbnailFile) {
-      fileInputRef.current.value = '';
-    }
-  }, [thumbnailSource, thumbnailFile]);
-
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
     <Box>
-      <Button variant="contained" onClick={handleCreate} sx={{ mb: 2 }}>
-        Create New Post
-      </Button>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Slug</TableCell>
-              <TableCell>Published</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {posts.map((post) => (
-              <TableRow key={post.id}>
-                <TableCell>{post.title}</TableCell>
-                <TableCell>{post.slug}</TableCell>
-                <TableCell>{post.published ? 'Yes' : 'No'}</TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleEdit(post)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(post.slug)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>{isEditing ? 'Edit Post' : 'Create Post'}</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            name="title"
-            label="Title"
-            value={currentPost.title ?? ''}
-            onChange={handleInputChange}
-            margin="normal"
-          />
-          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
-            <Typography variant="body1" style={{ marginRight: 8, flexShrink: 0, marginTop: 8 }}>
-              {getBaseURL()}/blog/
-            </Typography>
-            <TextField
-              fullWidth
-              name="slug"
-              label="Link"
-              value={currentPost.slug ?? ''}
-              onChange={handleInputChange}
-              margin="normal"
-            />
-          </div>
-          <MdEditor
-            value={currentPost.content ?? ''}
-            style={{ height: '500px' }}
-            renderHTML={(text) => marked(text)}
-            onChange={handleEditorChange}
-            onImageUpload={async (file) => {
-              const imageUrl = await handleImageUpload(file);
-              return imageUrl;
-            }}
-          />
-          <FormControl component="fieldset" margin="normal">
-            <FormLabel component="legend">Thumbnail Source</FormLabel>
-            <RadioGroup
-              row
-              value={thumbnailSource}
-              onChange={(e) => setThumbnailSource(e.target.value as 'url' | 'upload')}
-            >
-              <MuiFormControlLabel value="url" control={<Radio />} label="URL" />
-              <MuiFormControlLabel value="upload" control={<Radio />} label="Upload" />
-            </RadioGroup>
-          </FormControl>
-          {thumbnailSource === 'url' ? (
-            <TextField
-              label="Thumbnail URL"
-              fullWidth
-              value={currentPost.thumbnail ?? ''}
-              onChange={(e) => setCurrentPost({ ...currentPost, thumbnail: e.target.value })}
-              margin="normal"
-            />
-          ) : (
-            <Box display="flex" alignItems="center">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleThumbnailChange}
-                ref={fileInputRef}
-                style={{ display: 'block', margin: '16px 0' }}
-              />
-              {thumbnailFile && <Typography variant="body2" style={{ marginLeft: 8 }}>{thumbnailFile.name}</Typography>}
-              {uploadProgress > 0 && uploadProgress < 100 && <CircularProgress size={24} style={{ marginLeft: 8 }} />}
-              {uploadComplete && <CheckCircleIcon color="success" style={{ marginLeft: 8 }} />}
-            </Box>
-          )}
-          <FormControlLabel
-            control={
-              <Switch
-                checked={currentPost.published ?? false}
-                onChange={(e) => setCurrentPost(prev => ({
-                  ...prev,
-                  published: e.target.checked
-                }))}
-              />
-            }
-            label="Published"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained">
-            Save
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Button variant="contained" onClick={handleCreate}>
+            Create New Post
           </Button>
-        </DialogActions>
-      </Dialog>
+        </Grid>
+
+        <Grid item xs={12}>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Title</TableCell>
+                  <TableCell>Slug</TableCell>
+                  <TableCell>Published</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {posts.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center">
+                      <Typography variant="body1">No blog posts</Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  posts.map((post) => (
+                    <TableRow key={post.id}>
+                      <TableCell>{post.title}</TableCell>
+                      <TableCell>{post.slug}</TableCell>
+                      <TableCell>{post.published ? 'Yes' : 'No'}</TableCell>
+                      <TableCell>
+                        <IconButton onClick={() => handleEdit(post)}>
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton onClick={() => handleDelete(post.slug)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+
+        <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
+          <DialogTitle>{isEditing ? 'Edit Post' : 'Create Post'}</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2}>
+              {/* Title Field */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Title"
+                  name="title"
+                  value={currentPost.title ?? ''}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              {/* Slug Field */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Slug"
+                  name="slug"
+                  value={currentPost.slug ?? ''}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              {/* Thumbnail Upload Section */}
+              <Grid item xs={12}>
+                <Box display="flex" gap={2} flexDirection="column">
+                  <Box display="flex" gap={1} alignItems="center">
+                    <TextField
+                      fullWidth
+                      label="Image URL/Path"
+                      value={currentPost.thumbnail || ''}
+                      onChange={(e) => setCurrentPost({ ...currentPost, thumbnail: e.target.value })}
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleThumbnailChange}
+                      ref={fileInputRef}
+                      style={{ display: 'none' }}
+                    />
+                    <Button
+                      variant="contained"
+                      onClick={() => fileInputRef.current?.click()}
+                      startIcon={<CloudUploadIcon />}
+                    >
+                      Upload
+                    </Button>
+                  </Box>
+                  {uploadProgress > 0 && (
+                    <Box sx={{ width: '100%' }}>
+                      <LinearProgress variant="determinate" value={uploadProgress} />
+                      <Typography variant="caption" color="textSecondary">
+                        {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
+                      </Typography>
+                    </Box>
+                  )}
+                  <ImagePreview src={currentPost.thumbnail} />
+                </Box>
+              </Grid>
+
+              {/* Editor Section */}
+              <Grid item xs={12}>
+                <MdEditor
+                  value={currentPost.content ?? ''}
+                  style={{ height: '500px' }}
+                  renderHTML={(text) => marked(text)}
+                  onChange={handleEditorChange}
+                  onImageUpload={handleImageUpload}
+                />
+              </Grid>
+
+              {/* Published Switch */}
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={currentPost.published ?? false}
+                      onChange={(e) => setCurrentPost(prev => ({
+                        ...prev,
+                        published: e.target.checked
+                      }))}
+                    />
+                  }
+                  label="Published"
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} variant="contained" color="primary">
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Grid>
     </Box>
   );
 };

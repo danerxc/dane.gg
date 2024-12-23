@@ -4,81 +4,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadProjects() {
     try {
-        const response = await fetch('/api/projects');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const projects = await response.json();
-        const grid = document.getElementById('projects-grid');
-        grid.innerHTML = '';
+        const [projectsResponse, categoriesResponse] = await Promise.all([
+            fetch('/api/projects'),
+            fetch('/api/projects/categories')
+        ]);
 
-        const groupedProjects = projects.reduce((acc, project) => {
-            if (!acc[project.category]) {
-                acc[project.category] = [];
-            }
-            acc[project.category].push(project);
+        if (!projectsResponse.ok || !categoriesResponse.ok) {
+            throw new Error('Failed to fetch data');
+        }
+
+        const projects = await projectsResponse.json();
+        const categories = await categoriesResponse.json();
+
+        const categoryMap = categories.reduce((acc, cat) => {
+            acc[cat.id] = cat.name;
             return acc;
         }, {});
 
-        const categories = Object.keys(groupedProjects);
+        const categoryOrder = ['development', 'graphics', 'design'];
 
-        categories.forEach((category, index) => {
-            const categoryProjects = groupedProjects[category];
+        const categoriesWithPages = new Set(['development', 'graphics', 'design']);
 
-            const section = document.createElement('div');
-            section.className = 'category-section';
-
-            const categoryNameCapitalized = category.charAt(0).toUpperCase() + category.slice(1);
-
-            const categoryURL = encodeURIComponent(category);
-
-            section.innerHTML = `
-                <div class="category-header">
-                    <h2>${categoryNameCapitalized}</h2>
-                    <a href="/projects/${categoryURL}" class="view-all-link">View All</a>
-                </div>
-                <div class="projects-row">
-                    ${categoryProjects.map(project => `
-                        <div class="card project-card ${project.featured ? 'featured' : ''}" data-category="${project.category}">
-                            ${project.image_url ? `<img src="${project.image_url}" alt="${project.title}">` : ''}
-                            <h3>${project.title}</h3>
-                            <div class="project-tags">
-                                ${project.tags.map(tag => `
-                                    <span class="project-tag" style="background-color: ${tag.color};">${tag.title}</span>
-                                `).join('')}
-                            </div>
-                            <p>${project.description}</p>
-                            <div class="project-links">
-                                ${project.project_url ? `<button class="project-card-button" data-url="${project.project_url}">${project.project_text || 'View Project'}</button>` : ''}
-                                ${project.repo_url ? `<button class="project-card-button" data-url="${project.repo_url}">${project.repo_text || 'View Repository'}</button>` : ''}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-
-            grid.appendChild(section);
-
-            const buttons = section.querySelectorAll('.project-card-button');
-            buttons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const url = button.getAttribute('data-url');
-                    if (url) {
-                        window.open(url, '_blank');
-                    }
-                });
-            });
-
-            if (index < categories.length - 1) {
-                const divider = document.createElement('hr');
-                divider.className = 'category-divider';
-                grid.appendChild(divider);
+        const groupedProjects = projects.reduce((acc, project) => {
+            if (project.featured) {
+                if (!acc[project.category_id]) {
+                    acc[project.category_id] = [];
+                }
+                acc[project.category_id].push(project);
             }
-        });
-    } catch (err) {
-        console.error('Failed to load projects:', err);
+            return acc;
+        }, {});
+
         const grid = document.getElementById('projects-grid');
-        grid.innerHTML = '<div class="error-message">Failed to load projects. Please try again later.</div>';
+        grid.innerHTML = '';
+
+        const sortedCategories = Object.keys(groupedProjects).sort((a, b) => {
+            const nameA = categoryMap[a]?.toLowerCase() || '';
+            const nameB = categoryMap[b]?.toLowerCase() || '';
+            const indexA = categoryOrder.indexOf(nameA);
+            const indexB = categoryOrder.indexOf(nameB);
+
+            if (indexA === -1 && indexB === -1) return nameA.localeCompare(nameB);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
+
+        for (const categoryId of sortedCategories) {
+            const categoryProjects = groupedProjects[categoryId];
+            if (categoryProjects.length > 0) {
+                const section = document.createElement('div');
+                section.className = 'category-section';
+
+                const categoryName = categoryMap[categoryId] || 'Uncategorized';
+                const categoryNameLower = categoryName.toLowerCase();
+                const categoryNameCapitalized = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+
+                const categoryHasPage = categoriesWithPages.has(categoryNameLower);
+
+                section.innerHTML = `
+                    <div class="category-header">
+                        <h2>${categoryNameCapitalized}</h2>
+                        ${categoryHasPage ? `<a href="/projects/${categoryNameLower}" class="view-all-link">View All</a>` : ''}
+                    </div>
+                    <div class="projects-row">
+                        ${categoryProjects.map(project => `
+                            <div class="card project-card ${project.featured ? 'featured' : ''}" data-category="${categoryId}">
+                                ${project.image_url ? `<img src="${project.image_url}" alt="${project.title}">` : ''}
+                                <h3>${project.title}</h3>
+                                <div class="project-tags">
+                                    ${project.tags ? project.tags.map(tag => `
+                                        <span class="project-tag" style="background-color: ${tag.color};">${tag.title}</span>
+                                    `).join('') : ''}
+                                </div>
+                                <p>${project.description}</p>
+                                <div class="project-links">
+                                    ${project.project_url ? `<button class="project-card-button" data-url="${project.project_url}">${project.project_text || 'View Project'}</button>` : ''}
+                                    ${project.repo_url ? `<button class="project-card-button" data-url="${project.repo_url}">${project.repo_text || 'View Repository'}</button>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                grid.appendChild(section);
+            }
+        }
+
+        document.querySelectorAll('.project-card-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const url = button.getAttribute('data-url');
+                if (url) window.open(url, '_blank');
+            });
+        });
+
+    } catch (error) {
+        console.error('Error loading projects:', error);
     }
 }

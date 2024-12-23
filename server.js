@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import exphbs from 'express-handlebars';
 import setupWebSocket from './services/chat.js';
 import http from 'http';
-import { login, createUser, getUsers, updateUser, deleteUser } from './controllers/authController.js';
+import { login, createUser, getUsers, updateUser, deleteUser, getCurrentUser, updateAccountUsername, updateAccountPassword, checkUsernameAvailability, generateTOTPSecret, verifyAndEnableTOTP,disableTOTP, resetUserTOTP } from './controllers/authController.js';
 import { authenticateToken } from './middleware/auth.js';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
@@ -39,6 +39,17 @@ import adminBlogRoutes from './routes/blogApi.js';
 
 // Auth routes first
 app.post('/auth/login', login);
+// Account management routes
+app.get('/auth/account/me', authenticateToken, getCurrentUser);
+app.get('/auth/account/check-username', authenticateToken, checkUsernameAvailability);
+
+app.put('/auth/account/username', authenticateToken, updateAccountUsername);
+app.put('/auth/account/password', authenticateToken, updateAccountPassword);
+
+app.post('/auth/account/2fa/generate', authenticateToken, generateTOTPSecret);
+app.post('/auth/account/2fa/verify', authenticateToken, verifyAndEnableTOTP);
+app.post('/auth/account/2fa/disable', authenticateToken, disableTOTP);
+app.post('/auth/account/:userId/reset-2fa', authenticateToken, resetUserTOTP);
 
 // Protected API routes
 app.get('/api/admin/users', authenticateToken, getUsers);
@@ -52,15 +63,6 @@ app.use('/api/projects', projectRoutes);
 app.use('/api', apiRoutes);
 app.use('/webhooks', webhookRoutes);
 
-// Admin SPA routes
-app.use('/admin', express.static(path.join(__dirname, 'admin/dist')));
-app.get('/admin/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin/dist/index.html'));
-});
-
-// Public blog routes
-app.use('/blog', blogRoutes);
-
 // Middleware to remove trailing slashes
 app.use((req, res, next) => {
   if (req.path !== '/' && req.path.endsWith('/')) {
@@ -72,14 +74,16 @@ app.use((req, res, next) => {
   }
 });
 
-// Middleware to serve HTML files
+// Serve static files without redirecting directories
+app.use(express.static(path.join(__dirname, 'public'), { redirect: false }));
+
+// Handle non-extension URLs
 app.use((req, res, next) => {
-  if (req.path.startsWith('/admin')) {
-    return next();
-  }
-  
   if (!path.extname(req.url)) {
-    let sanitizedPath = path.normalize(req.url).replace(/^(\.\.[\/\\])+/, '').replace(/^\/+/, '');
+    let sanitizedPath = path
+      .normalize(req.url)
+      .replace(/^(\.\.[\/\\])+/, '')
+      .replace(/^\/+/, '');
 
     if (!sanitizedPath) {
       sanitizedPath = 'index';
@@ -102,11 +106,14 @@ app.use((req, res, next) => {
   }
 });
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Admin SPA routes
+app.use('/admin', express.static(path.join(__dirname, 'admin/dist')));
+app.get('/admin/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin/dist/index.html'));
 });
+
+// Public blog routes
+app.use('/blog', blogRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

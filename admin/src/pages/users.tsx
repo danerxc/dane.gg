@@ -19,6 +19,7 @@ import {
   FormControlLabel,
   CircularProgress,
   Alert,
+  Typography,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axiosInstance from '../services/axios';
@@ -28,6 +29,9 @@ interface User {
   username: string;
   is_admin: boolean;
   created_at: string;
+  password?: string;
+  changePassword?: boolean;
+  totp_enabled: boolean;
 }
 
 export const Users = () => {
@@ -35,8 +39,9 @@ export const Users = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<Partial<User & { password: string }>>({});
+  const [currentUser, setCurrentUser] = useState<Partial<User>>({});
   const [isEditing, setIsEditing] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const fetchUsers = async () => {
     try {
@@ -49,6 +54,17 @@ export const Users = () => {
       console.error('Failed to fetch users:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResetTOTP = async (userId: number) => {
+    try {
+      await axiosInstance.post(`/auth/account/${userId}/reset-2fa`);
+      await fetchUsers();
+      setCurrentUser(prev => ({ ...prev, totp_enabled: false }));
+      setSuccess('2FA has been reset');
+    } catch (err) {
+      setError('Failed to reset 2FA');
     }
   };
 
@@ -121,7 +137,13 @@ export const Users = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users && users.length > 0 ? (
+            {users.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  <Typography variant="body1">No users</Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
               users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.username}</TableCell>
@@ -145,12 +167,6 @@ export const Users = () => {
                   </TableCell>
                 </TableRow>
               ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4} align="center">
-                  No users found
-                </TableCell>
-              </TableRow>
             )}
           </TableBody>
         </Table>
@@ -166,12 +182,39 @@ export const Users = () => {
             onChange={(e) => setCurrentUser({ ...currentUser, username: e.target.value })}
             margin="normal"
           />
-          {!isEditing && (
+          {isEditing ? (
+            <>
+              <FormControlLabel
+                control={
+                  <Switch
+                    onChange={(e) => setCurrentUser({
+                      ...currentUser,
+                      changePassword: e.target.checked,
+                      password: e.target.checked ? currentUser.password : undefined
+                    })}
+                  />
+                }
+                label="Change Password"
+                sx={{ mt: 1 }}
+              />
+              {currentUser.changePassword && (
+                <TextField
+                  fullWidth
+                  label="New Password"
+                  type="password"
+                  value={currentUser.password ?? ''}
+                  onChange={(e) => setCurrentUser({ ...currentUser, password: e.target.value })}
+                  margin="normal"
+                />
+              )}
+            </>
+          ) : (
             <TextField
               fullWidth
               label="Password"
               type="password"
-              value={currentUser.password || ''}
+              required
+              value={currentUser.password ?? ''}
               onChange={(e) => setCurrentUser({ ...currentUser, password: e.target.value })}
               margin="normal"
             />
@@ -179,12 +222,35 @@ export const Users = () => {
           <FormControlLabel
             control={
               <Switch
-                checked={currentUser.is_admin || false}
+                checked={currentUser.is_admin ?? false}
                 onChange={(e) => setCurrentUser({ ...currentUser, is_admin: e.target.checked })}
               />
             }
             label="Admin Access"
           />
+          {isEditing && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Two-Factor Authentication Status
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography>
+                  {currentUser.totp_enabled ?
+                    '2FA is enabled for this user' :
+                    '2FA is not enabled'}
+                </Typography>
+                {currentUser.totp_enabled && (
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleResetTOTP(currentUser.id!)}
+                  >
+                    Reset 2FA
+                  </Button>
+                )}
+              </Box>
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancel</Button>

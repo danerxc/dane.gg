@@ -38,14 +38,21 @@ CREATE TABLE website.messages (
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     message_type VARCHAR(50) NOT NULL,
     message_color VARCHAR(50),
-    COLUMN client_uuid UUID;
+    client_uuid UUID
+);
+
+-- Categories table must be created before projects table due to foreign key
+CREATE TABLE website.project_categories (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(50) NOT NULL UNIQUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE website.projects (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(100) NOT NULL,
     description TEXT NOT NULL,
-    category VARCHAR(50) NOT NULL,
+    category_id UUID NOT NULL,
     featured BOOLEAN DEFAULT false,
     image_url VARCHAR(255),
     project_url VARCHAR(255),
@@ -53,7 +60,13 @@ CREATE TABLE website.projects (
     repo_url VARCHAR(255),
     repo_text VARCHAR(50) DEFAULT 'View Repository',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_project_category 
+        FOREIGN KEY (category_id) 
+        REFERENCES website.project_categories(id)
+        ON DELETE RESTRICT
+    totp_secret TEXT,
+    totp_enabled BOOLEAN DEFAULT false
 );
 
 -- Create the tags table
@@ -82,11 +95,11 @@ INSERT INTO website.tags (title, color) VALUES
 
 -- Rest of schema with explicit references
 CREATE INDEX idx_posts_slug ON website.posts(slug);
-CREATE INDEX idx_posts_author ON website.posts(author_id);
 CREATE INDEX idx_posts_published ON website.posts(published) WHERE published = true;
 CREATE INDEX idx_messages_client_uuid ON website.messages(client_uuid);
 CREATE INDEX idx_projects_featured ON website.projects(featured);
-CREATE INDEX idx_projects_category ON website.projects(category);
+CREATE INDEX idx_projects_category_id ON website.projects(category_id);
+CREATE INDEX idx_categories_name ON website.project_categories(name);
 
 -- Function and trigger
 CREATE OR REPLACE FUNCTION website.update_updated_at_column()

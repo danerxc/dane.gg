@@ -4,14 +4,24 @@ import path from 'path';
 const storage = multer.diskStorage({
   destination: './public/assets/uploads/',
   filename: (req, file, cb) => {
+    const originalName = file.originalname
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9.-]/g, '')
+      .replace(/--+/g, '-');
+
     const prefix = req.body.prefix || 'File';
-    cb(null, `${prefix}_${Date.now()}-${file.originalname}`);
+    const timestamp = Date.now();
+    const ext = path.extname(originalName);
+    const sanitizedName = `${prefix}_${timestamp}-${path.basename(originalName, ext)}${ext}`;
+    
+    cb(null, sanitizedName);
   }
 });
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5000000 }, // 5MB limit
+  limits: { fileSize: 5000000 },
   fileFilter: (req, file, cb) => {
     checkFileType(file, cb);
   }
