@@ -31,6 +31,7 @@ interface User {
   created_at: string;
   password?: string;
   changePassword?: boolean;
+  totp_enabled: boolean;
 }
 
 export const Users = () => {
@@ -38,8 +39,9 @@ export const Users = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<Partial<User & { password: string }>>({});
+  const [currentUser, setCurrentUser] = useState<Partial<User>>({});
   const [isEditing, setIsEditing] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const fetchUsers = async () => {
     try {
@@ -52,6 +54,17 @@ export const Users = () => {
       console.error('Failed to fetch users:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResetTOTP = async (userId: number) => {
+    try {
+      await axiosInstance.post(`/auth/account/${userId}/reset-2fa`);
+      await fetchUsers();
+      setCurrentUser(prev => ({ ...prev, totp_enabled: false }));
+      setSuccess('2FA has been reset');
+    } catch (err) {
+      setError('Failed to reset 2FA');
     }
   };
 
@@ -174,8 +187,8 @@ export const Users = () => {
               <FormControlLabel
                 control={
                   <Switch
-                    onChange={(e) => setCurrentUser({ 
-                      ...currentUser, 
+                    onChange={(e) => setCurrentUser({
+                      ...currentUser,
                       changePassword: e.target.checked,
                       password: e.target.checked ? currentUser.password : undefined
                     })}
@@ -215,6 +228,29 @@ export const Users = () => {
             }
             label="Admin Access"
           />
+          {isEditing && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Two-Factor Authentication Status
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography>
+                  {currentUser.totp_enabled ?
+                    '2FA is enabled for this user' :
+                    '2FA is not enabled'}
+                </Typography>
+                {currentUser.totp_enabled && (
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleResetTOTP(currentUser.id!)}
+                  >
+                    Reset 2FA
+                  </Button>
+                )}
+              </Box>
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancel</Button>

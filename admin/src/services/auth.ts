@@ -2,7 +2,9 @@ import axios from 'axios';
 import { NavigateFunction } from 'react-router-dom';
 
 interface LoginResponse {
-  token: string;
+  token?: string;
+  requiresTOTP?: boolean;
+  message?: string;
 }
 
 let navigate: NavigateFunction;
@@ -28,12 +30,23 @@ axios.interceptors.response.use(
 );
 
 export const auth = {
-  login: async (username: string, password: string): Promise<LoginResponse> => {
-    const response = await axios.post<LoginResponse>('/auth/login', { username, password });
+  login: async (username: string, password: string, totpToken?: string): Promise<boolean> => {
+    const response = await axios.post<LoginResponse>('/auth/login', { 
+      username, 
+      password,
+      totpToken 
+    });
+
+    if (response.data.requiresTOTP) {
+      return false;
+    }
+
     if (response.data.token) {
       localStorage.setItem('adminToken', response.data.token);
+      return true;
     }
-    return response.data;
+
+    return false;
   },
 
   logout: () => {

@@ -19,7 +19,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import PeopleIcon from '@mui/icons-material/People';
-import RssFeedIcon from '@mui/icons-material/RssFeed';
+import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import HighlightAltIcon from '@mui/icons-material/HighlightAlt';
 import { Link } from 'react-router-dom';
 import { BlogPosts } from './blog';
@@ -49,7 +49,7 @@ const Dashboard = () => {
   };
 
   const mainMenuItems = [
-    { text: 'Blog Posts', path: '/admin/blog', icon: <RssFeedIcon /> },
+    { text: 'Blog Posts', path: '/admin/blog', icon: <CollectionsBookmarkIcon /> },
     { text: 'Projects', path: '/admin/projects', icon: <HighlightAltIcon /> },
     { text: 'Users', path: '/admin/users', icon: <PeopleIcon /> },
   ];

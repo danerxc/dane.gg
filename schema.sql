@@ -65,6 +65,8 @@ CREATE TABLE website.projects (
         FOREIGN KEY (category_id) 
         REFERENCES website.project_categories(id)
         ON DELETE RESTRICT
+    totp_secret TEXT,
+    totp_enabled BOOLEAN DEFAULT false
 );
 
 -- Create the tags table

@@ -13,6 +13,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PersonIcon from '@mui/icons-material/Person';
 import axiosInstance from '../services/axios';
+import QRCode from 'qrcode.react';
 
 
 export const Account = () => {
@@ -28,22 +29,40 @@ export const Account = () => {
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [totpSecret, setTotpSecret] = useState<string | null>(null);
+  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [totpToken, setTotpToken] = useState('');
+  const [isTotpEnabled, setIsTotpEnabled] = useState(false);
 
-    useEffect(() => {
-      const fetchCurrentUser = async () => {
-          try {
-              const response = await axiosInstance.get('/auth/account/me');
-              const { username, is_admin } = response.data;
-              setCurrentUsername(username);
-              setIsAdmin(!!is_admin);
-              setFormData(prev => ({ ...prev, username: username }));
-          } catch (err) {
-              setError('Failed to fetch user data');
-              console.error('Failed to fetch current user:', err);
-          }
-      };
-      fetchCurrentUser();
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await axiosInstance.get('/auth/account/me');
+        console.log('User data:', response.data);
+        const { username, is_admin, totp_enabled } = response.data;
+        setCurrentUsername(username);
+        setIsAdmin(!!is_admin);
+        setIsTotpEnabled(!!totp_enabled);
+        setFormData(prev => ({ ...prev, username: username }));
+      } catch (err) {
+        console.error('Failed to fetch user data:', err);
+        setError('Failed to fetch user data');
+      }
+    };
+    fetchCurrentUser();
   }, []);
+
+  const disableTOTP = async () => {
+    try {
+        await axiosInstance.post('/auth/account/2fa/disable');
+        setIsTotpEnabled(false);
+        setTotpSecret(null);
+        setQrCode(null);
+        setSuccess('2FA has been disabled');
+    } catch (err) {
+        setError('Failed to disable 2FA');
+    }
+};
 
   useEffect(() => {
     const checkUsername = async () => {
@@ -123,6 +142,31 @@ export const Account = () => {
     }
   };
 
+  const setupTOTP = async () => {
+    try {
+      const response = await axiosInstance.post('/auth/account/2fa/generate');
+      setTotpSecret(response.data.secret);
+      setQrCode(response.data.qrCode);
+    } catch (err) {
+      setError('Failed to setup 2FA');
+    }
+  };
+
+  const verifyTOTP = async () => {
+    try {
+      await axiosInstance.post('/auth/account/2fa/verify', {
+        token: totpToken
+      });
+      setIsTotpEnabled(true);
+      setSuccess('2FA enabled successfully');
+      setTotpSecret(null);
+      setQrCode(null);
+      setTotpToken('');
+    } catch (err) {
+      setError('Invalid 2FA code');
+    }
+  };
+
   const UsernameStatus = () => {
     if (isCheckingUsername) {
       return (
@@ -176,29 +220,29 @@ export const Account = () => {
         </Box>
       </Paper>
 
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h6" gutterBottom>Change Username</Typography>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Current Username: <strong>{currentUsername}</strong>
-          </Typography>
-          <TextField
-            fullWidth
-            label="New Username"
-            value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-            margin="normal"
-            error={formData.username !== currentUsername && isUsernameAvailable === false}
-          />
-          <UsernameStatus />
-          <Button
-            variant="contained"
-            onClick={handleChangeUsername}
-            sx={{ mt: 2 }}
-            disabled={!isUsernameAvailable || formData.username === currentUsername}
-          >
-            Update Username
-          </Button>
-        </Paper>
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>Change Username</Typography>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Current Username: <strong>{currentUsername}</strong>
+        </Typography>
+        <TextField
+          fullWidth
+          label="New Username"
+          value={formData.username}
+          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+          margin="normal"
+          error={formData.username !== currentUsername && isUsernameAvailable === false}
+        />
+        <UsernameStatus />
+        <Button
+          variant="contained"
+          onClick={handleChangeUsername}
+          sx={{ mt: 2 }}
+          disabled={!isUsernameAvailable || formData.username === currentUsername}
+        >
+          Update Username
+        </Button>
+      </Paper>
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6" gutterBottom>Change Password</Typography>
@@ -243,6 +287,80 @@ export const Account = () => {
         >
           Update Password
         </Button>
+      </Paper>
+
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>Two-Factor Authentication</Typography>
+        {!isTotpEnabled ? (
+          <>
+            {!qrCode ? (
+              <Box>
+                <Typography color="text.secondary" sx={{ mb: 2 }}>
+                  Two-factor authentication adds an extra layer of security to your account
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={setupTOTP}
+                  sx={{ mt: 2 }}
+                >
+                  Setup 2FA
+                </Button>
+              </Box>
+            ) : (
+              <Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  1. Scan this QR code with your authenticator app
+                </Typography>
+                <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <img src={qrCode} alt="QR Code" style={{ marginBottom: 16 }} />
+                  <Typography variant="caption" color="text.secondary">
+                    Can't scan? Enter this code manually: {totpSecret}
+                  </Typography>
+                </Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  2. Enter the 6-digit code from your app
+                </Typography>
+                <TextField
+                  fullWidth
+                  label="Verification Code"
+                  value={totpToken}
+                  onChange={(e) => setTotpToken(e.target.value)}
+                  margin="normal"
+                  inputProps={{ maxLength: 6 }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={verifyTOTP}
+                  disabled={totpToken.length !== 6}
+                  sx={{ mt: 2 }}
+                >
+                  Verify & Enable 2FA
+                </Button>
+              </Box>
+            )}
+          </>
+        ) : (
+          <Box>
+            <Alert
+              severity="success"
+              sx={{ mb: 2 }}
+              action={
+                <Button
+                  color="error"
+                  size="small"
+                  onClick={disableTOTP}
+                >
+                  Disable 2FA
+                </Button>
+              }
+            >
+              Two-factor authentication is enabled
+            </Alert>
+            <Typography variant="body2" color="text.secondary">
+              Use your authenticator app to generate codes when signing in
+            </Typography>
+          </Box>
+        )}
       </Paper>
     </Box>
   );
