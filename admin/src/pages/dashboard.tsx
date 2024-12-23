@@ -7,17 +7,25 @@ import {
   Drawer,
   IconButton,
   List,
+  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Toolbar,
   Typography,
+  Divider
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
+import PeopleIcon from '@mui/icons-material/People';
+import RssFeedIcon from '@mui/icons-material/RssFeed';
+import HighlightAltIcon from '@mui/icons-material/HighlightAlt';
+import { Link } from 'react-router-dom';
 import { BlogPosts } from './blog';
 import { Projects } from './projects';
 import { Users } from './users';
+import { Account } from './account';
 import { auth, setNavigate } from '../services/auth';
 import { TokenExpirationChecker } from '../components/tokenExpirationCheck';
 
@@ -36,11 +44,17 @@ const Dashboard = () => {
     navigate('/admin/login');
   };
 
-  const menuItems = [
-    { text: 'Blog Posts', path: '/admin/blog', icon: <MenuIcon /> },
-    { text: 'Projects', path: '/admin/projects', icon: <MenuIcon /> },
-    { text: 'Users', path: '/admin/users', icon: <MenuIcon /> },
+  const handleDrawerToggle = () => {
+    setOpen(!open);
+  };
+
+  const mainMenuItems = [
+    { text: 'Blog Posts', path: '/admin/blog', icon: <RssFeedIcon /> },
+    { text: 'Projects', path: '/admin/projects', icon: <HighlightAltIcon /> },
+    { text: 'Users', path: '/admin/users', icon: <PeopleIcon /> },
   ];
+
+  const accountMenuItem = { text: 'Account', path: '/admin/account', icon: <PersonIcon /> };
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -50,14 +64,15 @@ const Dashboard = () => {
         <Toolbar>
           <IconButton
             color="inherit"
-            onClick={() => setOpen(!open)}
+            aria-label="toggle drawer"
+            onClick={handleDrawerToggle}
             edge="start"
-            sx={{ marginRight: 2 }}
+            sx={{ mr: 2 }}
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
-            Admin Dashboard
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+            Dashboard
           </Typography>
           <IconButton color="inherit" onClick={handleLogout}>
             <LogoutIcon />
@@ -65,26 +80,45 @@ const Dashboard = () => {
         </Toolbar>
       </AppBar>
       <Drawer
-        variant="persistent"
-        anchor="left"
+        variant="permanent"
         open={open}
         sx={{
-          width: drawerWidth,
+          width: open ? drawerWidth : 56,
+          flexShrink: 0,
+          whiteSpace: 'nowrap',
           '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
+            width: open ? drawerWidth : 56,
+            transition: theme => theme.transitions.create('width', {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+            overflowX: 'hidden',
           },
         }}
       >
         <Toolbar />
-        <List>
-          {menuItems.map((item) => (
-            <ListItemButton key={item.text} onClick={() => navigate(item.path)}>
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          ))}
-        </List>
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <List>
+            {mainMenuItems.map((item) => (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton component={Link} to={item.path}>
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+          <Box sx={{ flexGrow: 1 }} />
+          <Divider />
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton component={Link} to={accountMenuItem.path}>
+                <ListItemIcon>{accountMenuItem.icon}</ListItemIcon>
+                <ListItemText primary={accountMenuItem.text} sx={{ opacity: open ? 1 : 0 }} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        </Box>
       </Drawer>
       <Box
         component="main"
@@ -104,6 +138,7 @@ const Dashboard = () => {
           <Route path="/blog/*" element={<BlogPosts />} />
           <Route path="/projects/*" element={<Projects />} />
           <Route path="/users/*" element={<Users />} />
+          <Route path="/account" element={<Account />} />
           <Route path="/" element={<BlogPosts />} /> {/* Default route */}
         </Routes>
       </Box>

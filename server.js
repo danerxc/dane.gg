@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import exphbs from 'express-handlebars';
 import setupWebSocket from './services/chat.js';
 import http from 'http';
-import { login, createUser, getUsers, updateUser, deleteUser } from './controllers/authController.js';
+import { login, createUser, getUsers, updateUser, deleteUser, getCurrentUser, updateAccountUsername, updateAccountPassword, checkUsernameAvailability } from './controllers/authController.js';
 import { authenticateToken } from './middleware/auth.js';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
@@ -39,6 +39,11 @@ import adminBlogRoutes from './routes/blogApi.js';
 
 // Auth routes first
 app.post('/auth/login', login);
+// Account management routes
+app.get('/auth/account/me', authenticateToken, getCurrentUser);
+app.get('/auth/account/check-username', authenticateToken, checkUsernameAvailability);
+app.put('/auth/account/username', authenticateToken, updateAccountUsername);
+app.put('/auth/account/password', authenticateToken, updateAccountPassword);
 
 // Protected API routes
 app.get('/api/admin/users', authenticateToken, getUsers);

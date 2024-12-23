@@ -100,3 +100,83 @@ export const deleteUser = async (req, res) => {
         res.status(500).json({ message: 'Error deleting user' });
     }
 };
+
+export const getCurrentUser = async (req, res) => {
+    const userId = req.user.id;
+    
+    try {
+        const { rows } = await pool.query(
+            'SELECT username, is_admin FROM website.users WHERE id = $1',
+            [userId]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        res.json({
+            username: rows[0].username,
+            is_admin: rows[0].is_admin
+        });
+    } catch (err) {
+        console.error('Error fetching current user:', err);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
+};
+
+export const updateAccountPassword = async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    try {
+        const { rows } = await pool.query('SELECT password_hash FROM website.users WHERE id = $1', [userId]);
+        const user = rows[0];
+
+        if (!(await bcrypt.compare(currentPassword, user.password_hash))) {
+            return res.status(400).json({ message: 'Current password is incorrect' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await pool.query('UPDATE website.users SET password_hash = $1 WHERE id = $2', 
+            [hashedPassword, userId]
+        );
+
+        res.json({ message: 'Password updated successfully' });
+    } catch (err) {
+        console.error('Error updating password:', err);
+        res.status(500).json({ message: 'Error updating password' });
+    }
+};
+
+export const updateAccountUsername = async (req, res) => {
+    const { username } = req.body;
+    const userId = req.user.id;
+
+    try {
+        await pool.query('UPDATE website.users SET username = $1 WHERE id = $2',
+            [username, userId]
+        );
+        res.json({ message: 'Username updated successfully' });
+    } catch (err) {
+        console.error('Error updating username:', err);
+        res.status(500).json({ message: 'Error updating username' });
+    }
+};
+
+export const checkUsernameAvailability = async (req, res) => {
+    const { username } = req.query;
+    const userId = req.user.id;
+
+    try {
+        const { rows } = await pool.query(
+            'SELECT COUNT(*) FROM website.users WHERE username = $1 AND id != $2',
+            [username, userId]
+        );
+        const isAvailable = parseInt(rows[0].count) === 0;
+        res.json({ available: isAvailable });
+    } catch (err) {
+        console.error('Error checking username:', err);
+        res.status(500).json({ message: 'Error checking username' });
+    }
+};
+
