@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, Routes, Route } from 'react-router-dom';
 import {
   AppBar,
@@ -211,18 +211,34 @@ const Dashboard = () => {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: desktopOpen ? `${drawerWidth}px` : '5px' }
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: {
+            xs: '100%',
+            sm: desktopOpen ? `calc(100% - ${drawerWidth}px)` : '100%'
+          },
+          transition: theme => theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          })
         }}
       >
         <Toolbar />
-        <Routes>
-          <Route path="/" element={<BlogPosts />} />
-          <Route path="/blog" element={<BlogPosts />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/account" element={<Account />} />
-        </Routes>
+        <Box 
+          sx={{ 
+            width: '100%',
+            maxWidth: '1200px',
+          }}
+        >
+          <Routes>
+            <Route path="/" element={<BlogPosts />} />
+            <Route path="/blog" element={<BlogPosts />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/users" element={<Users />} />
+            <Route path="/account" element={<Account />} />
+          </Routes>
+        </Box>
       </Box>
     </Box>
   );
