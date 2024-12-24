@@ -217,6 +217,7 @@ const Dashboard = () => {
       >
         <Toolbar />
         <Routes>
+          <Route path="/" element={<BlogPosts />} />
           <Route path="/blog" element={<BlogPosts />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/users" element={<Users />} />
