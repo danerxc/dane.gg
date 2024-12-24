@@ -9,6 +9,8 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import MdEditor from 'react-markdown-editor-lite';
 import { marked } from 'marked';
 import 'react-markdown-editor-lite/lib/index.css';
@@ -130,26 +132,26 @@ export const BlogPosts = () => {
     }
   };
 
-const handleImageUpload = async (file: File) => {
-  const formData = new FormData();
-  formData.append('file', file);
-  
-  try {
-    const { data } = await axiosInstance.post('/api/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-    
-    const encodedPath = encodeURI(data.filePath);
-    console.log('Image uploaded:', encodedPath);
-    return encodedPath;
-  } catch (err) {
-    console.error('Failed to upload image:', err);
-    setError('Failed to upload image');
-    return '';
-  }
-};
+  const handleImageUpload = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const { data } = await axiosInstance.post('/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      const encodedPath = encodeURI(data.filePath);
+      console.log('Image uploaded:', encodedPath);
+      return encodedPath;
+    } catch (err) {
+      console.error('Failed to upload image:', err);
+      setError('Failed to upload image');
+      return '';
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -186,40 +188,52 @@ const handleImageUpload = async (file: File) => {
         </Grid>
 
         <Grid item xs={12}>
-          <TableContainer component={Paper}>
-            <Table>
+          <TableContainer
+            component={Paper}
+            sx={{
+              width: '100%',
+              overflowX: 'auto',
+              mb: 2
+            }}
+          >
+            <Table sx={{ minWidth: { xs: 300, sm: 650 } }}>
               <TableHead>
                 <TableRow>
                   <TableCell>Title</TableCell>
-                  <TableCell>Slug</TableCell>
-                  <TableCell>Published</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Slug</TableCell>
+                  <TableCell sx={{ width: { xs: '80px', sm: '120px' } }}>Published</TableCell>
+                  <TableCell sx={{ width: { xs: '100px', sm: '120px' } }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {posts.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} align="center">
-                      <Typography variant="body1">No blog posts</Typography>
+                {posts.map((post) => (
+                  <TableRow key={post.id}>
+                    <TableCell>{post.title}</TableCell>
+                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{post.slug}</TableCell>
+                    <TableCell align="center">
+                      {post.published ? (
+                        <CheckCircleIcon color="success" sx={{ fontSize: '1.2rem' }} />
+                      ) : (
+                        <CancelIcon color="error" sx={{ fontSize: '1.2rem' }} />
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEdit(post)}
+                        sx={{ mr: 1 }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDelete(post.id!)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  posts.map((post) => (
-                    <TableRow key={post.id}>
-                      <TableCell>{post.title}</TableCell>
-                      <TableCell>{post.slug}</TableCell>
-                      <TableCell>{post.published ? 'Yes' : 'No'}</TableCell>
-                      <TableCell>
-                        <IconButton onClick={() => handleEdit(post)}>
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton onClick={() => handleDelete(post.slug)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                ))}
               </TableBody>
             </Table>
           </TableContainer>

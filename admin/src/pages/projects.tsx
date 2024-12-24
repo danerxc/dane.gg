@@ -318,81 +318,67 @@ export const Projects = () => {
       </Button>
 
       <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Featured</TableCell>
-              <TableCell>Tags</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {projects.length === 0 ? (
+          <Table sx={{ minWidth: { xs: 300, sm: 650 } }}>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={6} align="center">
-                  <Typography variant="body1">No projects</Typography>
-                </TableCell>
+                <TableCell>Title</TableCell>
+                <TableCell>Featured</TableCell>
+                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Tags</TableCell>
+                <TableCell sx={{ width: 120 }}>Actions</TableCell>
               </TableRow>
-            ) : (
-              projects.map((project) => (
+            </TableHead>
+            <TableBody>
+              {projects.map((project) => (
                 <TableRow key={project.id}>
                   <TableCell>{project.title}</TableCell>
                   <TableCell>
-                    {categories.find(c => c.id === project.category_id)?.name || 'Uncategorized'}
+                    {project.featured ? 
+                      <CheckCircleIcon color="success" sx={{ fontSize: '1.2rem' }} /> : 
+                      <CancelIcon color="error" sx={{ fontSize: '1.2rem' }} />
+                    }
                   </TableCell>
-                  <TableCell>
-                    {project.featured ? <CheckCircleIcon color="success" /> : <CancelIcon color="error" />}
-                  </TableCell>
-                  <TableCell>
-                    {project.tags && project.tags.length > 0 ? (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {project.tags.map((tag) => (
-                          <Chip
-                            key={tag.id}
-                            label={tag.title}
-                            size="small"
-                            sx={{
-                              backgroundColor: tag.color,
-                              color: theme => theme.palette.getContrastText(tag.color),
-                              '&:hover': {
-                                backgroundColor: tag.color,
-                                opacity: 0.9
-                              }
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        No tags
-                      </Typography>
-                    )}
+                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {project.tags?.map((tag) => (
+                        <Chip
+                          key={tag.id}
+                          label={tag.title}
+                          size="small"
+                          sx={{
+                            backgroundColor: tag.color,
+                            color: theme => theme.palette.getContrastText(tag.color)
+                          }}
+                        />
+                      ))}
+                    </Box>
                   </TableCell>
                   <TableCell>
                     <IconButton
+                      size="small"
                       onClick={() => {
                         setCurrentProject({
                           ...project,
-                          tagIds: project.tags?.map(tag => tag.id) || []
+                          tagIds: project.tags?.map(tag => tag.id)
                         });
                         setIsEditing(true);
                         setOpen(true);
                       }}
+                      sx={{ mr: 1 }}
                     >
                       <EditIcon />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(project.id)}>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDelete(project.id)}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>{isEditing ? 'Edit Project' : 'Create Project'}</DialogTitle>
