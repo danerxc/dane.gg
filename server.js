@@ -9,6 +9,8 @@ import http from 'http';
 import { login, createUser, getUsers, updateUser, deleteUser, getCurrentUser, updateAccountUsername, updateAccountPassword, checkUsernameAvailability, generateTOTPSecret, verifyAndEnableTOTP,disableTOTP, resetUserTOTP } from './controllers/authController.js';
 import { authenticateToken } from './middleware/auth.js';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import { trackPageView } from './middleware/stats.js';
+import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -27,6 +29,7 @@ app.engine('handlebars', exphbs.engine({
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'public/templates'));
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,9 +39,11 @@ import blogRoutes from './routes/blog.js';
 import projectRoutes from './routes/projects.js';
 import webhookRoutes from './routes/webhooks.js';
 import adminBlogRoutes from './routes/blogApi.js';
+import statsRoutes from './routes/stats.js';
 
 // Auth routes first
 app.post('/auth/login', login);
+
 // Account management routes
 app.get('/auth/account/me', authenticateToken, getCurrentUser);
 app.get('/auth/account/check-username', authenticateToken, checkUsernameAvailability);
@@ -61,7 +66,11 @@ app.delete('/api/admin/users/:id', authenticateToken, deleteUser);
 app.use('/api/blog', adminBlogRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api', apiRoutes);
+app.use('/blog', blogRoutes);
 app.use('/webhooks', webhookRoutes);
+app.use('/api/stats', statsRoutes);
+
+app.use(trackPageView);
 
 // Middleware to remove trailing slashes
 app.use((req, res, next) => {
@@ -124,7 +133,7 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   console.error(err.stack);
   const statusCode = err.status || 500;
-  res.status(statusCode).redirect(`/error.html?code=${statusCode}`);
+  res.status(statusCode).redirect(`/error?code=${statusCode}`);
 });
 
 if (process.env.NODE_ENV === 'development') {

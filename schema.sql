@@ -84,6 +84,17 @@ CREATE TABLE website.project_tags (
     PRIMARY KEY (project_id, tag_id)
 );
 
+CREATE TABLE IF NOT EXISTS website.page_views (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    page_path VARCHAR(255) NOT NULL,
+    visitor_id VARCHAR(36) NOT NULL,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    country_code VARCHAR(2),
+    referrer TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Insert tags
 INSERT INTO website.tags (title, color) VALUES
 ('JavaScript', '#F0DB4F'),
@@ -100,6 +111,8 @@ CREATE INDEX idx_messages_client_uuid ON website.messages(client_uuid);
 CREATE INDEX idx_projects_featured ON website.projects(featured);
 CREATE INDEX idx_projects_category_id ON website.projects(category_id);
 CREATE INDEX idx_categories_name ON website.project_categories(name);
+CREATE INDEX idx_page_views_visitor_id ON website.page_views(visitor_id);
+CREATE INDEX idx_page_views_created_at ON website.page_views(created_at);
 
 -- Function and trigger
 CREATE OR REPLACE FUNCTION website.update_updated_at_column()

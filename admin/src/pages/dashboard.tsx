@@ -22,8 +22,10 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import PeopleIcon from '@mui/icons-material/People';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import HighlightAltIcon from '@mui/icons-material/HighlightAlt';
 import { Link } from 'react-router-dom';
+import { Stats } from './stats';
 import { BlogPosts } from './blog';
 import { Projects } from './projects';
 import { Users } from './users';
@@ -68,6 +70,11 @@ const Dashboard = () => {
   };
 
   const mainMenuItems = [
+    {
+      text: 'Dashboard',
+      path: '/admin',
+      icon: <DashboardIcon />
+    },
     {
       text: 'Blog Posts',
       path: '/admin/blog',
@@ -232,7 +239,8 @@ const Dashboard = () => {
           }}
         >
           <Routes>
-            <Route path="/" element={<BlogPosts />} />
+            <Route path="/" element={<Stats />} />
+            <Route path="/stats" element={<Stats />} />
             <Route path="/blog" element={<BlogPosts />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/users" element={<Users />} />
