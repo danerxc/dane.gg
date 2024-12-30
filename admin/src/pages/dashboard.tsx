@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Routes, Route } from 'react-router-dom';
 import {
   AppBar,
@@ -32,15 +32,39 @@ import { Users } from './users';
 import { Account } from './account';
 import { auth, setNavigate } from '../services/auth';
 import { TokenExpirationChecker } from '../components/tokenExpirationCheck';
+import axiosInstance from '../services/axios';
 
 const drawerWidth = 240;
+
+interface User {
+  id: number;
+  username: string;
+  is_admin: boolean;
+  created_at: string;
+  password?: string;
+  changePassword?: boolean;
+  totp_enabled: boolean;
+}
 
 const Dashboard = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data } = await axiosInstance.get('/auth/account/me');
+        setUser(data);
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleLogout = () => {
     auth.logout();
@@ -85,12 +109,24 @@ const Dashboard = () => {
       path: '/admin/projects',
       icon: <HighlightAltIcon />
     },
-    {
+    ...(user?.is_admin ? [{
       text: 'Users',
       path: '/admin/users',
       icon: <PeopleIcon />
-    }
+    }] : [])
   ];
+
+  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+      if (!user?.is_admin) {
+        navigate('/admin');
+      }
+    }, [navigate, user]);
+
+    return user?.is_admin ? <>{children}</> : null;
+  };
 
   const accountMenuItem = {
     text: 'Account',
@@ -100,37 +136,37 @@ const Dashboard = () => {
 
   const DrawerContent = () => (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-    <Toolbar />
-    <List>
-      {mainMenuItems.map((item) => (
-        <ListItem key={item.text} disablePadding>
-          <ListItemButton
-            component={Link}
-            to={item.path}
-            sx={{
-              minHeight: 48,
-              justifyContent: isMobile ? 'initial' : (desktopOpen ? 'initial' : 'center'),
-              px: 2.5,
-            }}
-          >
-            <ListItemIcon sx={{
-              minWidth: 0,
-              mr: isMobile ? 3 : (desktopOpen ? 3 : 'auto'),
-              justifyContent: 'center',
-            }}>
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText
-              primary={item.text}
-              sx={{ 
-                opacity: isMobile ? 1 : (desktopOpen ? 1 : 0),
-                display: isMobile ? 'block' : (desktopOpen ? 'block' : 'none')
+      <Toolbar />
+      <List>
+        {mainMenuItems.map((item) => (
+          <ListItem key={item.text} disablePadding>
+            <ListItemButton
+              component={Link}
+              to={item.path}
+              sx={{
+                minHeight: 48,
+                justifyContent: isMobile ? 'initial' : (desktopOpen ? 'initial' : 'center'),
+                px: 2.5,
               }}
-            />
-          </ListItemButton>
-        </ListItem>
-      ))}
-    </List>
+            >
+              <ListItemIcon sx={{
+                minWidth: 0,
+                mr: isMobile ? 3 : (desktopOpen ? 3 : 'auto'),
+                justifyContent: 'center',
+              }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.text}
+                sx={{
+                  opacity: isMobile ? 1 : (desktopOpen ? 1 : 0),
+                  display: isMobile ? 'block' : (desktopOpen ? 'block' : 'none')
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
       <Box sx={{ flexGrow: 1 }} />
       <Divider />
       <List>
@@ -184,8 +220,8 @@ const Dashboard = () => {
         </Toolbar>
       </AppBar>
 
-     {/* Mobile Drawer */}
-     {isMobile ? (
+      {/* Mobile Drawer */}
+      {isMobile ? (
         <Drawer variant="temporary" {...mobileDrawerProps}>
           <DrawerContent />
         </Drawer>
@@ -232,8 +268,8 @@ const Dashboard = () => {
         }}
       >
         <Toolbar />
-        <Box 
-          sx={{ 
+        <Box
+          sx={{
             width: '100%',
             maxWidth: '1200px',
           }}
@@ -243,7 +279,14 @@ const Dashboard = () => {
             <Route path="/stats" element={<Stats />} />
             <Route path="/blog" element={<BlogPosts />} />
             <Route path="/projects" element={<Projects />} />
-            <Route path="/users" element={<Users />} />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <Users />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/account" element={<Account />} />
           </Routes>
         </Box>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -35,6 +36,22 @@ interface User {
 }
 
 export const Users = () => {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const { data } = await axiosInstance.get('/auth/account/me');
+        if (!data.is_admin) {
+          navigate('/admin');
+        }
+      } catch (err) {
+        navigate('/admin');
+      }
+    };
+    checkAdmin();
+  }, [navigate]);
+
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
