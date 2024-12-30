@@ -32,7 +32,8 @@ import {
   Divider,
   Popper,
   ClickAwayListener,
-  LinearProgress
+  LinearProgress,
+  useTheme, useMediaQuery, Drawer
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -133,6 +134,9 @@ export const Projects = () => {
   const [inlineEditTag, setInlineEditTag] = useState({ title: '', color: '' });
   const [inlineColorPickerOpen, setInlineColorPickerOpen] = useState(false);
   const { uploadProgress, uploadComplete, fileInputRef, handleFileUpload, resetUploadState } = useFileUpload();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
 
   const fetchProjects = async () => {
@@ -178,16 +182,6 @@ export const Projects = () => {
   useEffect(() => {
     resetUploadState();
   }, [open, resetUploadState]);
-
-  const handleAddTag = async () => {
-    try {
-      const response = await axiosInstance.post('/api/projects/tags', newTag);
-      setTags([...tags, response.data]);
-      setNewTag({ title: '', color: '#000000' });
-    } catch (error) {
-      console.error('Failed to create tag:', error);
-    }
-  };
 
   const handleSave = async () => {
     try {
@@ -270,6 +264,21 @@ export const Projects = () => {
     }
   };
 
+  const handleThumbnailChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const filePath = await handleFileUpload(e);
+    if (filePath) {
+      setCurrentProject(prev => ({ ...prev, image_url: filePath }));
+    }
+  };
+
+  const handleColorPickerClick = (event: React.MouseEvent<HTMLElement>, tagId?: string) => {
+    setAnchorEl(event.currentTarget);
+    setColorPickerOpen(true);
+    if (tagId) {
+      setInlineEditingTagId(tagId);
+    }
+  };
+
   const handleUpdateTag = async (tag: Tag) => {
     try {
       await axiosInstance.put(`/api/projects/tags/${tag.id}`, {
@@ -277,19 +286,45 @@ export const Projects = () => {
         color: tag.color
       });
       setTags(tags.map(t => t.id === tag.id ? tag : t));
-      setEditingTag(null);
+      setFeedback({
+        message: 'Tag updated successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Failed to update tag:', error);
+      setFeedback({
+        message: 'Failed to update tag',
+        severity: 'error'
+      });
+    }
+  };
+
+  const handleTagSave = async (tagId: string) => {
+    try {
+      await handleUpdateTag({
+        id: tagId,
+        ...inlineEditTag
+      });
+      setInlineEditingTagId(null);
       setColorPickerOpen(false);
+      setAnchorEl(null);
     } catch (error) {
       console.error('Failed to update tag:', error);
     }
   };
 
-  const handleThumbnailChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const filePath = await handleFileUpload(e);
-    if (filePath) {
-      setCurrentProject(prev => ({ ...prev, image_url: filePath }));
+  const handleNewTagSave = async () => {
+    try {
+      const response = await axiosInstance.post('/api/projects/tags', newTag);
+      setTags([...tags, response.data]);
+      setNewTag({ title: '', color: '#000000' });
+      setColorPickerOpen(false);
+      setAnchorEl(null);
+    } catch (error) {
+      console.error('Failed to create tag:', error);
     }
   };
+
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
@@ -318,264 +353,310 @@ export const Projects = () => {
       </Button>
 
       <TableContainer component={Paper}>
-          <Table sx={{ minWidth: { xs: 300, sm: 650 } }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>Title</TableCell>
-                <TableCell>Featured</TableCell>
-                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Tags</TableCell>
-                <TableCell sx={{ width: 120 }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {projects.map((project) => (
-                <TableRow key={project.id}>
-                  <TableCell>{project.title}</TableCell>
-                  <TableCell>
-                    {project.featured ? 
-                      <CheckCircleIcon color="success" sx={{ fontSize: '1.2rem' }} /> : 
-                      <CancelIcon color="error" sx={{ fontSize: '1.2rem' }} />
-                    }
-                  </TableCell>
-                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {project.tags?.map((tag) => (
-                        <Chip
-                          key={tag.id}
-                          label={tag.title}
-                          size="small"
-                          sx={{
-                            backgroundColor: tag.color,
-                            color: theme => theme.palette.getContrastText(tag.color)
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setCurrentProject({
-                          ...project,
-                          tagIds: project.tags?.map(tag => tag.id)
-                        });
-                        setIsEditing(true);
-                        setOpen(true);
-                      }}
-                      sx={{ mr: 1 }}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleDelete(project.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>{isEditing ? 'Edit Project' : 'Create Project'}</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Title"
-                value={currentProject.title || ''}
-                onChange={(e) => setCurrentProject({ ...currentProject, title: e.target.value })}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Category</InputLabel>
-                  <Select
-                    value={currentProject.category_id || ''}
-                    onChange={(e) => setCurrentProject({ ...currentProject, category_id: e.target.value })}
-                    label="Category"
-                  >
-                    {Array.isArray(categories) && categories.map((category) => (
-                      <MenuItem key={category.id} value={category.id}>
-                        {category.name}
-                      </MenuItem>
+        <Table sx={{ minWidth: { xs: 300, sm: 650 } }}>
+          <TableHead>
+            <TableRow>
+              <TableCell>Title</TableCell>
+              <TableCell>Featured</TableCell>
+              <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Tags</TableCell>
+              <TableCell sx={{ width: 120 }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {projects.map((project) => (
+              <TableRow key={project.id}>
+                <TableCell>{project.title}</TableCell>
+                <TableCell>
+                  {project.featured ?
+                    <CheckCircleIcon color="success" sx={{ fontSize: '1.2rem' }} /> :
+                    <CancelIcon color="error" sx={{ fontSize: '1.2rem' }} />
+                  }
+                </TableCell>
+                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {project.tags?.map((tag) => (
+                      <Chip
+                        key={tag.id}
+                        label={tag.title}
+                        size="small"
+                        sx={{
+                          backgroundColor: tag.color,
+                          color: theme => theme.palette.getContrastText(tag.color)
+                        }}
+                      />
                     ))}
-                  </Select>
-                </FormControl>
-                <IconButton onClick={() => setCategoryDialogOpen(true)}>
-                  <AddIcon />
-                </IconButton>
-              </Box>
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Description"
-                multiline
-                rows={4}
-                value={currentProject.description || ''}
-                onChange={(e) => setCurrentProject({ ...currentProject, description: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={currentProject.featured || false}
-                    onChange={(e) => setCurrentProject({ ...currentProject, featured: e.target.checked })}
-                  />
-                }
-                label="Featured"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Box display="flex" gap={2} flexDirection="column">
-                <Box display="flex" gap={1} alignItems="center">
-                  <TextField
-                    fullWidth
-                    label="Image URL/Path"
-                    value={currentProject.image_url || ''}
-                    onChange={(e) => setCurrentProject({ ...currentProject, image_url: e.target.value })}
-                  />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleThumbnailChange}
-                    ref={fileInputRef}
-                    style={{ display: 'none' }}
-                  />
-                  <Button
-                    variant="contained"
-                    onClick={() => fileInputRef.current?.click()}
-                    startIcon={<CloudUploadIcon />}
-                  >
-                    Upload
-                  </Button>
-                </Box>
-                {uploadProgress > 0 && (
-                  <Box sx={{ width: '100%' }}>
-                    <LinearProgress variant="determinate" value={uploadProgress} />
-                    <Typography variant="caption" color="textSecondary">
-                      {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
-                    </Typography>
                   </Box>
-                )}
-                <ImagePreview src={currentProject.image_url} />
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Project URL"
-                value={currentProject.project_url || ''}
-                onChange={(e) => setCurrentProject({ ...currentProject, project_url: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Project Text</InputLabel>
-                <Select
-                  value={currentProject.project_text || ''}
-                  onChange={(e) => setCurrentProject({ ...currentProject, project_text: e.target.value })}
-                  label="Project Text"
-                >
-                  {PROJECT_TEXT_OPTIONS.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Repository URL"
-                value={currentProject.repo_url || ''}
-                onChange={(e) => setCurrentProject({ ...currentProject, repo_url: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Repository Text</InputLabel>
-                <Select
-                  value={currentProject.repo_text || ''}
-                  onChange={(e) => setCurrentProject({ ...currentProject, repo_text: e.target.value })}
-                  label="Repository Text"
-                >
-                  {REPO_TEXT_OPTIONS.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Tags</InputLabel>
-                  <Select
-                    multiple
-                    value={currentProject.tagIds || []}
-                    onChange={(e) => setCurrentProject({
-                      ...currentProject,
-                      tagIds: e.target.value as string[]
-                    })}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {(selected as string[]).map((tagId) => {
-                          const tag = tags.find(t => t.id === tagId);
-                          return tag ? (
-                            <Chip
-                              key={tag.id}
-                              label={tag.title}
-                              sx={{
-                                backgroundColor: tag.color,
-                                color: getContrastText(tag.color)
-                              }}
-                            />
-                          ) : null;
-                        })}
-                      </Box>
-                    )}
+                </TableCell>
+                <TableCell>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setCurrentProject({
+                        ...project,
+                        tagIds: project.tags?.map(tag => tag.id)
+                      });
+                      setIsEditing(true);
+                      setOpen(true);
+                    }}
+                    sx={{ mr: 1 }}
                   >
-                    {tags.map((tag) => (
-                      <MenuItem key={tag.id} value={tag.id}>
-                        <Chip
-                          size="small"
-                          label={tag.title}
-                          sx={{
-                            backgroundColor: tag.color,
-                            color: getContrastText(tag.color),
-                            mr: 1
-                          }}
-                        />
-                        {tag.title}
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleDelete(project.id)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Drawer
+        anchor="right"
+        open={open}
+        onClose={() => setOpen(false)}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: isMobile ? '100%' : '50%',
+            boxSizing: 'border-box',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box sx={{
+            p: 2,
+            borderBottom: 1,
+            borderColor: 'divider',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <Typography variant="h6">
+              {isEditing ? 'Edit Project' : 'Create Project'}
+            </Typography>
+            <IconButton onClick={() => setOpen(false)}>
+              <CancelIcon />
+            </IconButton>
+          </Box>
+
+          {/* Scrollable Content */}
+          <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Title"
+                  value={currentProject.title || ''}
+                  onChange={(e) => setCurrentProject({ ...currentProject, title: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Category</InputLabel>
+                    <Select
+                      value={currentProject.category_id || ''}
+                      onChange={(e) => setCurrentProject({ ...currentProject, category_id: e.target.value })}
+                      label="Category"
+                    >
+                      {Array.isArray(categories) && categories.map((category) => (
+                        <MenuItem key={category.id} value={category.id}>
+                          {category.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <IconButton onClick={() => setCategoryDialogOpen(true)}>
+                    <AddIcon />
+                  </IconButton>
+                </Box>
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  multiline
+                  rows={4}
+                  value={currentProject.description || ''}
+                  onChange={(e) => setCurrentProject({ ...currentProject, description: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={currentProject.featured || false}
+                      onChange={(e) => setCurrentProject({ ...currentProject, featured: e.target.checked })}
+                    />
+                  }
+                  label="Featured"
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Box display="flex" gap={2} flexDirection="column">
+                  <Box display="flex" gap={1} alignItems="center">
+                    <TextField
+                      fullWidth
+                      label="Image URL/Path"
+                      value={currentProject.image_url || ''}
+                      onChange={(e) => setCurrentProject({ ...currentProject, image_url: e.target.value })}
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleThumbnailChange}
+                      ref={fileInputRef}
+                      style={{ display: 'none' }}
+                    />
+                    <Button
+                      variant="contained"
+                      onClick={() => fileInputRef.current?.click()}
+                      startIcon={<CloudUploadIcon />}
+                    >
+                      Upload
+                    </Button>
+                  </Box>
+                  {uploadProgress > 0 && (
+                    <Box sx={{ width: '100%' }}>
+                      <LinearProgress variant="determinate" value={uploadProgress} />
+                      <Typography variant="caption" color="textSecondary">
+                        {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
+                      </Typography>
+                    </Box>
+                  )}
+                  <ImagePreview src={currentProject.image_url} />
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Project URL"
+                  value={currentProject.project_url || ''}
+                  onChange={(e) => setCurrentProject({ ...currentProject, project_url: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Project Text</InputLabel>
+                  <Select
+                    value={currentProject.project_text || ''}
+                    onChange={(e) => setCurrentProject({ ...currentProject, project_text: e.target.value })}
+                    label="Project Text"
+                  >
+                    {PROJECT_TEXT_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
-                <IconButton onClick={() => setTagDialogOpen(true)}>
-                  <AddIcon />
-                </IconButton>
-              </Box>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Repository URL"
+                  value={currentProject.repo_url || ''}
+                  onChange={(e) => setCurrentProject({ ...currentProject, repo_url: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Repository Text</InputLabel>
+                  <Select
+                    value={currentProject.repo_text || ''}
+                    onChange={(e) => setCurrentProject({ ...currentProject, repo_text: e.target.value })}
+                    label="Repository Text"
+                  >
+                    {REPO_TEXT_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Tags</InputLabel>
+                    <Select
+                      multiple
+                      value={currentProject.tagIds || []}
+                      onChange={(e) => setCurrentProject({
+                        ...currentProject,
+                        tagIds: e.target.value as string[]
+                      })}
+                      renderValue={(selected) => (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {(selected as string[]).map((tagId) => {
+                            const tag = tags.find(t => t.id === tagId);
+                            return tag ? (
+                              <Chip
+                                key={tag.id}
+                                label={tag.title}
+                                sx={{
+                                  backgroundColor: tag.color,
+                                  color: getContrastText(tag.color)
+                                }}
+                              />
+                            ) : null;
+                          })}
+                        </Box>
+                      )}
+                    >
+                      {tags.map((tag) => (
+                        <MenuItem key={tag.id} value={tag.id}>
+                          <Chip
+                            size="small"
+                            label={tag.title}
+                            sx={{
+                              backgroundColor: tag.color,
+                              color: getContrastText(tag.color),
+                              mr: 1
+                            }}
+                          />
+                          {tag.title}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <IconButton onClick={() => setTagDialogOpen(true)}>
+                    <AddIcon />
+                  </IconButton>
+                </Box>
+              </Grid>
             </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained">Save</Button>
-        </DialogActions>
-      </Dialog>
+          </Box>
+
+          {/* Footer */}
+          <Box sx={{
+            p: 2,
+            borderTop: 1,
+            borderColor: 'divider',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 1,
+            bgcolor: 'background.paper'
+          }}>
+            <Button onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} variant="contained">Save</Button>
+          </Box>
+        </Box>
+      </Drawer>
 
       <Dialog open={categoryDialogOpen} onClose={() => setCategoryDialogOpen(false)}>
         <DialogTitle>Manage Categories</DialogTitle>
@@ -659,142 +740,51 @@ export const Projects = () => {
         </DialogActions>
       </Dialog>
 
+      {/* Tag Management Dialog */}
       <Dialog open={tagDialogOpen} onClose={() => setTagDialogOpen(false)}>
         <DialogTitle>Manage Tags</DialogTitle>
         <DialogContent>
-          {!editingTag ? (
-            <Grid container spacing={2}>
-              <Grid item xs={10}>
-                <TextField
-                  autoFocus
-                  margin="dense"
-                  label="Tag Name"
-                  fullWidth
-                  value={newTag.title}
-                  onChange={(e) => setNewTag({ ...newTag, title: e.target.value })}
-                />
-              </Grid>
-              <Grid item xs={10}>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <TextField
-                    margin="dense"
-                    label="Tag Color"
-                    fullWidth
-                    value={newTag.color}
-                    onChange={(e) => setNewTag({ ...newTag, color: e.target.value })}
-                    InputProps={{
-                      startAdornment: (
-                        <Box
-                          sx={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: 1,
-                            backgroundColor: newTag.color,
-                            border: '1px solid #ccc',
-                            mr: 1
-                          }}
-                        />
-                      ),
-                    }}
-                  />
-                </Box>
-              </Grid>
-              <Grid item xs={2} sx={{ display: 'flex', alignItems: 'center' }}>
-                <IconButton
-                  onClick={(e) => {
-                    setColorPickerOpen(true);
-                    setPickerPosition({ x: e.clientX, y: e.clientY });
-                  }}
-                >
-                  <ColorLensIcon />
-                </IconButton>
-              </Grid>
-              <Grid item xs={12}>
-                <Button
-                  onClick={handleAddTag}
-                  variant="contained"
-                  sx={{ mt: 2 }}
-                  fullWidth
-                >
-                  Add New Tag
-                </Button>
-              </Grid>
+          {/* Add New Tag Section */}
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={10}>
+              <TextField
+                autoFocus
+                size="small"
+                label="New Tag Name"
+                fullWidth
+                value={newTag.title}
+                onChange={(e) => setNewTag({ ...newTag, title: e.target.value })}
+              />
             </Grid>
-          ) : (
-            <Grid container spacing={2}>
-              <Grid item xs={10}>
-                <TextField
-                  autoFocus
-                  margin="dense"
-                  label="Edit Tag Name"
-                  fullWidth
-                  value={newTag.title}
-                  onChange={(e) => setNewTag({ ...newTag, title: e.target.value })}
-                />
-              </Grid>
-              <Grid item xs={10}>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <TextField
-                    margin="dense"
-                    label="Edit Tag Color"
-                    fullWidth
-                    value={newTag.color}
-                    onChange={(e) => setNewTag({ ...newTag, color: e.target.value })}
-                    InputProps={{
-                      startAdornment: (
-                        <Box
-                          sx={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: 1,
-                            backgroundColor: newTag.color,
-                            border: '1px solid #ccc',
-                            mr: 1
-                          }}
-                        />
-                      ),
-                    }}
-                  />
-                </Box>
-              </Grid>
-              <Grid item xs={2} sx={{ display: 'flex', alignItems: 'center' }}>
-                <IconButton
-                  onClick={(e) => {
-                    setColorPickerOpen(true);
-                    setPickerPosition({ x: e.clientX, y: e.clientY });
-                  }}
-                >
-                  <ColorLensIcon />
-                </IconButton>
-              </Grid>
-              <Grid item xs={12}>
-                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                  <Button
-                    onClick={() => handleUpdateTag({
-                      id: editingTag.id,
-                      ...newTag
-                    })}
-                    variant="contained"
-                  >
-                    Update
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setEditingTag(null);
-                      setNewTag({ title: '', color: '#000000' });
-                    }}
-                    variant="outlined"
-                  >
-                    Cancel
-                  </Button>
-                </Box>
-              </Grid>
+            <Grid item xs={2}>
+              <IconButton
+                onClick={(e) => handleColorPickerClick(e)}
+                sx={{
+                  bgcolor: newTag.color,
+                  '&:hover': { bgcolor: newTag.color },
+                  width: 40,
+                  height: 40
+                }}
+              >
+                <ColorLensIcon sx={{ color: getContrastText(newTag.color) }} />
+              </IconButton>
             </Grid>
-          )}
+            <Grid item xs={12}>
+              <Button
+                onClick={handleNewTagSave}
+                variant="contained"
+                fullWidth
+                disabled={!newTag.title}
+              >
+                Add New Tag
+              </Button>
+            </Grid>
+          </Grid>
 
           <Divider sx={{ my: 2 }} />
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 2 }}>
+          {/* Existing Tags List */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {tags.map((tag) => (
               <Box
                 key={tag.id}
@@ -810,52 +800,24 @@ export const Projects = () => {
                       size="small"
                       value={inlineEditTag.title}
                       onChange={(e) => setInlineEditTag({ ...inlineEditTag, title: e.target.value })}
-                      sx={{
-                        flexGrow: 1,
-                        maxWidth: '50%'
-                      }}
-                    />
-                    <TextField
-                      size="small"
-                      value={inlineEditTag.color}
-                      onChange={(e) => setInlineEditTag({ ...inlineEditTag, color: e.target.value })}
-                      sx={{ width: '120px' }}
-                      InputProps={{
-                        startAdornment: (
-                          <Box
-                            sx={{
-                              width: 20,
-                              height: 20,
-                              borderRadius: 1,
-                              backgroundColor: inlineEditTag.color,
-                              border: '1px solid #ccc',
-                              mr: 1
-                            }}
-                          />
-                        ),
-                      }}
+                      sx={{ flexGrow: 1 }}
                     />
                     <IconButton
                       size="small"
-                      onClick={(e) => {
-                        setInlineColorPickerOpen(true);
-                        setPickerPosition({ x: e.clientX, y: e.clientY });
+                      onClick={(e) => handleColorPickerClick(e, tag.id)}
+                      sx={{
+                        bgcolor: inlineEditTag.color,
+                        '&:hover': { bgcolor: inlineEditTag.color }
                       }}
                     >
-                      <ColorLensIcon fontSize="small" />
+                      <ColorLensIcon sx={{
+                        color: getContrastText(inlineEditTag.color),
+                        fontSize: '1.2rem'
+                      }} />
                     </IconButton>
                     <IconButton
                       size="small"
-                      onClick={async () => {
-                        await handleUpdateTag({
-                          id: tag.id,
-                          ...inlineEditTag
-                        });
-                        setInlineEditingTagId(null);
-                        setInlineEditTag({ title: '', color: '' });
-                        const response = await axiosInstance.get('/api/projects/tags');
-                        setTags(response.data);
-                      }}
+                      onClick={() => handleTagSave(tag.id)}
                     >
                       <CheckCircleIcon fontSize="small" color="success" />
                     </IconButton>
@@ -863,7 +825,8 @@ export const Projects = () => {
                       size="small"
                       onClick={() => {
                         setInlineEditingTagId(null);
-                        setInlineEditTag({ title: '', color: '' });
+                        setColorPickerOpen(false);
+                        setAnchorEl(null);
                       }}
                     >
                       <CancelIcon fontSize="small" color="error" />
@@ -900,29 +863,34 @@ export const Projects = () => {
             ))}
           </Box>
 
-          {inlineColorPickerOpen && (
-            <Popper
-              open={inlineColorPickerOpen}
-              anchorEl={null}
-              style={{
-                position: 'absolute',
-                left: pickerPosition.x,
-                top: pickerPosition.y,
-                zIndex: 1500,
+          {/* Color Picker Popper */}
+          <Popper
+            open={colorPickerOpen}
+            anchorEl={anchorEl}
+            placement="bottom-start"
+            style={{ zIndex: 1500 }}
+          >
+            <ClickAwayListener
+              onClickAway={() => {
+                setColorPickerOpen(false);
+                setAnchorEl(null);
               }}
             >
-              <ClickAwayListener onClickAway={() => setInlineColorPickerOpen(false)}>
-                <div>
-                  <ChromePicker
-                    color={inlineEditTag.color}
-                    onChange={(color) => {
-                      setInlineEditTag({ ...inlineEditTag, color: color.hex });
-                    }}
-                  />
-                </div>
-              </ClickAwayListener>
-            </Popper>
-          )}
+              <Paper elevation={8} sx={{ p: 1 }}>
+                <ChromePicker
+                  color={inlineEditingTagId ? inlineEditTag.color : newTag.color}
+                  onChange={(color) => {
+                    if (inlineEditingTagId) {
+                      setInlineEditTag(prev => ({ ...prev, color: color.hex }));
+                    } else {
+                      setNewTag(prev => ({ ...prev, color: color.hex }));
+                    }
+                  }}
+                  disableAlpha
+                />
+              </Paper>
+            </ClickAwayListener>
+          </Popper>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setTagDialogOpen(false)}>Close</Button>

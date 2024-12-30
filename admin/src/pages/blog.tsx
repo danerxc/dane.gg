@@ -4,7 +4,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Grid, IconButton, Dialog, DialogTitle, DialogContent, TextField,
   FormControlLabel, Switch, Button, Typography, DialogActions, Box, CircularProgress,
-  Alert, LinearProgress,
+  Alert, LinearProgress, useTheme, useMediaQuery, Drawer
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -39,6 +39,8 @@ export const BlogPosts = () => {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { uploadProgress, uploadComplete, fileInputRef, handleFileUpload, resetUploadState } = useFileUpload();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const fetchPosts = async () => {
     try {
@@ -170,11 +172,6 @@ export const BlogPosts = () => {
     }
   };
 
-  const getBaseURL = () => {
-    const { protocol, hostname, port } = window.location;
-    return `${protocol}//${hostname}${port ? `:${port}` : ''}`;
-  };
-
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
 
@@ -239,104 +236,145 @@ export const BlogPosts = () => {
           </TableContainer>
         </Grid>
 
-        <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle>{isEditing ? 'Edit Post' : 'Create Post'}</DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2}>
-              {/* Title Field */}
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Title"
-                  name="title"
-                  value={currentPost.title ?? ''}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+        <Drawer
+          anchor="right"
+          open={open}
+          onClose={() => setOpen(false)}
+          sx={{
+            '& .MuiDrawer-paper': {
+              width: isMobile ? '100%' : '50%',
+              boxSizing: 'border-box',
+            },
+          }}
+        >
+          <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {/* Header */}
+            <Box sx={{ 
+              p: 2, 
+              borderBottom: 1, 
+              borderColor: 'divider',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <Typography variant="h6">
+                {isEditing ? 'Edit Post' : 'Create Post'}
+              </Typography>
+              <IconButton onClick={() => setOpen(false)}>
+                <CancelIcon />
+              </IconButton>
+            </Box>
 
-              {/* Slug Field */}
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Slug"
-                  name="slug"
-                  value={currentPost.slug ?? ''}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+            {/* Content */}
+            <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+              <Grid container spacing={2}>
+                {/* Title Field */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Title"
+                    name="title"
+                    value={currentPost.title ?? ''}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
 
-              {/* Thumbnail Upload Section */}
-              <Grid item xs={12}>
-                <Box display="flex" gap={2} flexDirection="column">
-                  <Box display="flex" gap={1} alignItems="center">
-                    <TextField
-                      fullWidth
-                      label="Image URL/Path"
-                      value={currentPost.thumbnail || ''}
-                      onChange={(e) => setCurrentPost({ ...currentPost, thumbnail: e.target.value })}
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleThumbnailChange}
-                      ref={fileInputRef}
-                      style={{ display: 'none' }}
-                    />
-                    <Button
-                      variant="contained"
-                      onClick={() => fileInputRef.current?.click()}
-                      startIcon={<CloudUploadIcon />}
-                    >
-                      Upload
-                    </Button>
-                  </Box>
-                  {uploadProgress > 0 && (
-                    <Box sx={{ width: '100%' }}>
-                      <LinearProgress variant="determinate" value={uploadProgress} />
-                      <Typography variant="caption" color="textSecondary">
-                        {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
-                      </Typography>
+                {/* Slug Field */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Slug"
+                    name="slug"
+                    value={currentPost.slug ?? ''}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
+
+                {/* Thumbnail Upload Section */}
+                <Grid item xs={12}>
+                  <Box display="flex" gap={2} flexDirection="column">
+                    <Box display="flex" gap={1} alignItems="center">
+                      <TextField
+                        fullWidth
+                        label="Image URL/Path"
+                        value={currentPost.thumbnail || ''}
+                        onChange={(e) => setCurrentPost({ ...currentPost, thumbnail: e.target.value })}
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleThumbnailChange}
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                      />
+                      <Button
+                        variant="contained"
+                        onClick={() => fileInputRef.current?.click()}
+                        startIcon={<CloudUploadIcon />}
+                      >
+                        Upload
+                      </Button>
                     </Box>
-                  )}
-                  <ImagePreview src={currentPost.thumbnail} />
-                </Box>
-              </Grid>
+                    {uploadProgress > 0 && (
+                      <Box sx={{ width: '100%' }}>
+                        <LinearProgress variant="determinate" value={uploadProgress} />
+                        <Typography variant="caption" color="textSecondary">
+                          {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
+                        </Typography>
+                      </Box>
+                    )}
+                    <ImagePreview src={currentPost.thumbnail} />
+                  </Box>
+                </Grid>
 
-              {/* Editor Section */}
-              <Grid item xs={12}>
-                <MdEditor
-                  value={currentPost.content ?? ''}
-                  style={{ height: '500px' }}
-                  renderHTML={(text) => marked(text)}
-                  onChange={handleEditorChange}
-                  onImageUpload={handleImageUpload}
-                />
-              </Grid>
+                {/* Editor Section */}
+                <Grid item xs={12}>
+                  <MdEditor
+                    value={currentPost.content ?? ''}
+                    style={{ height: '500px' }}
+                    renderHTML={(text) => marked(text)}
+                    onChange={handleEditorChange}
+                    onImageUpload={handleImageUpload}
+                  />
+                </Grid>
 
-              {/* Published Switch */}
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={currentPost.published ?? false}
-                      onChange={(e) => setCurrentPost(prev => ({
-                        ...prev,
-                        published: e.target.checked
-                      }))}
-                    />
-                  }
-                  label="Published"
-                />
+                {/* Published Switch */}
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={currentPost.published ?? false}
+                        onChange={(e) => setCurrentPost(prev => ({
+                          ...prev,
+                          published: e.target.checked
+                        }))}
+                      />
+                    }
+                    label="Published"
+                  />
+                </Grid>
               </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} variant="contained" color="primary">
-              Save
-            </Button>
-          </DialogActions>
-        </Dialog>
+            </Box>
+
+            {/* Footer */}
+            <Box sx={{ 
+              p: 2, 
+              borderTop: 1, 
+              borderColor: 'divider',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 1,
+              bgcolor: 'background.paper',
+            }}>
+              <Button onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave} variant="contained" color="primary">
+                Save
+              </Button>
+            </Box>
+          </Box>
+        </Drawer>
       </Grid>
     </Box>
   );

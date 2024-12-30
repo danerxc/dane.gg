@@ -33,9 +33,6 @@ router.get('/featured', async (req, res, next) => {
 
 // Protected routes
 router.post('/', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
     try {
         const project = await projectService.createProject(req.body);
         res.status(201).json(project);
@@ -45,9 +42,6 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 router.put('/:id', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
     try {
         const project = await projectService.updateProject(req.params.id, req.body);
         if (!project) {
@@ -60,9 +54,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 router.delete('/:id', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
     try {
         const success = await projectService.deleteProject(req.params.id);
         if (!success) {
@@ -84,9 +75,6 @@ router.get('/categories', async (req, res) => {
 });
 
 router.post('/category', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
     try {
         const category = await projectService.createCategory(req.body.name);
         res.status(201).json(category);
@@ -96,9 +84,6 @@ router.post('/category', authenticateToken, async (req, res) => {
 });
 
 router.put('/category/:id', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
     try {
         const category = await projectService.updateCategory(req.params.id, req.body.name);
         if (!category) {
@@ -111,9 +96,6 @@ router.put('/category/:id', authenticateToken, async (req, res) => {
 });
 
 router.delete('/category/:id', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
     try {
         const success = await projectService.deleteCategory(req.params.id);
         if (!success) {
@@ -135,9 +117,6 @@ router.get('/tags', async (req, res) => {
 });
 
 router.post('/tags', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
     try {
         const tag = await projectService.createTag(req.body);
         res.status(201).json(tag);
@@ -147,9 +126,6 @@ router.post('/tags', authenticateToken, async (req, res) => {
 });
 
 router.put('/tags/:id', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
     try {
         const tag = await projectService.updateTag(req.params.id, req.body);
         if (!tag) {
@@ -162,9 +138,6 @@ router.put('/tags/:id', authenticateToken, async (req, res) => {
 });
 
 router.delete('/tags/:id', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
     try {
         const success = await projectService.deleteTag(req.params.id);
         if (!success) {
@@ -178,9 +151,6 @@ router.delete('/tags/:id', authenticateToken, async (req, res) => {
 
 // Project tag assignment endpoints
 router.post('/:projectId/tags', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
     try {
         const result = await projectService.assignTagsToProject(req.params.projectId, req.body.tagIds);
         res.json(result);
@@ -190,9 +160,6 @@ router.post('/:projectId/tags', authenticateToken, async (req, res) => {
 });
 
 router.delete('/:projectId/tags/:tagId', authenticateToken, async (req, res) => {
-    if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
     try {
         const success = await projectService.removeTagFromProject(req.params.projectId, req.params.tagId);
         if (!success) {
