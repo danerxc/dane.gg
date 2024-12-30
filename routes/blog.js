@@ -17,6 +17,8 @@ async function getPostBySlug(req, res) {
     if (!post) {
       return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
     }
+
+    res.locals.blogSlug = post.slug;
     
     res.render('post', {
       thumbnail: post.thumbnail,

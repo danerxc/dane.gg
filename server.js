@@ -32,6 +32,7 @@ app.set('views', path.join(__dirname, 'public/templates'));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(trackPageView);
 
 // Import routes
 import apiRoutes from './routes/api.js';
@@ -66,11 +67,11 @@ app.delete('/api/admin/users/:id', authenticateToken, deleteUser);
 app.use('/api/blog', adminBlogRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api', apiRoutes);
-app.use('/blog', blogRoutes);
 app.use('/webhooks', webhookRoutes);
 app.use('/api/stats', statsRoutes);
 
-app.use(trackPageView);
+// Public blog routes
+app.use('/blog', blogRoutes);
 
 // Middleware to remove trailing slashes
 app.use((req, res, next) => {
@@ -120,9 +121,6 @@ app.use('/admin', express.static(path.join(__dirname, 'admin/dist')));
 app.get('/admin/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin/dist/index.html'));
 });
-
-// Public blog routes
-app.use('/blog', blogRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

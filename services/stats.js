@@ -1,3 +1,4 @@
+import { raw } from 'express';
 import pool from '../db.js';
 
 class StatsService {
@@ -23,7 +24,7 @@ class StatsService {
 
             const interval = periodMap[period] || periodMap['7d'];
 
-                        const stats = await pool.query(`
+            const stats = await pool.query(`
                 WITH stats AS (
                     SELECT 
                         COUNT(DISTINCT visitor_id) as unique_visitors,
@@ -58,6 +59,18 @@ class StatsService {
                         ) c
                     ) as countries,
                     (
+                        SELECT json_agg(bp)
+                        FROM (
+                            SELECT page_path, COUNT(*) as views
+                            FROM website.page_views
+                            WHERE created_at > (NOW() - ${interval})::timestamp
+                            AND page_path LIKE '/blog/%'
+                            GROUP BY page_path
+                            ORDER BY COUNT(*) DESC
+                            LIMIT 10
+                        ) bp
+                    ) as blog_posts,
+                    (
                         SELECT json_agg(dv)
                         FROM (
                             SELECT 
@@ -82,7 +95,17 @@ class StatsService {
                             ORDER BY COUNT(*) DESC
                             LIMIT 10
                         ) ua
-                    ) as user_agents
+                    ) as user_agents,
+                    (
+                        SELECT json_agg(raw)
+                        FROM (
+                            SELECT created_at, visitor_id, page_path, country_code, user_agent
+                            FROM website.page_views
+                            WHERE created_at > (NOW() - ${interval})::timestamp
+                            ORDER BY created_at DESC
+                            LIMIT 100
+                        ) raw
+                    ) as raw_data
                 FROM stats s;
             `);
             return stats.rows[0] || {
@@ -91,9 +114,11 @@ class StatsService {
                 pages_viewed: 0,
                 active_days: 0,
                 popular_pages: [],
+                blog_posts: [],
                 countries: [],
                 daily_views: [],
-                user_agents: []
+                user_agents: [],
+                raw_data: []
             };
         } catch (error) {
             console.error('Stats Service Error:', error);
