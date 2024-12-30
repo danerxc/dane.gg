@@ -40,6 +40,7 @@ function setupWebSocket(server) {
                         username: result.rows[0].username,
                         content: result.rows[0].content,
                         timestamp: result.rows[0].timestamp,
+                        userUUID: result.rows[0].userUUID,
                     }
                 });
 

@@ -217,7 +217,7 @@ export const Stats = () => {
 
     useEffect(() => {
         const fetchStats = async () => {
-            const { data } = await axiosInstance.get(`/api/stats/stats?period=${period}`);
+            const { data } = await axiosInstance.get(`/api/stats?period=${period}`);
             setStats(data);
         };
         fetchStats();

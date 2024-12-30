@@ -2,8 +2,8 @@ import { useState, useEffect, ChangeEvent } from 'react';
 import axiosInstance from '../services/axios';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Grid, IconButton, Dialog, DialogTitle, DialogContent, TextField,
-  FormControlLabel, Switch, Button, Typography, DialogActions, Box, CircularProgress,
+  Paper, Grid, IconButton, TextField,
+  FormControlLabel, Switch, Button, Typography, Box, CircularProgress,
   Alert, LinearProgress, useTheme, useMediaQuery, Drawer
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
@@ -224,7 +224,7 @@ export const BlogPosts = () => {
                       </IconButton>
                       <IconButton
                         size="small"
-                        onClick={() => handleDelete(post.id!)}
+                        onClick={() => handleDelete(post.slug)}
                       >
                         <DeleteIcon />
                       </IconButton>

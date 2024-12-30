@@ -4,17 +4,6 @@ import pool from '../db.js';
 class StatsService {
     async getVisitorStats(period = '7d') {
         try {
-            const totalRecords = await pool.query('SELECT COUNT(*) FROM website.page_views');
-            console.log('Total records:', totalRecords.rows[0].count);
-
-            const lastEntry = await pool.query(`
-                SELECT created_at 
-                FROM website.page_views 
-                ORDER BY created_at DESC 
-                LIMIT 1
-            `);
-            console.log('Last entry:', lastEntry.rows[0]);
-
             const periodMap = {
                 '24h': 'interval \'24 hours\'',
                 '7d': 'interval \'7 days\'',
