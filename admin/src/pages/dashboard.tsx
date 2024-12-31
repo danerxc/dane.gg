@@ -33,6 +33,7 @@ import { Account } from './account';
 import { auth, setNavigate } from '../services/auth';
 import { TokenExpirationChecker } from '../components/tokenExpirationCheck';
 import axiosInstance from '../services/axios';
+import logo from '../assets/logo.webp';
 
 const drawerWidth = 240;
 
@@ -202,19 +203,29 @@ const Dashboard = () => {
       <TokenExpirationChecker />
       <CssBaseline />
       <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
-        <Toolbar>
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <img
+              src={logo}
+              alt="Logo"
+              style={{
+                height: '50px',
+                marginLeft: '12px'
+              }}
+            />
+          </Box>
           <IconButton
             color="inherit"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
+            onClick={handleLogout}
           >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Dashboard
-          </Typography>
-          <IconButton color="inherit" onClick={handleLogout}>
             <LogoutIcon />
           </IconButton>
         </Toolbar>

@@ -490,18 +490,6 @@ export const Projects = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={currentProject.featured || false}
-                      onChange={(e) => setCurrentProject({ ...currentProject, featured: e.target.checked })}
-                    />
-                  }
-                  label="Featured"
-                />
-              </Grid>
-
-              <Grid item xs={12}>
                 <Box display="flex" gap={2} flexDirection="column">
                   <Box display="flex" gap={1} alignItems="center">
                     <TextField
@@ -518,11 +506,19 @@ export const Projects = () => {
                       style={{ display: 'none' }}
                     />
                     <Button
-                      variant="contained"
+                      variant="outlined"
                       onClick={() => fileInputRef.current?.click()}
-                      startIcon={<CloudUploadIcon />}
+                      sx={{
+                        height: '56px',
+                        width: '56px',
+                        minWidth: '56px',
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
                     >
-                      Upload
+                      <CloudUploadIcon />
                     </Button>
                   </Box>
                   {uploadProgress > 0 && (
@@ -639,6 +635,18 @@ export const Projects = () => {
                   </IconButton>
                 </Box>
               </Grid>
+
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={currentProject.featured || false}
+                      onChange={(e) => setCurrentProject({ ...currentProject, featured: e.target.checked })}
+                    />
+                  }
+                  label="Featured"
+                />
+              </Grid>
             </Grid>
           </Box>
 
@@ -671,7 +679,7 @@ export const Projects = () => {
               sx={{ mt: 1 }}
             />
             <Button
-              variant="contained"
+              variant="outlined"
               onClick={handleCreateCategory}
               disabled={!newCategoryName}
               sx={{ mt: 1 }}
@@ -772,7 +780,7 @@ export const Projects = () => {
             <Grid item xs={12}>
               <Button
                 onClick={handleNewTagSave}
-                variant="contained"
+                variant="outlined"
                 fullWidth
                 disabled={!newTag.title}
               >

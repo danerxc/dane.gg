@@ -264,6 +264,22 @@ export const Stats = () => {
                         </CardContent>
                     </Card>
                 </Grid>
+                <Grid item xs={12} md={3}>
+                    <Card>
+                        <CardContent>
+                            <Typography color="textSecondary">Pages Viewed</Typography>
+                            <Typography variant="h4">{stats.pages_viewed}</Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <Card>
+                        <CardContent>
+                            <Typography color="textSecondary">Active Days</Typography>
+                            <Typography variant="h4">{stats.active_days}</Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
 
                 {/* Visitor Chart */}
                 <Grid item xs={12}>

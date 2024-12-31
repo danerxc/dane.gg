@@ -249,9 +249,9 @@ export const BlogPosts = () => {
         >
           <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             {/* Header */}
-            <Box sx={{ 
-              p: 2, 
-              borderBottom: 1, 
+            <Box sx={{
+              p: 2,
+              borderBottom: 1,
               borderColor: 'divider',
               display: 'flex',
               alignItems: 'center',
@@ -308,11 +308,19 @@ export const BlogPosts = () => {
                         style={{ display: 'none' }}
                       />
                       <Button
-                        variant="contained"
+                        variant="outlined"
                         onClick={() => fileInputRef.current?.click()}
-                        startIcon={<CloudUploadIcon />}
+                        sx={{
+                          height: '56px',
+                          width: '56px',
+                          minWidth: '56px',
+                          padding: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
                       >
-                        Upload
+                        <CloudUploadIcon />
                       </Button>
                     </Box>
                     {uploadProgress > 0 && (
@@ -357,9 +365,9 @@ export const BlogPosts = () => {
             </Box>
 
             {/* Footer */}
-            <Box sx={{ 
-              p: 2, 
-              borderTop: 1, 
+            <Box sx={{
+              p: 2,
+              borderTop: 1,
               borderColor: 'divider',
               display: 'flex',
               justifyContent: 'flex-end',
