@@ -439,13 +439,13 @@ export const Projects = () => {
               <CancelIcon />
             </IconButton>
           </Box>
-      
+
           {/* Scrollable Content */}
-          <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+          <Box sx={{ flex: 1, overflow: 'auto', p: 3, pt: 4 }}>
             {/* Basic Info Section */}
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ mb: 4 }}>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>Basic Information</Typography>
-              <Grid container spacing={2}>
+              <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
@@ -454,7 +454,7 @@ export const Projects = () => {
                     onChange={(e) => setCurrentProject({ ...currentProject, title: e.target.value })}
                   />
                 </Grid>
-      
+
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <FormControl fullWidth>
@@ -476,7 +476,7 @@ export const Projects = () => {
                     </IconButton>
                   </Box>
                 </Grid>
-      
+
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
@@ -489,9 +489,9 @@ export const Projects = () => {
                 </Grid>
               </Grid>
             </Box>
-      
+
             <Divider sx={{ my: 3 }} />
-      
+
             {/* Image Upload Section */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>Project Image</Typography>
@@ -537,9 +537,9 @@ export const Projects = () => {
                 <ImagePreview src={currentProject.image_url} />
               </Box>
             </Box>
-      
+
             <Divider sx={{ my: 3 }} />
-      
+
             {/* URLs & Text Section */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>Links & Details</Typography>
@@ -568,7 +568,7 @@ export const Projects = () => {
                     </Select>
                   </FormControl>
                 </Grid>
-      
+
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
@@ -595,9 +595,9 @@ export const Projects = () => {
                 </Grid>
               </Grid>
             </Box>
-      
+
             <Divider sx={{ my: 3 }} />
-      
+
             {/* Tags & Settings Section */}
             <Box>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>Tags</Typography>
@@ -652,7 +652,7 @@ export const Projects = () => {
                     </IconButton>
                   </Box>
                 </Grid>
-      
+
                 <Grid item xs={12}>
                   <FormControlLabel
                     control={
@@ -667,7 +667,7 @@ export const Projects = () => {
               </Grid>
             </Box>
           </Box>
-      
+
           {/* Footer */}
           <Box sx={{
             p: 2,
@@ -687,7 +687,7 @@ export const Projects = () => {
       <Dialog open={categoryDialogOpen} onClose={() => setCategoryDialogOpen(false)}>
         <DialogTitle>Manage Categories</DialogTitle>
         <DialogContent>
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 2, mt: 0.5 }}>
             <TextField
               label="New Category Name"
               value={newCategoryName}
@@ -698,6 +698,7 @@ export const Projects = () => {
             />
             <Button
               variant="outlined"
+              fullWidth
               onClick={handleCreateCategory}
               disabled={!newCategoryName}
               sx={{ mt: 1 }}
@@ -771,7 +772,7 @@ export const Projects = () => {
         <DialogTitle>Manage Tags</DialogTitle>
         <DialogContent>
           {/* Add New Tag Section */}
-          <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid container spacing={2} sx={{ mb: 2, mt: 0.5 }}>
             <Grid item xs={10}>
               <TextField
                 autoFocus

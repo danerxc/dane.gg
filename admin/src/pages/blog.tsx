@@ -266,11 +266,11 @@ export const BlogPosts = () => {
             </Box>
 
             {/* Scrollable Content */}
-            <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+            <Box sx={{ flex: 1, overflow: 'auto', p: 3, pt: 4 }}>
               {/* Basic Info Section */}
-              <Box sx={{ mb: 3 }}>
+              <Box sx={{ mb: 4 }}>
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>Basic Information</Typography>
-                <Grid container spacing={2}>
+                <Grid container spacing={3}> {/* Increased grid spacing */}
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
