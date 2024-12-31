@@ -4,7 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}} - dane サイト</title>
+
+    <link rel="icon" type="image/png" href="/assets/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="/assets/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="dane.gg" />
+    <link rel="manifest" href="/assets/favicon/site.webmanifest" />
+
+    <title>Dane ツ :: {{title}}</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
 </head>
@@ -51,42 +59,42 @@
             </nav>
         </header>
         <hr>
-            <article class="blog-post">
-                <div class="post-header">
-                    {{#if thumbnail}}
-                    <img src="{{thumbnail}}" alt="{{title}}">
-                    {{/if}}
-                    <h1>{{title}}</h1>
-                    <div class="post-meta">
-                        <time datetime="{{date_iso}}">{{date}}</time>
-                        <span class="reading-time">{{reading_time}} min read</span>
-                    </div>
+        <article class="blog-post">
+            <div class="post-header">
+                {{#if thumbnail}}
+                <img src="{{thumbnail}}" alt="{{title}}">
+                {{/if}}
+                <h1>{{title}}</h1>
+                <div class="post-meta">
+                    <time datetime="{{date_iso}}">{{date}}</time>
+                    <span class="reading-time">{{reading_time}} min read</span>
                 </div>
+            </div>
 
-                <div class="post-content">
-                    {{{content}}}
+            <div class="post-content">
+                {{{content}}}
+            </div>
+
+            <footer class="post-footer">
+                {{#if tags}}
+                <div class="post-tags">
+                    {{#each tags}}
+                    <span class="tag">{{this}}</span>
+                    {{/each}}
                 </div>
+                {{/if}}
 
-                <footer class="post-footer">
-                    {{#if tags}}
-                    <div class="post-tags">
-                        {{#each tags}}
-                        <span class="tag">{{this}}</span>
-                        {{/each}}
-                    </div>
+                <div class="post-navigation">
+                    {{#if prev_post}}
+                    <a href="/blog/{{prev_post.slug}}" class="prev-post">← {{prev_post.title}}</a>
                     {{/if}}
-
-                    <div class="post-navigation">
-                        {{#if prev_post}}
-                        <a href="/blog/{{prev_post.slug}}" class="prev-post">← {{prev_post.title}}</a>
-                        {{/if}}
-                        {{#if next_post}}
-                        <a href="/blog/{{next_post.slug}}" class="next-post">{{next_post.title}} →</a>
-                        {{/if}}
-                    </div>
-                </footer>
-            </article>
-        </div>
+                    {{#if next_post}}
+                    <a href="/blog/{{next_post.slug}}" class="next-post">{{next_post.title}} →</a>
+                    {{/if}}
+                </div>
+            </footer>
+        </article>
+    </div>
     <div class="site-settings">
         <div class="settings-tab">⚙</div>
         <div class="settings-panel">
@@ -122,4 +130,5 @@
         });
     </script>
 </body>
+
 </html>
