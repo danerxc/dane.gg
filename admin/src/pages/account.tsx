@@ -299,7 +299,7 @@ export const Account = () => {
                   Two-factor authentication adds an extra layer of security to your account
                 </Typography>
                 <Button
-                  variant="contained"
+                  variant='contained'
                   onClick={setupTOTP}
                   sx={{ mt: 2 }}
                 >

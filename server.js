@@ -6,9 +6,9 @@ import dotenv from 'dotenv';
 import exphbs from 'express-handlebars';
 import setupWebSocket from './services/chat.js';
 import http from 'http';
-import { login, createUser, getUsers, updateUser, deleteUser, getCurrentUser, updateAccountUsername, updateAccountPassword, checkUsernameAvailability, generateTOTPSecret, verifyAndEnableTOTP,disableTOTP, resetUserTOTP } from './controllers/authController.js';
-import { authenticateToken } from './middleware/auth.js';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import { trackPageView } from './middleware/stats.js';
+import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -27,41 +27,25 @@ app.engine('handlebars', exphbs.engine({
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'public/templates'));
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(trackPageView);
+setupWebSocket(server);
 
 // Import routes
+import authRoutes from './routes/auth.js';
 import apiRoutes from './routes/api.js';
 import blogRoutes from './routes/blog.js';
-import projectRoutes from './routes/projects.js';
 import webhookRoutes from './routes/webhooks.js';
-import adminBlogRoutes from './routes/blogApi.js';
-
-// Auth routes first
-app.post('/auth/login', login);
-// Account management routes
-app.get('/auth/account/me', authenticateToken, getCurrentUser);
-app.get('/auth/account/check-username', authenticateToken, checkUsernameAvailability);
-
-app.put('/auth/account/username', authenticateToken, updateAccountUsername);
-app.put('/auth/account/password', authenticateToken, updateAccountPassword);
-
-app.post('/auth/account/2fa/generate', authenticateToken, generateTOTPSecret);
-app.post('/auth/account/2fa/verify', authenticateToken, verifyAndEnableTOTP);
-app.post('/auth/account/2fa/disable', authenticateToken, disableTOTP);
-app.post('/auth/account/:userId/reset-2fa', authenticateToken, resetUserTOTP);
-
-// Protected API routes
-app.get('/api/admin/users', authenticateToken, getUsers);
-app.post('/api/admin/users', authenticateToken, createUser);
-app.put('/api/admin/users/:id', authenticateToken, updateUser);
-app.delete('/api/admin/users/:id', authenticateToken, deleteUser);
 
 // API routes before static handling
-app.use('/api/blog', adminBlogRoutes);
-app.use('/api/projects', projectRoutes);
+app.use('/auth', authRoutes)
 app.use('/api', apiRoutes);
 app.use('/webhooks', webhookRoutes);
+
+// Public blog routes
+app.use('/blog', blogRoutes);
 
 // Middleware to remove trailing slashes
 app.use((req, res, next) => {
@@ -73,9 +57,6 @@ app.use((req, res, next) => {
     next();
   }
 });
-
-// Serve static files without redirecting directories
-app.use(express.static(path.join(__dirname, 'public'), { redirect: false }));
 
 // Handle non-extension URLs
 app.use((req, res, next) => {
@@ -106,14 +87,14 @@ app.use((req, res, next) => {
   }
 });
 
+// Serve static files without redirecting directories
+app.use(express.static(path.join(__dirname, 'public'), { redirect: false }));
+
 // Admin SPA routes
 app.use('/admin', express.static(path.join(__dirname, 'admin/dist')));
 app.get('/admin/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin/dist/index.html'));
 });
-
-// Public blog routes
-app.use('/blog', blogRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
@@ -124,7 +105,7 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   console.error(err.stack);
   const statusCode = err.status || 500;
-  res.status(statusCode).redirect(`/error.html?code=${statusCode}`);
+  res.status(statusCode).redirect(`/error?code=${statusCode}`);
 });
 
 if (process.env.NODE_ENV === 'development') {
@@ -134,8 +115,6 @@ if (process.env.NODE_ENV === 'development') {
     ws: true
   }));
 }
-
-setupWebSocket(server);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,140 +1,86 @@
-import express from 'express';
-import { promises as fs } from 'fs';
-import { fileURLToPath } from 'url';
-import path, { dirname } from 'path';
-import { upload } from '../services/upload.js';
-import { authenticateToken } from '../middleware/auth.js';
+// =====================================================================
+// ALL ROUTES WITHIN ARE PREFIXED WITH /API
+// =====================================================================
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import express from 'express';
+import { authenticateToken } from '../middleware/auth.js';
+import WidgetsController from '../controllers/widgetsController.js';
+import UploadController from '../controllers/uploadController.js';
+import BlogController from '../controllers/blogController.js';
+import ProjectsController from '../controllers/projectsController.js';
+import UsersController from '../controllers/usersController.js';
+import StatsController from '../controllers/statsController.js';
 
 const router = express.Router();
+const widgetsController = new WidgetsController();
+const uploadController = new UploadController();
+const blogController = new BlogController();
+const projectsController = new ProjectsController();
+const usersController = new UsersController();
+const statsController = new StatsController();
 
-let lastCheck = 0;
-let cachedLastfm = {};
+// =======================
+// WIDGET ROUTES 
+// =======================
+router.get('/status', widgetsController.getDiscordStatus.bind(widgetsController));
+router.get('/services/status', widgetsController.getServicesStatus.bind(widgetsController));
+router.get('/nowplaying', widgetsController.getNowPlaying.bind(widgetsController));
+router.get('/latest-tweet', widgetsController.getLatestTweet.bind(widgetsController));
+router.get('/config/weather', widgetsController.getWeatherConfig.bind(widgetsController));
 
-const STATUS_FILE = path.join(__dirname, '../data/serviceStatus.json');
-const DISCORD_STATUS_FILE = path.join(__dirname, '../data/discordStatus.json');
-const LATEST_TWEET_FILE = path.join(__dirname, '../data/latestTweet.json');
+// =======================
+// FILE MANAGEMENT ROUTES
+// =======================
+router.post('/upload', authenticateToken, UploadController.handleFileUpload.bind(uploadController));
 
-let lastStatusCheck = 0;
-let cachedDiscordStatus = { status: 0, lastUpdate: null };
+// =======================
+// USER MANAGEMENT ROUTES
+// =======================
+router.get('/admin/users', authenticateToken, usersController.getUsers.bind(usersController));
+router.post('/admin/users', authenticateToken, usersController.createUser.bind(usersController));
+router.put('/admin/users/:id', authenticateToken, usersController.updateUser.bind(usersController));
+router.delete('/admin/users/:id', authenticateToken, usersController.deleteUser.bind(usersController));
 
-let lastServicesCheck = 0;
-let cachedServices = { services: {} };
+// =======================
+// BLOG ROUTES
+// =======================
+router.get('/blog/posts/published', blogController.getPublishedPosts.bind(blogController));
+router.get('/blog/posts', authenticateToken, blogController.getPosts.bind(blogController));
+router.post('/blog/posts', authenticateToken, blogController.createPost.bind(blogController));
+router.put('/blog/posts/:slug', authenticateToken, blogController.updatePost.bind(blogController));
+router.delete('/blog/posts/:slug', authenticateToken, blogController.deletePost.bind(blogController));
 
-let cachedTweet = null;
-let lastTweetCheck = 0;
+// =======================
+// PROJECT ROUTES 
+// =======================
+router.get('/projects/', projectsController.getAllProjects.bind(projectsController));
+router.get('/projects/category/:categoryId', projectsController.getProjectsByCategory.bind(projectsController));
+router.get('/projects/featured', projectsController.getFeaturedProjects.bind(projectsController));
 
-// Discord Status
-router.get('/status', async (req, res) => {
-  try {
-    if (Date.now() - lastStatusCheck > 7500) {
-      lastStatusCheck = Date.now();
-      try {
-        const data = JSON.parse(await fs.readFile(DISCORD_STATUS_FILE, 'utf8'));
-        cachedDiscordStatus = data;
-      } catch (err) {
-        if (err.code !== 'ENOENT') throw err;
-      }
-    }
-    res.json(cachedDiscordStatus);
-  } catch (err) {
-    console.error('Discord status fetch error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+// - PROJECT MANAGEMENT ROUTES
+router.post('/projects/', authenticateToken, projectsController.createProject.bind(projectsController));
+router.put('/projects/:id', authenticateToken, projectsController.updateProject.bind(projectsController));
+router.delete('/projects/:id', authenticateToken, projectsController.deleteProject.bind(projectsController));
 
-// Services Status
-router.get('/services/status', async (req, res) => {
-  try {
-    if (Date.now() - lastServicesCheck > 7500) {
-      lastServicesCheck = Date.now();
-      try {
-        const data = JSON.parse(await fs.readFile(STATUS_FILE, 'utf8'));
-        cachedServices = data;
-      } catch (err) {
-        if (err.code !== 'ENOENT') throw err;
-      }
-    }
-    res.json(cachedServices.services);
-  } catch (err) {
-    console.error('Status fetch error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+// - CATEGORY MANAGEMENT ROUTES
+router.get('/projects/categories', projectsController.getCategories.bind(projectsController));
+router.post('/projects/category', authenticateToken, projectsController.createCategory.bind(projectsController));
+router.put('/projects/category/:id', authenticateToken, projectsController.updateCategory.bind(projectsController));
+router.delete('/projects/category/:id', authenticateToken, projectsController.deleteCategory.bind(projectsController));
 
-// Now playing
-router.get('/nowplaying', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    if (Date.now() - lastCheck > 7500) {
-        lastCheck = Date.now();
-        const username = process.env.LASTFM_USERNAME;
-        const apiKey = process.env.LASTFM_API_KEY;
-        fetch(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${apiKey}&format=json`)
-            .then(response => response.json())
-            .then(({ recenttracks }) => {
-                if (typeof recenttracks !== 'object') return res.json(cachedLastfm);
-                cachedLastfm = recenttracks.track[0];
-                res.json(cachedLastfm);
-            })
-            .catch(err => {
-                console.error(err);
-                res.status(500).json({ error: 'Failed to fetch data from Last.fm' });
-            });
-    } else {
-        res.json(cachedLastfm);
-    }
-});
+// - TAG MANAGEMENT ROUTES
+router.get('/projects/tags', projectsController.getTags.bind(projectsController));
+router.post('/projects/tags', authenticateToken, projectsController.createTag.bind(projectsController));
+router.put('/projects/tags/:id', authenticateToken, projectsController.updateTag.bind(projectsController));
+router.delete('/projects/tags/:id', authenticateToken, projectsController.deleteTag.bind(projectsController));
 
-// Latest tweet endpoint
-router.get('/latest-tweet', async (req, res) => {
-  try {
-    // Only return cached tweet if it exists AND cache isn't expired
-    if (cachedTweet && Date.now() - lastTweetCheck < 60000) {
-      return res.json(cachedTweet);
-    }
+// - PROJECT TAG ASSIGNMENT ROUTES
+router.post('/projects/:projectId/tags', authenticateToken, projectsController.assignTagsToProject.bind(projectsController));
+router.delete('/projects/:projectId/tags/:tagId', authenticateToken, projectsController.removeTagFromProject.bind(projectsController));
 
-    // Cache is expired or doesn't exist, read from file
-    const data = await fs.readFile(LATEST_TWEET_FILE, 'utf8');
-    const tweet = JSON.parse(data);
-
-    // Update cache and timestamp
-    cachedTweet = tweet;
-    lastTweetCheck = Date.now();
-
-    res.json(tweet);
-  } catch (err) {
-    console.error('Failed to fetch tweet:', err);
-    if (cachedTweet) {
-      res.json(cachedTweet);
-    } else {
-      res.status(500).json({ error: 'Failed to fetch tweet' });
-    }
-  }
-});
-
-router.get('/config/weather', async (req, res) => {
-    const defaultWeather = (process.env.DEFAULT_WEATHER || 'rain').toLowerCase();
-    res.json({ defaultWeather });
-});
-
-router.post('/upload', authenticateToken, (req, res) => {
-  upload(req, res, (err) => {
-    if (err) {
-      res.status(400).json({ message: err });
-    } else {
-      if (req.file == undefined) {
-        res.status(400).json({ message: 'No file selected!' });
-      } else {
-        res.status(200).json({
-          message: 'File uploaded!',
-          filePath: `/assets/uploads/${req.file.filename}`
-        });
-      }
-    }
-  });
-});
-
+// =======================
+// STATS ROUTES
+// =======================
+router.get('/stats', authenticateToken, statsController.getStats.bind(statsController));
 
 export default router;

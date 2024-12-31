@@ -40,6 +40,9 @@ function setupWebSocket(server) {
                         username: result.rows[0].username,
                         content: result.rows[0].content,
                         timestamp: result.rows[0].timestamp,
+                        message_type: result.rows[0].message_type,
+                        message_color: result.rows[0].message_color,
+                        userUUID: result.rows[0].client_uuid,
                     }
                 });
 
@@ -60,7 +63,8 @@ async function sendMessageHistory(ws) {
         const { rows: messages } = await pool.query(
             'SELECT * FROM website.messages ORDER BY timestamp DESC LIMIT 50'
         );
-        ws.send(JSON.stringify({ type: 'history', data: messages }));
+        const historyMessages = messages.map(msg => ({...msg, isHistorical: true}));
+        ws.send(JSON.stringify({ type: 'history', data: historyMessages }));
     } catch (err) {
         console.error('Error fetching message history:', err);
     }
