@@ -124,20 +124,16 @@ export const Projects = () => {
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editedCategoryName, setEditedCategoryName] = useState('');
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
-  const [editingTag, setEditingTag] = useState<Tag | null>(null);
-  const [pickerPosition, setPickerPosition] = useState({ x: 0, y: 0 });
-  const [feedback, setFeedback] = useState<{
-    message: string;
-    severity: 'success' | 'error';
-  } | null>(null);
   const [inlineEditingTagId, setInlineEditingTagId] = useState<string | null>(null);
   const [inlineEditTag, setInlineEditTag] = useState({ title: '', color: '' });
-  const [inlineColorPickerOpen, setInlineColorPickerOpen] = useState(false);
   const { uploadProgress, uploadComplete, fileInputRef, handleFileUpload, resetUploadState } = useFileUpload();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
+  const [feedback, setFeedback] = useState<{
+    message: string;
+    severity: 'success' | 'error';
+  } | null>(null);
 
   const fetchProjects = async () => {
     try {
@@ -443,213 +439,235 @@ export const Projects = () => {
               <CancelIcon />
             </IconButton>
           </Box>
-
+      
           {/* Scrollable Content */}
           <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Title"
-                  value={currentProject.title || ''}
-                  onChange={(e) => setCurrentProject({ ...currentProject, title: e.target.value })}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Category</InputLabel>
-                    <Select
-                      value={currentProject.category_id || ''}
-                      onChange={(e) => setCurrentProject({ ...currentProject, category_id: e.target.value })}
-                      label="Category"
-                    >
-                      {Array.isArray(categories) && categories.map((category) => (
-                        <MenuItem key={category.id} value={category.id}>
-                          {category.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <IconButton onClick={() => setCategoryDialogOpen(true)}>
-                    <AddIcon />
-                  </IconButton>
-                </Box>
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Description"
-                  multiline
-                  rows={4}
-                  value={currentProject.description || ''}
-                  onChange={(e) => setCurrentProject({ ...currentProject, description: e.target.value })}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <Box display="flex" gap={2} flexDirection="column">
-                  <Box display="flex" gap={1} alignItems="center">
-                    <TextField
-                      fullWidth
-                      label="Image URL/Path"
-                      value={currentProject.image_url || ''}
-                      onChange={(e) => setCurrentProject({ ...currentProject, image_url: e.target.value })}
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleThumbnailChange}
-                      ref={fileInputRef}
-                      style={{ display: 'none' }}
-                    />
-                    <Button
-                      variant="outlined"
-                      onClick={() => fileInputRef.current?.click()}
-                      sx={{
-                        height: '56px',
-                        width: '56px',
-                        minWidth: '56px',
-                        padding: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <CloudUploadIcon />
-                    </Button>
+            {/* Basic Info Section */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>Basic Information</Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Title"
+                    value={currentProject.title || ''}
+                    onChange={(e) => setCurrentProject({ ...currentProject, title: e.target.value })}
+                  />
+                </Grid>
+      
+                <Grid item xs={12}>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Category</InputLabel>
+                      <Select
+                        value={currentProject.category_id || ''}
+                        onChange={(e) => setCurrentProject({ ...currentProject, category_id: e.target.value })}
+                        label="Category"
+                      >
+                        {Array.isArray(categories) && categories.map((category) => (
+                          <MenuItem key={category.id} value={category.id}>
+                            {category.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <IconButton onClick={() => setCategoryDialogOpen(true)}>
+                      <AddIcon />
+                    </IconButton>
                   </Box>
-                  {uploadProgress > 0 && (
-                    <Box sx={{ width: '100%' }}>
-                      <LinearProgress variant="determinate" value={uploadProgress} />
-                      <Typography variant="caption" color="textSecondary">
-                        {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
-                      </Typography>
-                    </Box>
-                  )}
-                  <ImagePreview src={currentProject.image_url} />
+                </Grid>
+      
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Description"
+                    multiline
+                    rows={4}
+                    value={currentProject.description || ''}
+                    onChange={(e) => setCurrentProject({ ...currentProject, description: e.target.value })}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+      
+            <Divider sx={{ my: 3 }} />
+      
+            {/* Image Upload Section */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>Project Image</Typography>
+              <Box display="flex" gap={2} flexDirection="column">
+                <Box display="flex" gap={1} alignItems="center">
+                  <TextField
+                    fullWidth
+                    label="Image URL/Path"
+                    value={currentProject.image_url || ''}
+                    onChange={(e) => setCurrentProject({ ...currentProject, image_url: e.target.value })}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleThumbnailChange}
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() => fileInputRef.current?.click()}
+                    sx={{
+                      height: '56px',
+                      width: '56px',
+                      minWidth: '56px',
+                      padding: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <CloudUploadIcon />
+                  </Button>
                 </Box>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Project URL"
-                  value={currentProject.project_url || ''}
-                  onChange={(e) => setCurrentProject({ ...currentProject, project_url: e.target.value })}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Project Text</InputLabel>
-                  <Select
-                    value={currentProject.project_text || ''}
-                    onChange={(e) => setCurrentProject({ ...currentProject, project_text: e.target.value })}
-                    label="Project Text"
-                  >
-                    {PROJECT_TEXT_OPTIONS.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Repository URL"
-                  value={currentProject.repo_url || ''}
-                  onChange={(e) => setCurrentProject({ ...currentProject, repo_url: e.target.value })}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Repository Text</InputLabel>
-                  <Select
-                    value={currentProject.repo_text || ''}
-                    onChange={(e) => setCurrentProject({ ...currentProject, repo_text: e.target.value })}
-                    label="Repository Text"
-                  >
-                    {REPO_TEXT_OPTIONS.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                {uploadProgress > 0 && (
+                  <Box sx={{ width: '100%' }}>
+                    <LinearProgress variant="determinate" value={uploadProgress} />
+                    <Typography variant="caption" color="textSecondary">
+                      {uploadComplete ? 'Upload complete!' : `Uploading: ${uploadProgress}%`}
+                    </Typography>
+                  </Box>
+                )}
+                <ImagePreview src={currentProject.image_url} />
+              </Box>
+            </Box>
+      
+            <Divider sx={{ my: 3 }} />
+      
+            {/* URLs & Text Section */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>Links & Details</Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Project URL"
+                    value={currentProject.project_url || ''}
+                    onChange={(e) => setCurrentProject({ ...currentProject, project_url: e.target.value })}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
-                    <InputLabel>Tags</InputLabel>
+                    <InputLabel>Project Text</InputLabel>
                     <Select
-                      multiple
-                      value={currentProject.tagIds || []}
-                      onChange={(e) => setCurrentProject({
-                        ...currentProject,
-                        tagIds: e.target.value as string[]
-                      })}
-                      renderValue={(selected) => (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {(selected as string[]).map((tagId) => {
-                            const tag = tags.find(t => t.id === tagId);
-                            return tag ? (
-                              <Chip
-                                key={tag.id}
-                                label={tag.title}
-                                sx={{
-                                  backgroundColor: tag.color,
-                                  color: getContrastText(tag.color)
-                                }}
-                              />
-                            ) : null;
-                          })}
-                        </Box>
-                      )}
+                      value={currentProject.project_text || ''}
+                      onChange={(e) => setCurrentProject({ ...currentProject, project_text: e.target.value })}
+                      label="Project Text"
                     >
-                      {tags.map((tag) => (
-                        <MenuItem key={tag.id} value={tag.id}>
-                          <Chip
-                            size="small"
-                            label={tag.title}
-                            sx={{
-                              backgroundColor: tag.color,
-                              color: getContrastText(tag.color),
-                              mr: 1
-                            }}
-                          />
-                          {tag.title}
+                      {PROJECT_TEXT_OPTIONS.map((option) => (
+                        <MenuItem key={option} value={option}>
+                          {option}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
-                  <IconButton onClick={() => setTagDialogOpen(true)}>
-                    <AddIcon />
-                  </IconButton>
-                </Box>
+                </Grid>
+      
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Repository URL"
+                    value={currentProject.repo_url || ''}
+                    onChange={(e) => setCurrentProject({ ...currentProject, repo_url: e.target.value })}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Repository Text</InputLabel>
+                    <Select
+                      value={currentProject.repo_text || ''}
+                      onChange={(e) => setCurrentProject({ ...currentProject, repo_text: e.target.value })}
+                      label="Repository Text"
+                    >
+                      {REPO_TEXT_OPTIONS.map((option) => (
+                        <MenuItem key={option} value={option}>
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
               </Grid>
-
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={currentProject.featured || false}
-                      onChange={(e) => setCurrentProject({ ...currentProject, featured: e.target.checked })}
-                    />
-                  }
-                  label="Featured"
-                />
+            </Box>
+      
+            <Divider sx={{ my: 3 }} />
+      
+            {/* Tags & Settings Section */}
+            <Box>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>Tags</Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Tags</InputLabel>
+                      <Select
+                        multiple
+                        value={currentProject.tagIds || []}
+                        onChange={(e) => setCurrentProject({
+                          ...currentProject,
+                          tagIds: e.target.value as string[]
+                        })}
+                        renderValue={(selected) => (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {(selected as string[]).map((tagId) => {
+                              const tag = tags.find(t => t.id === tagId);
+                              return tag ? (
+                                <Chip
+                                  key={tag.id}
+                                  label={tag.title}
+                                  sx={{
+                                    backgroundColor: tag.color,
+                                    color: getContrastText(tag.color)
+                                  }}
+                                />
+                              ) : null;
+                            })}
+                          </Box>
+                        )}
+                      >
+                        {tags.map((tag) => (
+                          <MenuItem key={tag.id} value={tag.id}>
+                            <Chip
+                              size="small"
+                              label={tag.title}
+                              sx={{
+                                backgroundColor: tag.color,
+                                color: getContrastText(tag.color),
+                                mr: 1
+                              }}
+                            />
+                            {tag.title}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <IconButton onClick={() => setTagDialogOpen(true)}>
+                      <AddIcon />
+                    </IconButton>
+                  </Box>
+                </Grid>
+      
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={currentProject.featured || false}
+                        onChange={(e) => setCurrentProject({ ...currentProject, featured: e.target.checked })}
+                      />
+                    }
+                    label="Featured"
+                  />
+                </Grid>
               </Grid>
-            </Grid>
+            </Box>
           </Box>
-
+      
           {/* Footer */}
           <Box sx={{
             p: 2,
