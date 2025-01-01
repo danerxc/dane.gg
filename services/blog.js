@@ -16,7 +16,7 @@ class BlogService {
                 ORDER BY created_at DESC
                 LIMIT $1 OFFSET $2
             `;
-            
+
             const { rows } = await pool.query(query, [limit, offset]);
 
             return {
@@ -44,7 +44,7 @@ class BlogService {
                 ORDER BY created_at DESC
                 LIMIT $1 OFFSET $2
             `;
-            
+
             const { rows } = await pool.query(query, [limit, offset]);
 
             return {
@@ -65,7 +65,7 @@ class BlogService {
                 'SELECT * FROM website.posts WHERE slug = $1 AND published = true',
                 [slug]
             );
-            
+
             if (rows.length === 0) {
                 return null;
             }
@@ -77,6 +77,33 @@ class BlogService {
                     breaks: true,
                     sanitize: true
                 });
+                
+                marked.use({
+                    extensions: [{
+                        name: 'underline',
+                        level: 'inline',
+                        start(src) {
+                            const match = src.match(/\+\+/);
+                            return match ? match.index : -1;
+                        },
+                        tokenizer(src) {
+                            const match = /^\+\+([^+]+)\+\+/.exec(src);
+                            if (match) {
+                                return {
+                                    type: 'underline',
+                                    raw: match[0],
+                                    text: match[1],
+                                    tokens: []
+                                };
+                            }
+                            return undefined;
+                        },
+                        renderer(token) {
+                            return `<u>${token.text}</u>`;
+                        }
+                    }]
+                });
+
                 post.content = marked.parse(post.content);
             } catch (markdownError) {
                 console.error('Markdown parsing error:', markdownError);

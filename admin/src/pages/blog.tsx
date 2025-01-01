@@ -12,7 +12,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import MdEditor from 'react-markdown-editor-lite';
-import { marked } from 'marked';
+import { marked, Token } from 'marked';
 import 'react-markdown-editor-lite/lib/index.css';
 import { useFileUpload } from '../hooks/upload';
 import { ImagePreview } from '../components/imagePreview';
@@ -30,6 +30,32 @@ interface BlogPost {
   thumbnail?: string;
   published: boolean;
 }
+
+marked.use({
+  extensions: [{
+    name: 'underline',
+    level: 'inline',
+    start(src: string) {
+      const match = src.match(/\+\+/);
+      return match ? match.index : -1;
+    },
+    tokenizer(src: string) {
+      const match = /^\+\+([^+]+)\+\+/.exec(src);
+      if (match) {
+        return {
+          type: 'underline',
+          raw: match[0],
+          text: match[1],
+          tokens: []
+        };
+      }
+      return undefined;
+    },
+    renderer(token: Token & { text?: string }) {
+      return `<u>${token.text ?? ''}</u>`;
+    }
+  }]
+});
 
 export const BlogPosts = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
