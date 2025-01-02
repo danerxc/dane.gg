@@ -1597,3 +1597,54 @@ a[href^="mailto"] svg {
     text-align: center;
     margin-top: 10px;
 }
+
+.infinite-scroll-container {
+    width: 300px;  /* Show ~3-4 buttons at once */
+    height: 50px;  /* Slightly taller than buttons for padding */
+    overflow: hidden;
+    position: relative;
+    padding: 10px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+.scroll-content {
+    display: flex;
+    animation: scroll 20s linear infinite;
+    width: fit-content;
+    align-items: center;
+    gap: 10px;  /* Consistent spacing between items */
+}
+
+.scroll-content:hover {
+    animation-play-state: paused;
+}
+
+.scroll-content a {
+    flex-shrink: 0;  /* Prevent images from shrinking */
+    height: 31px;
+    display: flex;
+    align-items: center;
+}
+
+.scroll-content img {
+    height: 31px;
+    width: 88px;
+    object-fit: contain;
+}
+
+@keyframes scroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);  /* Move by half to create seamless loop */
+    }
+}
+
+@media (max-width: 768px) {
+    .card.cool-sites,
+    .card.site-button {
+        display: none;
+    }
+}
