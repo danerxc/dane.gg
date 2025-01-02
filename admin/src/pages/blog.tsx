@@ -2,10 +2,11 @@ import { useState, useEffect, ChangeEvent } from 'react';
 import axiosInstance from '../services/axios';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Grid, IconButton, TextField,
+  Paper, IconButton, TextField,
   FormControlLabel, Switch, Button, Typography, Box, CircularProgress,
   Alert, LinearProgress, useTheme, useMediaQuery, Drawer, Divider
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -36,7 +37,7 @@ marked.use({
     name: 'underline',
     level: 'inline',
     start(src: string) {
-      const match = src.match(/\+\+/);
+      const match = RegExp(/\+\+/).exec(src);
       return match ? match.index : -1;
     },
     tokenizer(src: string) {
@@ -204,13 +205,13 @@ export const BlogPosts = () => {
   return (
     <Box>
       <Grid container spacing={3}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Button variant="contained" onClick={handleCreate}>
             Create New Post
           </Button>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid size={12}>
           <TableContainer
             component={Paper}
             sx={{
@@ -297,7 +298,7 @@ export const BlogPosts = () => {
               <Box sx={{ mb: 4 }}>
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>Basic Information</Typography>
                 <Grid container spacing={3}> {/* Increased grid spacing */}
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <TextField
                       fullWidth
                       label="Title"
@@ -307,7 +308,7 @@ export const BlogPosts = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <TextField
                       fullWidth
                       label="Link"
@@ -329,7 +330,7 @@ export const BlogPosts = () => {
                     <TextField
                       fullWidth
                       label="Image URL/Path"
-                      value={currentPost.thumbnail || ''}
+                      value={currentPost.thumbnail ?? ''}
                       onChange={(e) => setCurrentPost({ ...currentPost, thumbnail: e.target.value })}
                     />
                     <input
@@ -373,7 +374,7 @@ export const BlogPosts = () => {
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>Post Content</Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <MdEditor
                       value={currentPost.content ?? ''}
                       style={{ height: '500px' }}
@@ -390,7 +391,7 @@ export const BlogPosts = () => {
               {/* Settings Section */}
               <Box>
                 <Grid container spacing={2}>
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <FormControlLabel
                       control={
                         <Switch

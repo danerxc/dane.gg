@@ -47,6 +47,7 @@ export const Users = () => {
         }
       } catch (err) {
         navigate('/admin');
+        throw err;
       }
     };
     checkAdmin();
@@ -82,6 +83,7 @@ export const Users = () => {
       setSuccess('2FA has been reset');
     } catch (err) {
       setError('Failed to reset 2FA');
+      throw err;
     }
   };
 
@@ -143,6 +145,16 @@ export const Users = () => {
         Create New User
       </Button>
 
+      {success && (
+      <Alert 
+        severity="success" 
+        sx={{ mb: 2 }}
+        onClose={() => setSuccess(null)}
+      >
+        {success}
+      </Alert>
+    )}
+
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -195,7 +207,7 @@ export const Users = () => {
           <TextField
             fullWidth
             label="Username"
-            value={currentUser.username || ''}
+            value={currentUser.username ?? ''}
             onChange={(e) => setCurrentUser({ ...currentUser, username: e.target.value })}
             margin="normal"
           />
