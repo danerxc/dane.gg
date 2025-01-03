@@ -20,8 +20,8 @@ services:
     volumes:
       - user_uploads:/public/assets/uploads
       - widget_data:/data
-    depends_on:
-      - db
+    # depends_on:
+    #   - db
 
   # db:
   #   image: postgres:16
@@ -34,5 +34,7 @@ services:
   #     - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
   #   restart: unless-stopped
 
-# volumes:
+volumes:
+    user_uploads:
+    widget_data:
 #   pgdata:

@@ -50,7 +50,7 @@ async function loadProjects() {
             return indexA - indexB;
         });
 
-        for (const categoryId of sortedCategories) {
+        for (const [index, categoryId] of sortedCategories.entries()) {
             const categoryProjects = groupedProjects[categoryId];
             if (categoryProjects.length > 0) {
                 const section = document.createElement('div');
@@ -63,7 +63,7 @@ async function loadProjects() {
                 const categoryHasPage = categoriesWithPages.has(categoryNameLower);
 
                 section.innerHTML = `
-                    <div class="category-header">
+                    <div class="category-header heading-underline">
                         <h2>${categoryNameCapitalized}</h2>
                         ${categoryHasPage ? `<a href="/projects/${categoryNameLower}" class="view-all-link">View All</a>` : ''}
                     </div>
@@ -88,6 +88,11 @@ async function loadProjects() {
                 `;
 
                 grid.appendChild(section);
+
+                if (index < sortedCategories.length - 1) {
+                    const divider = document.createElement('hr');
+                    grid.appendChild(divider);
+                }
             }
         }
 
