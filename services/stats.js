@@ -114,6 +114,24 @@ class StatsService {
             throw error;
         }
     }
+
+    async getPublicStats() {
+        try {
+            const stats = await pool.query(`
+                SELECT 
+                    COUNT(DISTINCT visitor_id) as unique_visitors,
+                    COUNT(*) as total_views
+                FROM website.page_views;
+            `);
+            return stats.rows[0] || {
+                unique_visitors: 0,
+                total_views: 0,
+            };
+        } catch (error) {
+            console.error('Stats Service Error:', error);
+            throw error;
+        }
+    }
 }
 
 export default new StatsService();

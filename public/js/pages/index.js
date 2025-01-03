@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     openBtnHotlink();
     openAdditionalMobile();
     initializeChatSoundToggle();
+    getStats();
 });
 
 // =======================================
@@ -163,6 +164,24 @@ async function updateTweet() {
         }
     } catch (err) {
         console.error('Failed to update tweet:', err);
+    }
+}
+
+// =======================================
+// >> SITE STATS
+// =======================================
+async function getStats() {
+    try {
+        const response = await fetch('/api/web-stats');
+        const data = await response.json();
+        
+        const totalElement = document.querySelector('.stat-value-total');
+        const uniqueElement = document.querySelector('.stat-value-unique');
+        
+        animateValue(totalElement, 0, data.total_views, 1000);
+        animateValue(uniqueElement, 0, data.unique_visitors, 1000);
+    } catch (error) {
+        console.error('Error fetching stats:', error);
     }
 }
 
@@ -456,4 +475,33 @@ function initializeChatSoundToggle() {
         isChatSoundEnabled = e.target.checked;
         setCookie('chatSoundEnabled', isChatSoundEnabled);
     });
+}
+
+// =======================================
+// >> OTHER HELPER FUNCTIONS
+// =======================================
+
+function animateValue(element, start, end, duration) {
+    const range = end - start;
+    const minTimer = 50;
+    let stepTime = Math.abs(Math.floor(duration / range));
+    stepTime = Math.max(stepTime, minTimer);
+    
+    let startTime = new Date().getTime();
+    let endTime = startTime + duration;
+    let timer;
+
+    function run() {
+        let now = new Date().getTime();
+        let remaining = Math.max((endTime - now) / duration, 0);
+        let value = Math.round(end - (remaining * range));
+        element.textContent = value;
+        
+        if (value == end) {
+            clearInterval(timer);
+        }
+    }
+    
+    timer = setInterval(run, stepTime);
+    run();
 }

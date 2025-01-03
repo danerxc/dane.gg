@@ -1643,7 +1643,7 @@ a[href^="mailto"] svg {
         transform: translateX(0);
     }
     100% {
-        transform: translateX(-50%);  /* Move by half to create seamless loop */
+        transform: translateX(-50%);
     }
 }
 
@@ -1671,4 +1671,53 @@ a[href^="mailto"] svg {
     .cool-sites-pointer {
         display: none;
     }
+}
+
+.site-stats {
+    background: #141414;
+    border: 1px solid #ffffff;
+    padding: 10px;
+}
+
+.stats-list {
+    font-family: 'Consolas', monospace;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    background: rgba(32, 32, 32, 0.16)
+}
+
+.stat-name {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.stat-value-total, 
+.stat-value-unique {
+    font-size: 16px;
+    font-weight: bold;
+    color: #8ee28e;
+    text-shadow: 0 0 5px rgba(142, 226, 142, 0.5);
+    min-width: 60px;
+    text-align: right;
+}
+
+@keyframes countUp {
+    from {
+        opacity: 0.5;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.counting {
+    animation: countUp 0.1s ease-out;
 }
