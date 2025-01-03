@@ -1728,3 +1728,24 @@ a[href^="mailto"] svg {
 .counting {
     animation: countUp 0.1s ease-out;
 }
+
+.admin-link {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    padding: 2px 2px;
+    z-index: 1000;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-top-right-radius: 5px;
+}
+
+.admin-link a {
+    color: rgba(255, 255, 255, 0.4);
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.admin-link a:hover {
+    color: #e48f8f;
+}
