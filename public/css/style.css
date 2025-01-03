@@ -596,6 +596,7 @@ nav a:hover {
 .discord-status {
     position: relative;
     overflow: hidden;
+    padding: 3px;
 }
 
 .status-text {
@@ -616,22 +617,16 @@ nav a:hover {
     align-items: center;
 }
 
-/* Apply scanline effect directly to .status-state */
 .status-state {
     font-size: 28px;
     font-weight: bold;
     position: relative;
     color: #fff;
-    /* Ensure text color is set */
     background: linear-gradient(transparent 0%,
             rgb(255, 73, 73) 50%,
             transparent 100%);
     background-clip: text;
-    /* Clip the background to the text */
     -webkit-background-clip: text;
-    /* For Safari */
-    color: transparent;
-    /* Make the text color transparent to show the background */
 }
 
 .status-state.online {
@@ -1596,4 +1591,84 @@ a[href^="mailto"] svg {
 .miku-footer p {
     text-align: center;
     margin-top: 10px;
+}
+
+.infinite-scroll-container {
+    position: relative;
+    width: 300px;
+    background: #141414;
+    overflow: visible;
+}
+
+.scroll-wrapper {
+    width: 100%;
+    overflow: hidden;
+}
+
+.scroll-content {
+    display: flex;
+    animation: scroll 7s linear infinite;
+    width: fit-content;
+    align-items: center;
+    gap: 10px;
+}
+
+.scroll-content-2 {
+    display: flex;
+    animation: scroll 3s linear infinite;
+    width: fit-content;
+    align-items: center;
+    gap: 10px;
+}
+
+.scroll-content:hover {
+    animation-play-state: paused;
+}
+
+.scroll-content a {
+    flex-shrink: 0;  /* Prevent images from shrinking */
+    height: 31px;
+    display: flex;
+    align-items: center;
+}
+
+.scroll-content img {
+    height: 31px;
+    width: 88px;
+    object-fit: contain;
+}
+
+@keyframes scroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);  /* Move by half to create seamless loop */
+    }
+}
+
+@media (max-width: 768px) {
+    .card.cool-sites,
+    .card.site-button {
+        display: none;
+    }
+}
+
+.cool-sites-pointer {
+    position: absolute;
+    left: -95px;
+    top: 50%;
+    transform: translateY(-50%);
+    transform-origin: right;
+    color: rgba(255, 255, 255, 0.289);
+    font-family: 'W95FA', sans-serif;
+    font-size: 14px;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+@media (max-width: 768px) {
+    .cool-sites-pointer {
+        display: none;
+    }
 }

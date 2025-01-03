@@ -1,7 +1,6 @@
-import path from 'path';
 import express from 'express';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import path, { dirname } from 'path';
 import dotenv from 'dotenv';
 import exphbs from 'express-handlebars';
 import setupWebSocket from './services/chat.js';
@@ -63,7 +62,7 @@ app.use((req, res, next) => {
   if (!path.extname(req.url)) {
     let sanitizedPath = path
       .normalize(req.url)
-      .replace(/^(\.\.[\/\\])+/, '')
+      .replace(/^(\.\.[\\/])+/, '')
       .replace(/^\/+/, '');
 
     if (!sanitizedPath) {
