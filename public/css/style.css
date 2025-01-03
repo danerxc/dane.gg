@@ -247,10 +247,8 @@ header p {
     margin-bottom: -20px;
 }
 
-.ascii-container:hover {
-    pre {
-        animation: rainbow-text 3s linear infinite;
-    }
+.ascii-container a {
+    text-decoration: none;
 }
 
 .ascii-box {
@@ -260,12 +258,21 @@ header p {
     white-space: pre;
 }
 
+@keyframes softColorCycle {
+    0% { color: #ffd5d5; }
+    20% { color: #c9ffd7; }
+    40% { color: #c6e4ff; }
+    60% { color: #d7c8ff; }
+    80% { color: #ffcbcb; }
+    100% { color: #ffd5d5; }
+}
+
 .ascii-box pre {
     margin: 0;
     padding: 0;
     font-size: clamp(8px, 1vw, 16px);
     line-height: 1;
-    /* animation: rainbow-text 3s linear infinite; */
+    animation: softColorCycle 10s ease-in-out infinite;
     display: inline-block;
 }
 
