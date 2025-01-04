@@ -1148,6 +1148,7 @@ nav a:hover {
     display: flex;
     position: relative;
     align-items: center;
+    justify-content: center;
     gap: 15px;
     width: 100%;
 }
@@ -1223,54 +1224,35 @@ nav a:hover {
     display: block;
 }
 
-.left-column-toggle {
-    display: none;
-    width: 100%;
-    padding: 10px;
-    background: #141414;
-    border: 1px solid #ffffff;
-    color: #ffffff;
-    text-align: left;
-    cursor: pointer;
-}
-
-.left-column-toggle::after {
-    content: '▼';
-    float: right;
-}
-
-.left-column-toggle.active::after {
-    content: '▲';
-}
-
-.mobile-widget-divider {
-    display: none;
-}
-
 @media (max-width: 800px) {
-    .left-column-toggle {
-        display: block;
-    }
-
-    .left-column {
-        display: none;
-    }
-
-    .left-column.show {
-        display: flex;
-    }
-
     .layout {
         flex-direction: column;
     }
 
-    .mobile-widget-divider {
-        display: block;
-        margin-top: 10px;
+    .left-column,
+    .right-column {
+        width: 100%;
+        flex: none;
+        display: contents;
     }
 
-    .mobile-widget-divider hr {
-        background: #858585;
+    .mobile-order-1 { order: 1; }
+    .mobile-order-2 { order: 2; }
+    .mobile-order-3 { order: 3; }
+    .mobile-order-4 { order: 4; }
+    .mobile-order-5 { order: 5; }
+    .mobile-order-6 { order: 6; }
+    .mobile-order-7 { order: 7; }
+    .mobile-order-8 { order: 8; }
+    .mobile-order-9 { order: 9; }
+    .mobile-order-10 { order: 10; }
+    .mobile-order-11 { order: 11; }
+    .mobile-order-12 { order: 12; }
+
+    /* Make container flex in mobile */
+    .container {
+        display: flex;
+        flex-direction: column;
     }
 }
 
@@ -1774,13 +1756,6 @@ a[href^="mailto"] svg {
     }
 }
 
-@media (max-width: 768px) {
-    .card.cool-sites,
-    .card.site-button {
-        display: none;
-    }
-}
-
 .cool-sites-pointer {
     position: absolute;
     left: -95px;
@@ -1794,8 +1769,12 @@ a[href^="mailto"] svg {
     z-index: 1;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 800px) {
     .cool-sites-pointer {
+        display: none;
+    }
+
+    #oneko {
         display: none;
     }
 }

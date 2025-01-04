@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initialize other features
         setupChat();
         openBtnHotlink();
-        openAdditionalMobile();
         initializeChatSoundToggle();
     } catch (error) {
         console.error('Failed to load initial data:', error);
@@ -471,17 +470,6 @@ function openBtnHotlink() {
     hotlinkText.addEventListener('click', () => {
         dropdown.classList.toggle('active');
     });
-}
-
-function openAdditionalMobile() {
-    const toggle = document.querySelector('.left-column-toggle');
-    const leftColumn = document.querySelector('.left-column');
-
-  toggle.addEventListener('click', () => {
-    leftColumn.classList.toggle('show');
-    toggle.classList.toggle('active');
-    toggle.textContent = leftColumn.classList.contains('show') ? 'Hide Widgets' : 'Show Widgets';
-  });
 }
 
 function initializeChatSoundToggle() {
