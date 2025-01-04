@@ -17,9 +17,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             getStats()
         ]);
 
-        // Hide loading overlay and show content
         document.querySelector('.loading-overlay').style.display = 'none';
         document.querySelector('.container').style.display = 'block';
+        document.querySelector('#oneko').style.display = 'block';
 
         // Start intervals after initial load
         setInterval(updateNowPlaying, 7500);

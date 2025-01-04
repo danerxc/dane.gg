@@ -10,6 +10,10 @@
     font-style: normal;
 }
 
+#oneko {
+    display: none;
+}
+
 /* General Styles */
 body {
     background: #141414;
@@ -1775,7 +1779,7 @@ a[href^="mailto"] svg {
     }
 
     #oneko {
-        display: none;
+        display: none !important;
     }
 }
 

@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initializeBlog() {
     const loadingOverlay = document.querySelector('.loading-overlay');
     const mainContainer = document.querySelector('.container');
+    const oneko = document.querySelector('#oneko');
 
     if (!loadingOverlay || !mainContainer) {
         console.error('Required DOM elements not found');
@@ -16,6 +17,7 @@ async function initializeBlog() {
 
         loadingOverlay.style.display = 'none';
         mainContainer.style.display = 'block';
+        oneko.style.display = 'block';
 
     } catch (error) {
         console.error('Failed to load initial data:', error);
