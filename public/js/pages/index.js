@@ -5,21 +5,38 @@ let inactivityTimeout;
 const messageSound = new Audio('/assets/sounds/notification.mp3');
 let isChatSoundEnabled = getCookie('chatSoundEnabled') !== 'false';
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadPosts(1, 4);
-    updateNowPlaying();
-    setInterval(updateNowPlaying, 7500);
-    updateStatus();
-    setInterval(updateStatus, 7500);
-    updateServices();
-    setInterval(updateServices, 7500);
-    updateTweet();
-    setInterval(updateTweet, 60000);
-    setupChat();
-    openBtnHotlink();
-    openAdditionalMobile();
-    initializeChatSoundToggle();
-    getStats();
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Wait for all initial data loads
+        await Promise.all([
+            loadPosts(1, 4),
+            updateNowPlaying(),
+            updateStatus(),
+            updateServices(),
+            updateTweet(),
+            getStats()
+        ]);
+
+        // Hide loading overlay and show content
+        document.querySelector('.loading-overlay').style.display = 'none';
+        document.querySelector('.container').style.display = 'block';
+
+        // Start intervals after initial load
+        setInterval(updateNowPlaying, 7500);
+        setInterval(updateStatus, 7500);
+        setInterval(updateServices, 7500);
+        setInterval(updateTweet, 60000);
+
+        // Initialize other features
+        setupChat();
+        openBtnHotlink();
+        openAdditionalMobile();
+        initializeChatSoundToggle();
+    } catch (error) {
+        console.error('Failed to load initial data:', error);
+        // Show error message to user
+        document.querySelector('.loading-content').innerHTML = '<h2>Failed to load content. Please refresh the page.</h2>';
+    }
 });
 
 // =======================================

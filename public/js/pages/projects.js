@@ -1,6 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
-    loadProjects();
+    initializeProjects();
 });
+
+async function initializeProjects() {
+    const loadingOverlay = document.querySelector('.loading-overlay');
+    const mainContainer = document.querySelector('.container');
+
+    if (!loadingOverlay || !mainContainer) {
+        console.error('Required DOM elements not found');
+        return;
+    }
+
+    try {
+        // Load initial data
+        await loadProjects();
+
+        // Hide loading overlay and show content
+        loadingOverlay.style.display = 'none';
+        mainContainer.style.display = 'block';
+
+    } catch (error) {
+        console.error('Failed to load initial data:', error);
+        const loadingContent = loadingOverlay.querySelector('.loading-content');
+        if (loadingContent) {
+            loadingContent.innerHTML = '<h2>Failed to load content. Please refresh the page.</h2>';
+        }
+    }
+}
 
 async function loadProjects() {
     try {
