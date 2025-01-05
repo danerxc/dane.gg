@@ -562,9 +562,10 @@ nav a:hover {
 .slider-container {
     margin: 20px auto;
     border: 1px solid #fff;
-    padding: 20px;
+    padding: 20px 0px;
     position: relative;
     overflow: hidden;
+    width: 100%;
 }
 
 .slider {
@@ -991,31 +992,59 @@ nav a:hover {
     background-color: #e48f8f;
 }
 
-/* Skills Grid Layout */
 .skills-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
+    width: 100%;
 }
 
-/* Skills Section */
 .skills-section {
     border: 1px solid #ffffff;
-    padding: 5px 20px;
+    padding: 15px 20px;
     border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-/* Progress Bar Styles */
+.skills-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.skills-section li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    gap: 5px;
+}
+
 .progress-bar {
     background-color: #333;
     border-radius: 5px;
     overflow: hidden;
     height: 10px;
     width: 100px;
-    display: inline-block;
-    margin-left: 10px;
-    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+    .skills-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .skills-section li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .progress-bar {
+        width: 100%;
+    }
 }
 
 .progress-languages {
