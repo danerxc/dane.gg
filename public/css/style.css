@@ -329,70 +329,86 @@ hr {
 }
 
 .chat-container {
-    display: flex;
     flex-direction: column;
     height: 200px;
+    position: relative;
+    background: #141414;
+    backdrop-filter: blur(10px);
+    font-family: 'W95FA', monospace;
+    color: #ffffff;
+    margin: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
 }
 
 .messages {
     flex: 1;
     overflow-y: auto;
-    padding: 10px;
+    padding: 5px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
 }
 
 .message {
-    padding: 8px;
-    border-radius: 8px;
-    max-width: 70%;
+    padding: 2px 0;
+    font-size: 14px;
+    line-height: 1.4;
+    position: relative;
+    padding-left: 20px;
 }
 
-.message.received {
-    background: #2a2a2a;
-    align-self: flex-start;
-}
-
-.message.sent {
-    background: #1a1a1a;
-    align-self: flex-end;
-}
-
-.timestamp {
-    font-size: 10px;
-    color: #666;
-    display: block;
-    margin-bottom: 4px;
+.message::before {
+    content: ">";
+    position: absolute;
+    left: 5px;
+    opacity: 0.5;
 }
 
 .chat-input {
     display: flex;
     gap: 8px;
-    padding: 10px;
-    border-top: 1px solid #333;
+    padding: 8px 0;
+    border-top: 1px solid #ffffff23;
+}
+
+.chat-input::before {
+    content: "$";
+    opacity: 0.5;
+    padding: 5px;
 }
 
 .chat-input input {
     flex: 1;
-    background: #1a1a1a;
-    border: 1px solid #333;
-    padding: 8px;
-    color: white;
-    border-radius: 4px;
-}
-
-.chat-input button {
-    background: #333;
-    color: white;
+    background: transparent;
     border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
+    color: #ffffff;
+    font-family: 'W95FA', monospace;
+    font-size: 14px;
+    padding: 5px;
 }
 
-chat-input button:hover {
-    background: #444;
+.chat-input input:focus {
+    outline: none;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.chat-input input::after {
+    content: "▋";
+    animation: blink 1s step-end infinite;
+}
+
+.messages::-webkit-scrollbar {
+    width: 5px;
+}
+
+.messages::-webkit-scrollbar-thumb {
+    background: #ffffff23;
 }
 
 .status-items {
