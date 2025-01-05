@@ -236,6 +236,15 @@ function handleCommand(input) {
     return false;
 }
 
+function sanitizeMessage(text) {
+    return text
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/`{3}[\s\S]*?`{3}/g, "[code block removed]")
+        .replace(/`[\s\S]*?`/g, "[inline code removed]")
+        .trim();
+}
+
 function setupChat() {
     const messages = document.querySelector('.messages');
     const input = document.querySelector('.chat-input input');
@@ -267,7 +276,7 @@ function setupChat() {
                 data.data.reverse().forEach(msg => addMessage(msg));
                 addMessage({
                     username: 'System',
-                    content: 'Connected to chat server',
+                    content: 'Connected to chat server - please be respectful',
                     timestamp: new Date().toISOString()
                 });
             } else if (data.type === 'message') {
@@ -303,11 +312,13 @@ function setupChat() {
             return;
         }
 
+        const sanitizedContent = sanitizeMessage(content);
+
         if (ws.readyState === WebSocket.OPEN) {
             const username = getCookie('chatUsername') || 'Anonymous';
             const message = JSON.stringify({
                 username,
-                content,
+                content: sanitizedContent,
                 timestamp: new Date().toISOString(),
                 message_type: 'Web',
                 message_color: null,
