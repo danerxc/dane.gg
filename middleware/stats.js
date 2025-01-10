@@ -1,7 +1,6 @@
 import { readdirSync } from 'fs';
-import { join } from 'path';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { join, dirname } from 'path';
 import pool from '../db.js';
 import requestIp from 'request-ip';
 import geoip from 'geoip-lite';

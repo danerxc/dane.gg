@@ -8,6 +8,25 @@ import { WebSocket } from 'ws';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+function sanitizeServerMessage(text) {
+    if (!text || typeof text !== 'string') {
+        return '';
+    }
+
+    const needsSanitization = /[<>`]/.test(text);
+    if (!needsSanitization) {
+        return text.substring(0, 500).trim();
+    }
+
+    return text
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/`{3}[\s\S]*?`{3}/g, "[code block removed]")
+        .replace(/`[\s\S]*?`/g, "[inline code removed]")
+        .substring(0, 500)
+        .trim();
+}
+
 function setupWebSocket(server) {
     const wss = new WebSocketServer({ 
         server,
@@ -21,14 +40,17 @@ function setupWebSocket(server) {
             try {
                 const data = JSON.parse(message.toString());
 
+                const sanitizedContent = sanitizeServerMessage(data.content);
+                const sanitizedUsername = sanitizeServerMessage(data.username);
+
                 const query = `
                     INSERT INTO website.messages (username, content, message_type, message_color, client_uuid)
                     VALUES ($1, $2, $3, $4, $5)
                     RETURNING id, username, content, timestamp, message_type, message_color, client_uuid
                 `;
                 const result = await pool.query(query, [
-                    data.username, 
-                    data.content, 
+                    sanitizedUsername, 
+                    sanitizedContent, 
                     data.message_type, 
                     data.message_color,
                     data.userUUID

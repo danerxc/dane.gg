@@ -81,6 +81,7 @@ router.delete('/projects/:projectId/tags/:tagId', authenticateToken, projectsCon
 // =======================
 // STATS ROUTES
 // =======================
+router.get('/web-stats', statsController.getPublicStats.bind(statsController));
 router.get('/stats', authenticateToken, statsController.getStats.bind(statsController));
 
 export default router;

@@ -1,6 +1,34 @@
 document.addEventListener('DOMContentLoaded', () => {
-    loadProjects();
+    initializeProjects();
 });
+
+async function initializeProjects() {
+    const loadingOverlay = document.querySelector('.loading-overlay');
+    const mainContainer = document.querySelector('.container');
+    const oneko = document.querySelector('#oneko');
+
+    if (!loadingOverlay || !mainContainer) {
+        console.error('Required DOM elements not found');
+        return;
+    }
+
+    try {
+        // Load initial data
+        await loadProjects();
+
+        // Hide loading overlay and show content
+        loadingOverlay.style.display = 'none';
+        mainContainer.style.display = 'block';
+        oneko.style.display = 'block';
+
+    } catch (error) {
+        console.error('Failed to load initial data:', error);
+        const loadingContent = loadingOverlay.querySelector('.loading-content');
+        if (loadingContent) {
+            loadingContent.innerHTML = '<h2>Failed to load content. Please refresh the page.</h2>';
+        }
+    }
+}
 
 async function loadProjects() {
     try {
@@ -50,7 +78,7 @@ async function loadProjects() {
             return indexA - indexB;
         });
 
-        for (const categoryId of sortedCategories) {
+        for (const [index, categoryId] of sortedCategories.entries()) {
             const categoryProjects = groupedProjects[categoryId];
             if (categoryProjects.length > 0) {
                 const section = document.createElement('div');
@@ -63,7 +91,7 @@ async function loadProjects() {
                 const categoryHasPage = categoriesWithPages.has(categoryNameLower);
 
                 section.innerHTML = `
-                    <div class="category-header">
+                    <div class="category-header heading-underline">
                         <h2>${categoryNameCapitalized}</h2>
                         ${categoryHasPage ? `<a href="/projects/${categoryNameLower}" class="view-all-link">View All</a>` : ''}
                     </div>
@@ -88,6 +116,11 @@ async function loadProjects() {
                 `;
 
                 grid.appendChild(section);
+
+                if (index < sortedCategories.length - 1) {
+                    const divider = document.createElement('hr');
+                    grid.appendChild(divider);
+                }
             }
         }
 

@@ -1,6 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
-    loadDevelopmentProjects();
+    initializeDevelopment();
 });
+
+async function initializeDevelopment() {
+    const loadingOverlay = document.querySelector('.loading-overlay');
+    const mainContainer = document.querySelector('.container');
+    const oneko = document.querySelector('#oneko');
+
+    if (!loadingOverlay || !mainContainer) {
+        console.error('Required DOM elements not found');
+        return;
+    }
+
+    try {
+        await loadDevelopmentProjects();
+
+        loadingOverlay.style.display = 'none';
+        mainContainer.style.display = 'block';
+        oneko.style.display = 'block';
+
+    } catch (error) {
+        console.error('Failed to load initial data:', error);
+        const loadingContent = loadingOverlay.querySelector('.loading-content');
+        if (loadingContent) {
+            loadingContent.innerHTML = '<h2>Failed to load content. Please refresh the page.</h2>';
+        }
+    }
+}
 
 async function loadDevelopmentProjects() {
     try {
