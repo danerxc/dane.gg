@@ -38,7 +38,8 @@ export default class BlogController {
           content: post.content,
           date: new Date(post.created_at).toLocaleDateString(),
           date_iso: post.created_at,
-          reading_time: Math.ceil(post.content.split(' ').length / 200)
+          reading_time: Math.ceil(post.content.split(' ').length / 200),
+          tags: post.tags
         });
       } catch (err) {
         res.status(500).sendFile(path.join(__dirname, 'public', '500.html')); 
@@ -60,8 +61,15 @@ export default class BlogController {
       
       async createPost(req, res) {
         try {
-          const { title, content, slug, thumbnail, published } = req.body;
-          const post = await blogService.createPost({ title, content, slug, thumbnail, published });
+          const { title, content, slug, thumbnail, published, tags } = req.body;
+          const post = await blogService.createPost({ 
+            title, 
+            content, 
+            slug, 
+            thumbnail, 
+            published,
+            tags: tags?.map(t => t.id)
+          });
           res.status(201).json(post);
         } catch (err) {
           res.status(500).json({ error: err.message });
@@ -70,8 +78,14 @@ export default class BlogController {
       
       async updatePost(req, res) {
         try {
-          const { title, content, thumbnail, published } = req.body;
-          const post = await blogService.updatePost(req.params.slug, { title, content, thumbnail, published });
+          const { title, content, thumbnail, published, tags } = req.body;
+          const post = await blogService.updatePost(req.params.slug, { 
+            title, 
+            content, 
+            thumbnail, 
+            published,
+            tags: tags?.map(t => t.id)
+          });
           if (!post) {
             return res.status(404).json({ error: 'Post not found' });
           }
@@ -92,4 +106,42 @@ export default class BlogController {
           res.status(500).json({ error: err.message });
         }
       }
+
+      async getTags(req, res) {
+        try {
+            const tags = await blogService.getAllTags();
+            res.json(tags);
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    }
+
+    async createTag(req, res) {
+        try {
+            const tag = await blogService.createTag(req.body.name);
+            res.status(201).json(tag);
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    }
+
+    async assignTagsToPost(req, res) {
+        try {
+            await blogService.assignTagsToPost(req.params.postId, req.body.tagIds);
+            res.json({ message: 'Tags assigned successfully' });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    }
+
+    async deleteTag(req, res) {
+      try {
+          const { id } = req.params;
+          await blogService.deleteTag(id);
+          res.json({ message: 'Tag deleted successfully' });
+      } catch (err) {
+          console.error('Error deleting tag:', err);
+          res.status(500).json({ error: err.message });
+      }
+  }
 }

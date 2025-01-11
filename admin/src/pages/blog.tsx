@@ -4,7 +4,9 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, IconButton, TextField,
   FormControlLabel, Switch, Button, Typography, Box, CircularProgress,
-  Alert, LinearProgress, useTheme, useMediaQuery, Drawer, Divider
+  Alert, LinearProgress, useTheme, useMediaQuery, Drawer, Divider, Dialog,
+  DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemText,
+  Select, MenuItem, InputLabel, FormControl, Checkbox, Chip
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import EditIcon from '@mui/icons-material/Edit';
@@ -12,6 +14,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import AddIcon from '@mui/icons-material/Add';
 import MdEditor from 'react-markdown-editor-lite';
 import { marked, Token } from 'marked';
 import 'react-markdown-editor-lite/lib/index.css';
@@ -30,6 +33,12 @@ interface BlogPost {
   content: string;
   thumbnail?: string;
   published: boolean;
+  tags?: BlogTag[];
+}
+
+interface BlogTag {
+  id: string;
+  name: string;
 }
 
 marked.use({
@@ -66,6 +75,9 @@ export const BlogPosts = () => {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { uploadProgress, uploadComplete, fileInputRef, handleFileUpload, resetUploadState } = useFileUpload();
+  const [tagDialogOpen, setTagDialogOpen] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [tags, setTags] = useState<BlogTag[]>([]);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -82,6 +94,18 @@ export const BlogPosts = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const { data } = await axiosInstance.get('/api/blog/tags');
+        setTags(data);
+      } catch (err) {
+        console.error('Failed to fetch tags:', err);
+      }
+    };
+    fetchTags();
+  }, []);
 
   useEffect(() => {
     fetchPosts();
@@ -147,6 +171,28 @@ export const BlogPosts = () => {
     }
   };
 
+  const handleCreateTag = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newTagName.trim()) {
+      try {
+        const { data } = await axiosInstance.post('/api/blog/tags', { name: newTagName.trim() });
+        setTags(prev => [...prev, data]);
+        setNewTagName('');
+      } catch (err) {
+        console.error('Failed to create tag:', err);
+      }
+    }
+  };
+
+  const handleDeleteTag = async (id: string) => {
+    try {
+      await axiosInstance.delete(`/api/blog/tags/${id}`);
+      setTags(prev => prev.filter(tag => tag.id !== id));
+    } catch (err) {
+      console.error('Failed to delete tag:', err);
+    }
+  };
+
   const handleEditorChange = ({ text }: { text: string }) => {
     setCurrentPost(prev => ({
       ...prev,
@@ -186,11 +232,23 @@ export const BlogPosts = () => {
     try {
       setError(null);
       const postData = { ...currentPost };
+      let savedPost;
+
       if (isEditing) {
-        await axiosInstance.put(`/api/blog/posts/${currentPost.slug}`, postData);
+        const { data } = await axiosInstance.put(`/api/blog/posts/${currentPost.slug}`, postData);
+        savedPost = data;
       } else {
-        await axiosInstance.post('/api/blog/posts', postData);
+        const { data } = await axiosInstance.post('/api/blog/posts', postData);
+        savedPost = data;
       }
+
+      // Handle tag assignments after post is saved
+      if (savedPost && currentPost.tags?.length) {
+        await axiosInstance.post(`/api/blog/posts/${savedPost.id}/tags`, {
+          tagIds: currentPost.tags.map(tag => tag.id)
+        });
+      }
+
       setOpen(false);
       await fetchPosts();
     } catch (err) {
@@ -388,6 +446,52 @@ export const BlogPosts = () => {
 
               <Divider sx={{ my: 3 }} />
 
+              {/* Tags Section */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" sx={{ mb: 2 }}>Tags</Typography>
+                <Grid container spacing={2}>
+                  <Grid size={12}>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <FormControl fullWidth>
+                        <InputLabel>Select Tags</InputLabel>
+                        <Select
+                          multiple
+                          value={currentPost.tags?.map(t => t.id) || []}
+                          onChange={(e) => {
+                            const selectedIds = e.target.value as string[];
+                            const selectedTags = tags.filter(tag => selectedIds.includes(tag.id));
+                            setCurrentPost(prev => ({ ...prev, tags: selectedTags }));
+                          }}
+                          renderValue={(selected) => (
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                              {selected.map(id => (
+                                <Chip
+                                  key={id}
+                                  label={tags.find(t => t.id === id)?.name}
+                                  size="small"
+                                />
+                              ))}
+                            </Box>
+                          )}
+                        >
+                          {tags.map((tag) => (
+                            <MenuItem key={tag.id} value={tag.id}>
+                              <Checkbox checked={currentPost.tags?.some(t => t.id === tag.id) ?? false} />
+                              <ListItemText primary={tag.name} />
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <IconButton onClick={() => setTagDialogOpen(true)}>
+                        <AddIcon />
+                      </IconButton>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Divider sx={{ my: 3 }} />
+
               {/* Settings Section */}
               <Box>
                 <Grid container spacing={2}>
@@ -428,6 +532,44 @@ export const BlogPosts = () => {
             </Box>
           </Box>
         </Drawer>
+
+        <Dialog open={tagDialogOpen} onClose={() => setTagDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Manage Tags</DialogTitle>
+          <DialogContent>
+            <form onSubmit={handleCreateTag}>
+              <TextField
+                fullWidth
+                label="New Tag Name"
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                margin="normal"
+              />
+              <Button type="submit" variant="contained" disabled={!newTagName.trim()}>
+                Add Tag
+              </Button>
+            </form>
+            <List>
+              {tags.map((tag) => (
+                <ListItem
+                  key={tag.id}
+                  secondaryAction={
+                    <IconButton
+                      edge="end"
+                      onClick={() => handleDeleteTag(tag.id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  }
+                >
+                  <ListItemText primary={tag.name} />
+                </ListItem>
+              ))}
+            </List>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setTagDialogOpen(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </Grid>
     </Box>
   );

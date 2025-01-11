@@ -848,10 +848,6 @@ nav a:hover {
     border-top: 1px solid #333;
 }
 
-.post-tags {
-    margin-bottom: 1.5rem;
-}
-
 .tag {
     background: #333;
     padding: 0.3rem 0.8rem;
@@ -1896,4 +1892,44 @@ a[href^="mailto"] svg {
 
 .admin-link a:hover {
     color: #e48f8f;
+}
+
+.blog-post-card .post-tags {
+    margin: 0.5rem 0;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.blog-post-card .tag {
+    display: inline-block;
+    padding: 4px 8px;
+    margin: 10px 0;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 12px;
+    text-decoration: none;
+    cursor: default;
+    white-space: nowrap;
+    background: #2a2a2a;
+}
+
+.post-tags {
+    margin: 1rem 0;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.post-tags .tag {
+    display: inline-block;
+    padding: 4px 8px;
+    margin: 0 5px 5px 0;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 12px;
+    text-decoration: none;
+    cursor: default;
+    white-space: nowrap;
+    background: #2a2a2a;
 }

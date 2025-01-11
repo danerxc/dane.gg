@@ -49,6 +49,10 @@ router.get('/blog/posts', authenticateToken, blogController.getPosts.bind(blogCo
 router.post('/blog/posts', authenticateToken, blogController.createPost.bind(blogController));
 router.put('/blog/posts/:slug', authenticateToken, blogController.updatePost.bind(blogController));
 router.delete('/blog/posts/:slug', authenticateToken, blogController.deletePost.bind(blogController));
+router.get('/blog/tags', blogController.getTags.bind(blogController));
+router.post('/blog/tags', authenticateToken, blogController.createTag.bind(blogController));
+router.post('/blog/posts/:postId/tags', authenticateToken, blogController.assignTagsToPost.bind(blogController));
+router.delete('/blog/tags/:id', authenticateToken, blogController.deleteTag.bind(blogController));
 
 // =======================
 // PROJECT ROUTES 
