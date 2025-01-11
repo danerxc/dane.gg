@@ -30,10 +30,7 @@ export default class BlogController {
               return res.status(404).render('404');
           }
   
-          const { prev_post, next_post } = await blogService.getAdjacentPosts(
-              post.created_at,
-              post.id
-          );
+          const { prev_post, next_post } = await blogService.getAdjacentPosts(post.id);
           
           res.render('post', {
               title: post.title,

@@ -71,22 +71,33 @@ class BlogService {
         }
     }
 
-    async getAdjacentPosts(currentPostDate, currentPostId, published = true) {
+    async getAdjacentPosts(currentPostId) {
         const query = `
-            SELECT id, title, slug, created_at 
-            FROM website.posts
-            WHERE published = $1
-            ORDER BY created_at ASC;
+            WITH ordered_posts AS (
+                SELECT id, title, slug, created_at,
+                       LAG(id) OVER w as prev_id,
+                       LAG(title) OVER w as prev_title,
+                       LAG(slug) OVER w as prev_slug,
+                       LEAD(id) OVER w as next_id,
+                       LEAD(title) OVER w as next_title,
+                       LEAD(slug) OVER w as next_slug
+                FROM website.posts 
+                WHERE published = true
+                WINDOW w AS (ORDER BY created_at ASC)
+            )
+            SELECT 
+                CASE WHEN prev_id IS NOT NULL THEN 
+                    json_build_object('id', prev_id, 'title', prev_title, 'slug', prev_slug)
+                ELSE NULL END as prev_post,
+                CASE WHEN next_id IS NOT NULL THEN 
+                    json_build_object('id', next_id, 'title', next_title, 'slug', next_slug)
+                ELSE NULL END as next_post
+            FROM ordered_posts
+            WHERE id = $1;
         `;
     
-        const { rows } = await pool.query(query, [published]);
-        
-        const currentIndex = rows.findIndex(post => post.id === currentPostId);
-        
-        return {
-            prev_post: currentIndex > 0 ? rows[currentIndex - 1] : null,
-            next_post: currentIndex < rows.length - 1 ? rows[currentIndex + 1] : null
-        };
+        const { rows } = await pool.query(query, [currentPostId]);
+        return rows[0] || { prev_post: null, next_post: null };
     }
 
     async getPostBySlug(slug) {
