@@ -83,7 +83,9 @@ body::before {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .loading-overlay {
@@ -155,18 +157,24 @@ header p {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 33.333%; /* Set explicit width */
-    flex: 0 0 33.333%; /* Don't grow or shrink */
-    min-width: 0; /* Prevent overflow */
+    width: 33.333%;
+    /* Set explicit width */
+    flex: 0 0 33.333%;
+    /* Don't grow or shrink */
+    min-width: 0;
+    /* Prevent overflow */
 }
 
 .right-column {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 66.667%; /* Set explicit width */
-    flex: 0 0 66.667%; /* Don't grow or shrink */
-    min-width: 0; /* Prevent overflow */
+    width: 66.667%;
+    /* Set explicit width */
+    flex: 0 0 66.667%;
+    /* Don't grow or shrink */
+    min-width: 0;
+    /* Prevent overflow */
 }
 
 /* Card Styles */
@@ -297,12 +305,29 @@ header p {
 }
 
 @keyframes softColorCycle {
-    0% { color: #ffd5d5; }
-    20% { color: #c9ffd7; }
-    40% { color: #c6e4ff; }
-    60% { color: #d7c8ff; }
-    80% { color: #ffcbcb; }
-    100% { color: #ffd5d5; }
+    0% {
+        color: #ffd5d5;
+    }
+
+    20% {
+        color: #c9ffd7;
+    }
+
+    40% {
+        color: #c6e4ff;
+    }
+
+    60% {
+        color: #d7c8ff;
+    }
+
+    80% {
+        color: #ffcbcb;
+    }
+
+    100% {
+        color: #ffd5d5;
+    }
 }
 
 .ascii-box pre {
@@ -394,8 +419,15 @@ hr {
 }
 
 @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
 }
 
 .chat-input input::after {
@@ -466,12 +498,12 @@ hr {
 }
 
 .current-album-art {
-    width: 52px; 
-    height: 52px; 
+    width: 52px;
+    height: 52px;
     flex-shrink: 0;
     border: 2px solid rgba(255, 255, 255, 0.3);
     overflow: hidden;
-    box-sizing: border-box; 
+    box-sizing: border-box;
 }
 
 .current-album-art img {
@@ -1064,16 +1096,19 @@ nav a:hover {
     height: 100%;
     width: 0;
 }
+
 .progress-frameworks {
     background-color: #b8ffb8;
     height: 100%;
     width: 0;
 }
+
 .progress-infrastructure {
     background-color: #9fe1ff;
     height: 100%;
     width: 0;
 }
+
 .progress-tools {
     background-color: #dcb0ff;
     height: 100%;
@@ -1281,18 +1316,53 @@ nav a:hover {
         display: contents;
     }
 
-    .mobile-order-1 { order: 1; }
-    .mobile-order-2 { order: 2; }
-    .mobile-order-3 { order: 3; }
-    .mobile-order-4 { order: 4; }
-    .mobile-order-5 { order: 5; }
-    .mobile-order-6 { order: 6; }
-    .mobile-order-7 { order: 7; }
-    .mobile-order-8 { order: 8; }
-    .mobile-order-9 { order: 9; }
-    .mobile-order-10 { order: 10; }
-    .mobile-order-11 { order: 11; }
-    .mobile-order-12 { order: 12; }
+    .mobile-order-1 {
+        order: 1;
+    }
+
+    .mobile-order-2 {
+        order: 2;
+    }
+
+    .mobile-order-3 {
+        order: 3;
+    }
+
+    .mobile-order-4 {
+        order: 4;
+    }
+
+    .mobile-order-5 {
+        order: 5;
+    }
+
+    .mobile-order-6 {
+        order: 6;
+    }
+
+    .mobile-order-7 {
+        order: 7;
+    }
+
+    .mobile-order-8 {
+        order: 8;
+    }
+
+    .mobile-order-9 {
+        order: 9;
+    }
+
+    .mobile-order-10 {
+        order: 10;
+    }
+
+    .mobile-order-11 {
+        order: 11;
+    }
+
+    .mobile-order-12 {
+        order: 12;
+    }
 
     /* Make container flex in mobile */
     .container {
@@ -1379,8 +1449,10 @@ a[href^="mailto"] svg {
 }
 
 .social-links a svg {
-    width: 14px; /* Match font size */
-    height: 14px; /* Match font size */
+    width: 14px;
+    /* Match font size */
+    height: 14px;
+    /* Match font size */
     vertical-align: middle;
 }
 
@@ -1482,13 +1554,11 @@ a[href^="mailto"] svg {
     left: 0;
     right: 0;
     bottom: 0;
-    background: repeating-linear-gradient(
-        0deg,
-        rgba(255, 255, 255, 0.01) 0px,
-        rgba(255, 255, 255, 0.01) 1px,
-        transparent 1px,
-        transparent 3px
-    );
+    background: repeating-linear-gradient(0deg,
+            rgba(255, 255, 255, 0.01) 0px,
+            rgba(255, 255, 255, 0.01) 1px,
+            transparent 1px,
+            transparent 3px);
     pointer-events: none;
     animation: scan 8s linear infinite;
     box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
@@ -1498,6 +1568,7 @@ a[href^="mailto"] svg {
     from {
         transform: translateY(0);
     }
+
     to {
         transform: translateY(3px);
     }
@@ -1535,8 +1606,15 @@ a[href^="mailto"] svg {
 }
 
 @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
 }
 
 .category-header {
@@ -1593,99 +1671,116 @@ a[href^="mailto"] svg {
 .post-content h4,
 .post-content h5,
 .post-content h6 {
-  margin: 2rem 0 1rem;
-  line-height: 1.4;
-  font-weight: 600;
-  color: #ffffff;
+    margin: 2rem 0 1rem;
+    line-height: 1.4;
+    font-weight: 600;
+    color: #ffffff;
 }
 
-.post-content h1 { font-size: 2.5em; }
-.post-content h2 { font-size: 2em; }
-.post-content h3 { font-size: 1.75em; }
-.post-content h4 { font-size: 1.5em; }
-.post-content h5 { font-size: 1.25em; }
-.post-content h6 { font-size: 1em; }
+.post-content h1 {
+    font-size: 2.5em;
+}
+
+.post-content h2 {
+    font-size: 2em;
+}
+
+.post-content h3 {
+    font-size: 1.75em;
+}
+
+.post-content h4 {
+    font-size: 1.5em;
+}
+
+.post-content h5 {
+    font-size: 1.25em;
+}
+
+.post-content h6 {
+    font-size: 1em;
+}
 
 /* Paragraphs and Lists */
 .post-content p,
 .post-content ul,
 .post-content ol {
-  margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .post-content ul,
 .post-content ol {
-  padding-left: 2rem;
+    padding-left: 2rem;
 }
 
 .post-content li {
-  margin: 0.5rem 0;
+    margin: 0.5rem 0;
 }
 
 .post-content blockquote {
-  border-left: 4px solid #e48f8f;
-  margin: 1.5rem 0;
-  padding: 1rem 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  font-style: italic;
+    border-left: 4px solid #e48f8f;
+    margin: 1.5rem 0;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    font-style: italic;
 }
 
 .post-content a {
-  color: #e48f8f;
-  text-decoration: none;
-  border-bottom: 1px dotted #e48f8f;
-  transition: all 0.2s ease;
+    color: #e48f8f;
+    text-decoration: none;
+    border-bottom: 1px dotted #e48f8f;
+    transition: all 0.2s ease;
 }
 
 .post-content a:hover {
-  border-bottom-style: solid;
+    border-bottom-style: solid;
 }
 
 .post-content img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 2rem auto;
-  border-radius: 4px;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 2rem auto;
+    border-radius: 4px;
 }
 
 .post-content table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 2rem 0;
-  border: 1px solid #333;
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+    border: 1px solid #333;
 }
 
 .post-content th,
 .post-content td {
-  padding: 0.75rem;
-  border: 1px solid #333;
+    padding: 0.75rem;
+    border: 1px solid #333;
 }
 
 .post-content th {
-  background: #1a1a1a;
-  font-weight: 600;
+    background: #1a1a1a;
+    font-weight: 600;
 }
 
 .post-content hr {
-  border: none;
-  border-top: 1px solid #333;
-  margin: 2rem 0;
+    border: none;
+    border-top: 1px solid #333;
+    margin: 2rem 0;
 }
 
 @media (max-width: 768px) {
-  .post-content {
-    font-size: 15px;
-  }
-  
-  .post-content pre {
-    padding: 0.75rem;
-    font-size: 0.85em;
-  }
-  
-  .post-content blockquote {
-    padding: 0.75rem 1rem;
-  }
+    .post-content {
+        font-size: 15px;
+    }
+
+    .post-content pre {
+        padding: 0.75rem;
+        font-size: 0.85em;
+    }
+
+    .post-content blockquote {
+        padding: 0.75rem 1rem;
+    }
 }
 
 .post-content pre {
@@ -1780,7 +1875,8 @@ a[href^="mailto"] svg {
 }
 
 .scroll-content a {
-    flex-shrink: 0;  /* Prevent images from shrinking */
+    flex-shrink: 0;
+    /* Prevent images from shrinking */
     height: 31px;
     display: flex;
     align-items: center;
@@ -1796,6 +1892,7 @@ a[href^="mailto"] svg {
     0% {
         transform: translateX(0);
     }
+
     100% {
         transform: translateX(-50%);
     }
@@ -1850,7 +1947,7 @@ a[href^="mailto"] svg {
     color: rgba(255, 255, 255, 0.7);
 }
 
-.stat-value-total, 
+.stat-value-total,
 .stat-value-unique {
     font-size: 16px;
     font-weight: bold;
@@ -1864,6 +1961,7 @@ a[href^="mailto"] svg {
     from {
         opacity: 0.5;
     }
+
     to {
         opacity: 1;
     }
@@ -1901,19 +1999,6 @@ a[href^="mailto"] svg {
     flex-wrap: wrap;
 }
 
-.blog-post-card .tag {
-    display: inline-block;
-    padding: 4px 8px;
-    margin: 10px 0;
-    border-radius: 12px;
-    color: #fff;
-    font-size: 12px;
-    text-decoration: none;
-    cursor: default;
-    white-space: nowrap;
-    background: #2a2a2a;
-}
-
 .post-tags {
     margin: 1rem 0;
     display: flex;
@@ -1921,15 +2006,17 @@ a[href^="mailto"] svg {
     flex-wrap: wrap;
 }
 
+.blog-post-card .tag {
+    margin: 10px 0;
+}
+
 .post-tags .tag {
     display: inline-block;
     padding: 4px 8px;
-    margin: 0 5px 5px 0;
     border-radius: 12px;
     color: #fff;
     font-size: 12px;
     text-decoration: none;
     cursor: default;
     white-space: nowrap;
-    background: #2a2a2a;
 }

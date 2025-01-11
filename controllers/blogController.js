@@ -34,6 +34,7 @@ export default class BlogController {
           
           res.render('post', {
               title: post.title,
+              thumbnail: post.thumbnail,
               content: post.content,
               date: new Date(post.created_at).toLocaleDateString(),
               date_iso: post.created_at,
