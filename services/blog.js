@@ -2,13 +2,13 @@ import pool from '../db.js';
 import { marked } from 'marked';
 
 class BlogService {
-        async getPublishedPosts(limit, offset = 0) {
+    async getPublishedPosts(limit, offset = 0) {
         try {
             const countResult = await pool.query(
                 'SELECT COUNT(*) FROM website.posts WHERE published = true'
             );
             const total = parseInt(countResult.rows[0].count);
-    
+
             const query = `
                 SELECT p.*,
                     COALESCE(
@@ -28,9 +28,9 @@ class BlogService {
                 ORDER BY p.created_at DESC
                 LIMIT $1 OFFSET $2
             `;
-    
+
             const { rows } = await pool.query(query, [limit, offset]);
-    
+
             return {
                 posts: rows,
                 total,
@@ -42,7 +42,7 @@ class BlogService {
             throw new Error('Failed to fetch posts: ' + err.message);
         }
     }
-    
+
     async getAllPosts(limit, offset = 0) {
         try {
             const countResult = await pool.query(
@@ -71,6 +71,24 @@ class BlogService {
         }
     }
 
+    async getAdjacentPosts(currentPostDate, currentPostId, published = true) {
+        const query = `
+            SELECT id, title, slug, created_at 
+            FROM website.posts
+            WHERE published = $1
+            ORDER BY created_at ASC;
+        `;
+    
+        const { rows } = await pool.query(query, [published]);
+        
+        const currentIndex = rows.findIndex(post => post.id === currentPostId);
+        
+        return {
+            prev_post: currentIndex > 0 ? rows[currentIndex - 1] : null,
+            next_post: currentIndex < rows.length - 1 ? rows[currentIndex + 1] : null
+        };
+    }
+
     async getPostBySlug(slug) {
         try {
             const { rows } = await pool.query(
@@ -91,11 +109,11 @@ class BlogService {
                 GROUP BY p.id`,
                 [slug]
             );
-    
+
             if (rows.length === 0) {
                 return null;
             }
-    
+
             const post = rows[0];
             try {
                 marked.setOptions({
@@ -103,7 +121,7 @@ class BlogService {
                     breaks: true,
                     sanitize: true
                 });
-                
+
                 marked.use({
                     extensions: [{
                         name: 'underline',
@@ -174,21 +192,21 @@ class BlogService {
                  RETURNING *`,
                 [title, content, slug, thumbnail, published]
             );
-    
+
             if (tags?.length) {
                 await this.assignTagsToPost(rows[0].id, tags);
             }
-    
+
             return rows[0] || null;
         } catch (err) {
             throw new Error('Failed to create post: ' + err.message);
         }
     }
 
-async updatePost(slug, { title, content, thumbnail, published, tags }) {
-    try {
-        const { rows } = await pool.query(
-            `UPDATE website.posts 
+    async updatePost(slug, { title, content, thumbnail, published, tags }) {
+        try {
+            const { rows } = await pool.query(
+                `UPDATE website.posts 
              SET title = COALESCE($1, title),
                  content = COALESCE($2, content),
                  thumbnail = COALESCE($3, thumbnail),
@@ -196,18 +214,18 @@ async updatePost(slug, { title, content, thumbnail, published, tags }) {
                  updated_at = CURRENT_TIMESTAMP
              WHERE slug = $5
              RETURNING *`,
-            [title, content, thumbnail, published, slug]
-        );
+                [title, content, thumbnail, published, slug]
+            );
 
-        if (tags?.length && rows[0]) {
-            await this.assignTagsToPost(rows[0].id, tags);
+            if (tags?.length && rows[0]) {
+                await this.assignTagsToPost(rows[0].id, tags);
+            }
+
+            return rows[0] || null;
+        } catch (err) {
+            throw new Error('Failed to update post: ' + err.message);
         }
-
-        return rows[0] || null;
-    } catch (err) {
-        throw new Error('Failed to update post: ' + err.message);
     }
-}
 
     async deletePost(slug) {
         try {

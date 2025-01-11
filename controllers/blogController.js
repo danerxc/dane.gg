@@ -25,26 +25,31 @@ export default class BlogController {
 
     async getPostBySlug(req, res) {
       try {
-        const post = await blogService.getPostBySlug(req.params.slug);
-        if (!post) {
-          return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
-        }
-    
-        res.locals.blogSlug = post.slug;
-        
-        res.render('post', {
-          thumbnail: post.thumbnail,
-          title: post.title,
-          content: post.content,
-          date: new Date(post.created_at).toLocaleDateString(),
-          date_iso: post.created_at,
-          reading_time: Math.ceil(post.content.split(' ').length / 200),
-          tags: post.tags
-        });
+          const post = await blogService.getPostBySlug(req.params.slug);
+          if (!post) {
+              return res.status(404).render('404');
+          }
+  
+          const { prev_post, next_post } = await blogService.getAdjacentPosts(
+              post.created_at,
+              post.id
+          );
+          
+          res.render('post', {
+              title: post.title,
+              content: post.content,
+              date: new Date(post.created_at).toLocaleDateString(),
+              date_iso: post.created_at,
+              reading_time: Math.ceil(post.content.split(' ').length / 200),
+              tags: post.tags,
+              prev_post,
+              next_post
+          });
       } catch (err) {
-        res.status(500).sendFile(path.join(__dirname, 'public', '500.html')); 
+          console.error(err);
+          res.status(500).render('500');
       }
-    }
+  }
 
     // =================
     // PROTECTED MANAGEMENT ROUTES
