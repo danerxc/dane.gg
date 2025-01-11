@@ -2018,3 +2018,11 @@ a[href^="mailto"] svg {
     cursor: default;
     white-space: nowrap;
 }
+
+.prev-post {
+    font-weight: bold;
+}
+
+.next-post {
+    font-weight: bold;
+}
