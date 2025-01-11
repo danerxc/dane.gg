@@ -14,6 +14,48 @@ function getCookie(name) {
 }
 
 // =======================================
+// >> TYPEWRITER EFFECT
+// =======================================
+
+function initTypewriter() {
+    const headers = document.querySelectorAll('.subpage-header h1');
+    
+    headers.forEach(header => {
+        const originalText = header.textContent;
+        
+        // Clear header
+        header.textContent = '';
+        
+        // Add prompt span
+        const prompt = document.createElement('span');
+        prompt.className = 'prompt';
+        prompt.textContent = '> ';
+        header.appendChild(prompt);
+        
+        // Add text container
+        const textContainer = document.createElement('span');
+        textContainer.className = 'typed-text';
+        header.appendChild(textContainer);
+        
+        // Add cursor
+        const cursor = document.createElement('span');
+        cursor.className = 'cursor';
+        header.appendChild(cursor);
+        
+        let i = 0;
+        const typeChar = () => {
+            if (i < originalText.length) {
+                textContainer.textContent += originalText.charAt(i);
+                i++;
+                setTimeout(typeChar, 100);
+            }
+        };
+        
+        setTimeout(typeChar, 500);
+    });
+}
+
+// =======================================
 // >> RAIN SYSTEM 
 // =======================================
 
@@ -609,4 +651,5 @@ class WeatherManager {
 
 document.addEventListener('DOMContentLoaded', () => {
     new WeatherManager();
+    initTypewriter();
 });

@@ -13,16 +13,24 @@
     <link rel="manifest" href="/assets/favicon/site.webmanifest" />
 
     <title>Dane ツ :: About</title>
+    <script src="js/pages/about.js"></script>
+    <script src="js/shared.js"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
+    <style>
+        #oneko {
+            display: block;
+        }
+    </style>
     <canvas id="rainCanvas"></canvas>
     <div class="container">
         <header>
             <div class="ascii-container">
-                <div class="ascii-box">
-                    <pre>
+                <a href="/">
+                    <div class="ascii-box">
+                        <pre>
 　　　　 ／＞　 フ 
 　　　　| 　_　 _|
  　　　／`ミ _x 彡
@@ -31,19 +39,17 @@
 ／￣|　　 |　|　|
 | (￣ヽ＿_ヽ_)_)
 ＼二つ 
-
                     </pre>
-                    <pre>
+                        <pre>
      _                  
     | |                 
   __| | __ _ _ __   ___ 
  / _` |/ _` | '_ \ / _ \
 | (_| | (_| | | | |  __/
  \__,_|\__,_|_| |_|\___|
-                        
-                   
                     </pre>
-                </div>
+                    </div>
+                </a>
             </div>
             <nav>
                 <div class="nav-container">
@@ -57,11 +63,11 @@
                 </div>
             </nav>
         </header>
-        <hr>
-        <div class="subpage-title">
-            <h1>About Me</h1>
+        <div class="subpage-header">
+            <h1>About</h1>
         </div>
         <div class="about-section">
+            <h2 class="heading-underline">About Me</h2>
             <p>I’m a software engineer based in Manchester. My primary focus
                 is on backend development, but I’m also skilled in frontend technologies. While C# is my main language,
                 I also have experience in JavaScript, TypeScript, and Python, making me a versatile developer across the
@@ -86,7 +92,7 @@
                 stay inspired and balanced, contributing to my personal and professional growth.</p>
         </div>
         <hr>
-        <h1>Skills</h1>
+        <h2 class="heading-underline">Skills</h2>
         <div class="skills-grid">
             <div class="skills-section">
                 <h3>Languages</h3>
@@ -94,37 +100,37 @@
                     <li>
                         C#
                         <div class="progress-bar">
-                            <div class="progress" style="width: 90%;"></div>
+                            <div class="progress-languages" style="width: 90%;"></div>
                         </div>
                     </li>
                     <li>
                         JavaScript
                         <div class="progress-bar">
-                            <div class="progress" style="width: 80%;"></div>
+                            <div class="progress-languages" style="width: 80%;"></div>
                         </div>
                     </li>
                     <li>
                         TypeScript
                         <div class="progress-bar">
-                            <div class="progress" style="width: 70%;"></div>
+                            <div class="progress-languages" style="width: 70%;"></div>
                         </div>
                     </li>
                     <li>
                         Python
                         <div class="progress-bar">
-                            <div class="progress" style="width: 60%;"></div>
+                            <div class="progress-languages" style="width: 60%;"></div>
                         </div>
                     </li>
                     <li>
                         HTML
                         <div class="progress-bar">
-                            <div class="progress" style="width: 90%;"></div>
+                            <div class="progress-languages" style="width: 90%;"></div>
                         </div>
                     </li>
                     <li>
                         CSS
                         <div class="progress-bar">
-                            <div class="progress" style="width: 85%;"></div>
+                            <div class="progress-languages" style="width: 85%;"></div>
                         </div>
                     </li>
                 </ul>
@@ -135,31 +141,31 @@
                     <li>
                         .NET Core
                         <div class="progress-bar">
-                            <div class="progress" style="width: 80%;"></div>
+                            <div class="progress-frameworks" style="width: 80%;"></div>
                         </div>
                     </li>
                     <li>
                         .NET Framework
                         <div class="progress-bar">
-                            <div class="progress" style="width: 75%;"></div>
+                            <div class="progress-frameworks" style="width: 75%;"></div>
                         </div>
                     </li>
                     <li>
                         Node.js
                         <div class="progress-bar">
-                            <div class="progress" style="width: 70%;"></div>
+                            <div class="progress-frameworks" style="width: 70%;"></div>
                         </div>
                     </li>
                     <li>
                         React
                         <div class="progress-bar">
-                            <div class="progress" style="width: 65%;"></div>
+                            <div class="progress-frameworks" style="width: 65%;"></div>
                         </div>
                     </li>
                     <li>
                         Express
                         <div class="progress-bar">
-                            <div class="progress" style="width: 60%;"></div>
+                            <div class="progress-frameworks" style="width: 60%;"></div>
                         </div>
                     </li>
                 </ul>
@@ -170,49 +176,49 @@
                     <li>
                         Docker
                         <div class="progress-bar">
-                            <div class="progress" style="width: 95%;"></div>
+                            <div class="progress-infrastructure" style="width: 95%;"></div>
                         </div>
                     </li>
                     <li>
                         Kubernetes
                         <div class="progress-bar">
-                            <div class="progress" style="width: 80%;"></div>
+                            <div class="progress-infrastructure" style="width: 80%;"></div>
                         </div>
                     </li>
                     <li>
                         Terraform
                         <div class="progress-bar">
-                            <div class="progress" style="width: 90%;"></div>
+                            <div class="progress-infrastructure" style="width: 90%;"></div>
                         </div>
                     </li>
                     <li>
                         Azure
                         <div class="progress-bar">
-                            <div class="progress" style="width: 90%;"></div>
+                            <div class="progress-infrastructure" style="width: 90%;"></div>
                         </div>
                     </li>
                     <li>
                         AWS
                         <div class="progress-bar">
-                            <div class="progress" style="width: 70%;"></div>
+                            <div class="progress-infrastructure" style="width: 70%;"></div>
                         </div>
                     </li>
                     <li>
                         Cloudflare
                         <div class="progress-bar">
-                            <div class="progress" style="width: 85%;"></div>
+                            <div class="progress-infrastructure" style="width: 85%;"></div>
                         </div>
                     </li>
                     <li>
                         Linux Server
                         <div class="progress-bar">
-                            <div class="progress" style="width: 85%;"></div>
+                            <div class="progress-infrastructure" style="width: 85%;"></div>
                         </div>
                     </li>
                     <li>
                         Windows Server
                         <div class="progress-bar">
-                            <div class="progress" style="width: 75%;"></div>
+                            <div class="progress-infrastructure" style="width: 75%;"></div>
                         </div>
                     </li>
                 </ul>
@@ -223,56 +229,56 @@
                     <li>
                         Visual Studio
                         <div class="progress-bar">
-                            <div class="progress" style="width: 95%;"></div>
+                            <div class="progress-tools" style="width: 95%;"></div>
                         </div>
                     </li>
                     <li>
                         Visual Studio Code
                         <div class="progress-bar">
-                            <div class="progress" style="width: 95%;"></div>
+                            <div class="progress-tools" style="width: 95%;"></div>
                         </div>
                     </li>
                     <li>
                         Git
                         <div class="progress-bar">
-                            <div class="progress" style="width: 95%;"></div>
+                            <div class="progress-tools" style="width: 95%;"></div>
                         </div>
                     </li>
                     <li>
                         Postman
                         <div class="progress-bar">
-                            <div class="progress" style="width: 85%;"></div>
+                            <div class="progress-tools" style="width: 85%;"></div>
                         </div>
                     </li>
                     <li>
                         Insomnia
                         <div class="progress-bar">
-                            <div class="progress" style="width: 90%;"></div>
+                            <div class="progress-tools" style="width: 90%;"></div>
                         </div>
                     </li>
                     <li>
                         Swagger
                         <div class="progress-bar">
-                            <div class="progress" style="width: 60%;"></div>
+                            <div class="progress-tools" style="width: 60%;"></div>
                         </div>
                     </li>
                     <li>
                         Affinity Suite
                         <div class="progress-bar">
-                            <div class="progress" style="width: 90%;"></div>
+                            <div class="progress-tools" style="width: 90%;"></div>
                         </div>
                     </li>
                     <li>
                         Davinci Resolve
                         <div class="progress-bar">
-                            <div class="progress" style="width: 65%;"></div>
+                            <div class="progress-tools" style="width: 65%;"></div>
                         </div>
                     </li>
                 </ul>
             </div>
         </div>
         <hr>
-        <h1>Certifications</h1>
+        <h2 class="heading-underline">Certifications</h2>
         <p>Here are some of the active certifications which I hold across various different technologies:</p>
         <div class="slider-container">
             <div class="slider">
@@ -329,6 +335,9 @@
             <div class="slider-dots"></div>
         </div>
     </div>
+    <div class="admin-link">
+        <a href="/admin">Admin</a>
+    </div>
     <div class="site-settings">
         <div class="settings-tab">⚙</div>
         <div class="settings-panel">
@@ -349,9 +358,8 @@
             </div>
         </div>
     </div>
-    <script src="js/pages/about.js"></script>
-    <script src="js/shared.js"></script>
-    <!-- <script src="/public/js/oneko.js" data-cat="/public/assets/fonts/oneko.gif"></script> -->
+
+    <script src="js/oneko.js" data-cat="assets/fonts/oneko.gif"></script>
 </body>
 
 </html>
