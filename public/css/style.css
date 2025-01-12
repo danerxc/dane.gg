@@ -1983,10 +1983,11 @@ a[href^="mailto"] svg {
     position: fixed;
     left: 0;
     bottom: 0;
-    padding: 2px 2px;
+    background-color: #141414;
+    padding: 3px 10px;
     z-index: 1000;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid rgb(255, 255, 255);
+    border-right: 1px solid rgb(255, 255, 255);
     border-top-right-radius: 5px;
 }
 
