@@ -1,5 +1,17 @@
+-- Create application user if not exists
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_user WHERE usename = 'dane_gg') THEN
+        CREATE USER dane_gg WITH PASSWORD 'your_secure_password';
+    END IF;
+END
+$$;
+
 -- Create schema first
 CREATE SCHEMA IF NOT EXISTS website;
+
+-- Grant usage on schema
+GRANT USAGE ON SCHEMA website TO dane_gg;
 
 -- Set search path
 SET search_path TO website;
@@ -16,7 +28,9 @@ CREATE TABLE website.users (
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     is_admin BOOLEAN DEFAULT false,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT valid_username CHECK (username ~ '^[a-zA-Z0-9_-]{3,50}$'),
+    CONSTRAINT valid_password CHECK (char_length(password_hash) >= 60)
 );
 
 CREATE TABLE website.posts (
@@ -28,7 +42,9 @@ CREATE TABLE website.posts (
     published BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT title_length CHECK (char_length(title) >= 3)
+    CONSTRAINT title_length CHECK (char_length(title) >= 3),
+    CONSTRAINT valid_slug CHECK (slug ~ '^[a-z0-9-]+$'),
+    CONSTRAINT content_not_empty CHECK (char_length(content) > 0)
 );
 
 CREATE TABLE website.messages (
@@ -38,7 +54,9 @@ CREATE TABLE website.messages (
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     message_type VARCHAR(50) NOT NULL,
     message_color VARCHAR(50),
-    client_uuid UUID
+    client_uuid UUID,
+    CONSTRAINT valid_color CHECK (message_color ~ '^#[0-9A-Fa-f]{6}$' OR message_color IS NULL),
+    CONSTRAINT content_not_empty CHECK (char_length(content) > 0)
 );
 
 -- Categories table must be created before projects table due to foreign key
@@ -122,11 +140,26 @@ INSERT INTO website.tags (title, color) VALUES
 CREATE INDEX idx_posts_slug ON website.posts(slug);
 CREATE INDEX idx_posts_published ON website.posts(published) WHERE published = true;
 CREATE INDEX idx_messages_client_uuid ON website.messages(client_uuid);
+CREATE INDEX idx_messages_timestamp ON website.messages(timestamp);
 CREATE INDEX idx_projects_featured ON website.projects(featured);
 CREATE INDEX idx_projects_category_id ON website.projects(category_id);
 CREATE INDEX idx_categories_name ON website.project_categories(name);
 CREATE INDEX idx_page_views_visitor_id ON website.page_views(visitor_id);
 CREATE INDEX idx_page_views_created_at ON website.page_views(created_at);
+
+-- Grant permissions on all existing tables
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA website TO dane_gg;
+
+-- Grant permissions on sequences
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA website TO dane_gg;
+
+-- Set default permissions for future tables
+ALTER DEFAULT PRIVILEGES IN SCHEMA website 
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO dane_gg;
+
+-- Set default permissions for future sequences
+ALTER DEFAULT PRIVILEGES IN SCHEMA website 
+GRANT USAGE, SELECT ON SEQUENCES TO dane_gg;
 
 -- Function and trigger
 CREATE OR REPLACE FUNCTION website.update_updated_at_column()
