@@ -5,6 +5,11 @@ import path, { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+function processImageUrl(thumbnail) {
+  if (!thumbnail) return 'https://dane.gg/assets/img/misc/social-thumbnail.jpg';
+  return thumbnail.startsWith('http') ? thumbnail : `https://dane.gg${thumbnail}`;
+}
+
 export default class BlogController {
 
   // =================
@@ -32,10 +37,20 @@ export default class BlogController {
 
       const { prev_post, next_post } = await blogService.getAdjacentPosts(post.id);
 
+      const content_preview = post.content
+      .replace(/<[^>]*>/g, '')
+      .replace(/[#*`]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 160);
+
       res.render('post', {
         title: post.title,
+        slug: post.slug,
         thumbnail: post.thumbnail,
+        social_thumbnail: processImageUrl(post.thumbnail),
         content: post.content,
+        content_preview: content_preview + (content_preview.length >= 160 ? '...' : ''),
         date: new Date(post.created_at).toLocaleDateString(),
         date_iso: post.created_at,
         reading_time: Math.ceil(post.content.split(' ').length / 200),

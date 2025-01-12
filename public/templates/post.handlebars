@@ -5,6 +5,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{{content_preview}}">
+    <meta name="keywords" content="{{#each tags}}{{this.name}}{{#unless @last}}, {{/unless}}{{/each}}">
+    <meta name="author" content="Dane Buchanan">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://dane.gg/blog/{{slug}}">
+    <meta property="og:title" content="{{title}} - dane 桜">
+    <meta property="og:description" content="{{content_preview}}">
+    <meta property="og:image" content="{{social_thumbnail}}">
+    <meta property="article:published_time" content="{{date_iso}}">
+    <meta property="article:author" content="Dane Buchanan">
+    {{#each tags}}
+    <meta property="article:tag" content="{{this.name}}">{{/each}}
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dane.gg/blog/{{slug}}">
+    <meta name="twitter:title" content="{{title}} - dane 桜">
+    <meta name="twitter:description" content="{{content_preview}}">
+    <meta name="twitter:image" content="{{social_thumbnail}}">
+
     <link rel="icon" type="image/png" href="/assets/favicon/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/assets/favicon/favicon.svg" />
     <link rel="shortcut icon" href="/assets/favicon/favicon.ico" />
@@ -12,7 +36,7 @@
     <meta name="apple-mobile-web-app-title" content="dane.gg" />
     <link rel="manifest" href="/assets/favicon/site.webmanifest" />
 
-    <title>{{title}} :: dane ツ</title>
+    <title>{{title}} - dane 桜</title>
     <script src="../js/shared.js"></script>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
