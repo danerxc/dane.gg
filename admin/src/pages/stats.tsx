@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
-    Box, Card, CardContent, Typography, Grid, Select,
+    Box, Card, CardContent, Typography, Select,
     MenuItem, FormControl, InputLabel, Tooltip as MUIToolTip, Table,
     TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     List, ListItem, ListItemText
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
     LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer, PieChart, Pie, Cell
@@ -119,7 +120,7 @@ const CountryTooltip = ({ active, payload }: { active?: boolean; payload?: { pay
             <Card sx={{ p: 1, backgroundColor: 'rgba(43, 43, 43, 0.9)' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {CountryFlag && <CountryFlag style={{ width: 20 }} />}
-                    <Typography>{data.country ? getName(data.country) || data.country : 'Unknown'}</Typography>
+                    <Typography>{data.country ? getName(data.country) ?? data.country : 'Unknown'}</Typography>
                     <Typography>{data.visits} visits ({data.percentage}%)</Typography>
                 </Box>
             </Card>
@@ -176,9 +177,9 @@ const TrendTooltip = ({ active, payload, label }: { active?: boolean; payload?: 
 };
 
 const processCountryData = (countries: CountryData[]): CountryData[] => {
-    const totalVisits = countries.reduce((sum, country) => 
+    const totalVisits = countries.reduce((sum, country) =>
         sum + (country.visits ?? 0), 0);
-        
+
     return countries.map(country => ({
         country: country.country ?? 'Unknown',
         visits: country.visits ?? 0,
@@ -188,15 +189,15 @@ const processCountryData = (countries: CountryData[]): CountryData[] => {
 
 const aggregateCountryData = (countries: CountryData[] | null): CountryData[] => {
     if (!countries || countries.length === 0) return [];
-    
-    type CountryAccumulator = { 
-        [key: string]: CountryData 
+
+    type CountryAccumulator = {
+        [key: string]: CountryData
     };
 
     return Object.values(
         countries.reduce((acc: CountryAccumulator, curr: CountryData) => {
             const countryKey = curr.country ?? 'Unknown';
-            
+
             if (!acc[countryKey]) {
                 acc[countryKey] = {
                     country: countryKey,
@@ -211,7 +212,7 @@ const aggregateCountryData = (countries: CountryData[] | null): CountryData[] =>
     );
 };
 
-export const Stats = () => {    
+export const Stats = () => {
     const [stats, setStats] = useState<Stats>(defaultStats);
     const [period, setPeriod] = useState('7d');
 
@@ -247,7 +248,7 @@ export const Stats = () => {
 
             <Grid container spacing={3}>
                 {/* Summary Cards */}
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                     <Card>
                         <CardContent>
                             <Typography color="textSecondary">Total Visits</Typography>
@@ -256,7 +257,7 @@ export const Stats = () => {
                     </Card>
 
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                     <Card>
                         <CardContent>
                             <Typography color="textSecondary">Unique Visitors</Typography>
@@ -264,7 +265,7 @@ export const Stats = () => {
                         </CardContent>
                     </Card>
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                     <Card>
                         <CardContent>
                             <Typography color="textSecondary">Pages Viewed</Typography>
@@ -272,7 +273,7 @@ export const Stats = () => {
                         </CardContent>
                     </Card>
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                     <Card>
                         <CardContent>
                             <Typography color="textSecondary">Active Days</Typography>
@@ -282,7 +283,7 @@ export const Stats = () => {
                 </Grid>
 
                 {/* Visitor Chart */}
-                <Grid item xs={12}>
+                <Grid size={12}>
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>Visitor Trends</Typography>
@@ -300,7 +301,7 @@ export const Stats = () => {
                     </Card>
                 </Grid>
 
-                <Grid item xs={12} md={8}>
+                <Grid size={{ xs: 12, md: 8 }}>
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>Page Views</Typography>
@@ -317,13 +318,13 @@ export const Stats = () => {
                     </Card>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>Blog Posts</Typography>
                             <List sx={{ maxHeight: 300, overflow: 'auto' }}>
-                                {stats.blog_posts?.map((post, index) => (
-                                    <ListItem key={index} divider>
+                                {stats.blog_posts?.map((post) => (
+                                    <ListItem key={post.page_path} divider>
                                         <MUIToolTip title={post.page_path}>
                                             <ListItemText
                                                 primary={(post.page_path ?? '').replace('/blog/', '')}
@@ -347,7 +348,7 @@ export const Stats = () => {
                 </Grid>
 
                 {/* Countries Section */}
-                <Grid item xs={12} md={8}>
+                <Grid size={{ xs: 12, md: 8 }}>
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>Visitor Countries</Typography>
@@ -384,7 +385,7 @@ export const Stats = () => {
                                                 {processedCountries.map((entry: CountryData) => (
                                                     <Cell
                                                         key={`cell-${entry.country}`}
-                                                        fill={getRandomColor(entry.country || 'Unknown')}
+                                                        fill={getRandomColor(entry.country ?? 'Unknown')}
                                                     />
                                                 ))}
                                             </Pie>
@@ -430,7 +431,7 @@ export const Stats = () => {
                                                         height: 8,
                                                         borderRadius: '50%',
                                                         flexShrink: 0,
-                                                        bgcolor: getRandomColor(country.country || 'Unknown')
+                                                        bgcolor: getRandomColor(country.country ?? 'Unknown')
                                                     }}
                                                 />
                                                 {(() => {
@@ -451,7 +452,7 @@ export const Stats = () => {
                                                         minWidth: 0
                                                     }}
                                                 >
-                                                    {getName(country.country || 'Unknown')}
+                                                    {getName(country.country ?? 'Unknown')}
                                                 </Typography>
                                                 <Typography
                                                     variant="caption"
@@ -470,7 +471,7 @@ export const Stats = () => {
                     </Card>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>User Agents</Typography>
@@ -483,7 +484,7 @@ export const Stats = () => {
                             }}>
                                 {processedAgents.map((agent, index) => (
                                     <MUIToolTip
-                                        key={index}
+                                        key={agent.user_agent ?? `agent-${index}`}
                                         arrow
                                         slotProps={{
                                             tooltip: {
@@ -573,7 +574,7 @@ export const Stats = () => {
                     </Card>
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={12}>
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>Request Logs</Typography>
@@ -601,8 +602,8 @@ export const Stats = () => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {stats.raw_data?.map((row: RawData, index: number) => (
-                                            <TableRow key={index}>
+                                        {stats.raw_data?.map((row: RawData) => (
+                                            <TableRow key={`${row.visitor_id}-${row.created_at}`}>
                                                 <TableCell>{row.created_at ? new Date(row.created_at).toLocaleString() : ''}</TableCell>
                                                 <TableCell>{row.visitor_id}</TableCell>
                                                 <TableCell>{row.page_path}</TableCell>

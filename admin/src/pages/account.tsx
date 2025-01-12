@@ -8,12 +8,12 @@ import {
   Typography,
   CircularProgress
 } from '@mui/material';
+import { AxiosError } from 'axios';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PersonIcon from '@mui/icons-material/Person';
 import axiosInstance from '../services/axios';
-import QRCode from 'qrcode.react';
 
 
 export const Account = () => {
@@ -54,15 +54,16 @@ export const Account = () => {
 
   const disableTOTP = async () => {
     try {
-        await axiosInstance.post('/auth/account/2fa/disable');
-        setIsTotpEnabled(false);
-        setTotpSecret(null);
-        setQrCode(null);
-        setSuccess('2FA has been disabled');
+      await axiosInstance.post('/auth/account/2fa/disable');
+      setIsTotpEnabled(false);
+      setTotpSecret(null);
+      setQrCode(null);
+      setSuccess('2FA has been disabled');
     } catch (err) {
-        setError('Failed to disable 2FA');
+      setError('Failed to disable 2FA');
+      throw err;
     }
-};
+  };
 
   useEffect(() => {
     const checkUsername = async () => {
@@ -77,6 +78,7 @@ export const Account = () => {
         setIsUsernameAvailable(response.data.available);
       } catch (err) {
         console.error('Failed to check username');
+        throw err;
       }
       setIsCheckingUsername(false);
     };
@@ -117,8 +119,8 @@ export const Account = () => {
         newPassword: '',
         confirmPassword: ''
       }));
-    } catch (err) {
-      if (err.response?.data?.message) {
+    } catch (err: unknown) {
+      if (err instanceof AxiosError && err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
         setError('Failed to update password');
@@ -139,6 +141,7 @@ export const Account = () => {
       setSuccess('Username updated successfully');
     } catch (err) {
       setError('Failed to update username');
+      throw err;
     }
   };
 
@@ -149,6 +152,7 @@ export const Account = () => {
       setQrCode(response.data.qrCode);
     } catch (err) {
       setError('Failed to setup 2FA');
+      throw err;
     }
   };
 
@@ -164,6 +168,7 @@ export const Account = () => {
       setTotpToken('');
     } catch (err) {
       setError('Invalid 2FA code');
+      throw err;
     }
   };
 
@@ -254,7 +259,7 @@ export const Account = () => {
           onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
           margin="normal"
           error={!!error && error.includes('Current password')}
-          helperText={error && error.includes('Current password') ?
+          helperText={error?.includes('Current password') ?
             <PasswordErrorText message={error} /> : ''}
         />
         <TextField
@@ -324,9 +329,27 @@ export const Account = () => {
                   fullWidth
                   label="Verification Code"
                   value={totpToken}
-                  onChange={(e) => setTotpToken(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setTotpToken(value);
+                  }}
                   margin="normal"
-                  inputProps={{ maxLength: 6 }}
+                  type="text"
+                  inputMode="numeric"
+                  slotProps={{
+                    htmlInput: {
+                      maxLength: 6,
+                      pattern: '[0-9]*'
+                    }
+                  }}
+                  sx={{
+                    '& input': {
+                      '-moz-appearance': 'textfield',
+                      '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
+                        display: 'none'
+                      }
+                    }
+                  }}
                 />
                 <Button
                   variant="contained"
