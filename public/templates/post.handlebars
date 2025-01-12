@@ -29,8 +29,8 @@
         <header>
             <div class="ascii-container">
                 <a href="/">
-                <div class="ascii-box">
-                    <pre>
+                    <div class="ascii-box">
+                        <pre>
 　　　　 ／＞　 フ 
 　　　　| 　_　 _|
  　　　／`ミ _x 彡
@@ -40,7 +40,7 @@
 | (￣ヽ＿_ヽ_)_)
 ＼二つ 
                     </pre>
-                    <pre>
+                        <pre>
      _                  
     | |                 
   __| | __ _ _ __   ___ 
@@ -48,7 +48,7 @@
 | (_| | (_| | | | |  __/
  \__,_|\__,_|_| |_|\___|
                     </pre>
-                </div>
+                    </div>
                 </a>
             </div>
             <nav>
@@ -83,7 +83,7 @@
                 {{#if tags}}
                 <div class="post-tags">
                     {{#each tags}}
-                    <span class="tag">{{this}}</span>
+                    <span class="tag">{{this.name}}</span>
                     {{/each}}
                 </div>
                 {{/if}}
@@ -99,7 +99,7 @@
             </footer>
         </article>
     </div>
-        <div class="admin-link">
+    <div class="admin-link">
         <a href="/admin">Admin</a>
     </div>
     <div class="site-settings">

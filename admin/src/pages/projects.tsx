@@ -10,7 +10,6 @@ import {
   DialogTitle,
   FormControl,
   FormControlLabel,
-  Grid,
   IconButton,
   InputLabel,
   MenuItem,
@@ -28,13 +27,13 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction,
   Divider,
   Popper,
   ClickAwayListener,
   LinearProgress,
   useTheme, useMediaQuery, Drawer
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -439,28 +438,28 @@ export const Projects = () => {
               <CancelIcon />
             </IconButton>
           </Box>
-      
+
           {/* Scrollable Content */}
-          <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+          <Box sx={{ flex: 1, overflow: 'auto', p: 3, pt: 4 }}>
             {/* Basic Info Section */}
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ mb: 4 }}>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>Basic Information</Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
+              <Grid container spacing={3}>
+                <Grid size={12}>
                   <TextField
                     fullWidth
                     label="Title"
-                    value={currentProject.title || ''}
+                    value={currentProject.title ?? ''}
                     onChange={(e) => setCurrentProject({ ...currentProject, title: e.target.value })}
                   />
                 </Grid>
-      
-                <Grid item xs={12}>
+
+                <Grid size={12}>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <FormControl fullWidth>
                       <InputLabel>Category</InputLabel>
                       <Select
-                        value={currentProject.category_id || ''}
+                        value={currentProject.category_id ?? ''}
                         onChange={(e) => setCurrentProject({ ...currentProject, category_id: e.target.value })}
                         label="Category"
                       >
@@ -476,22 +475,22 @@ export const Projects = () => {
                     </IconButton>
                   </Box>
                 </Grid>
-      
-                <Grid item xs={12}>
+
+                <Grid size={12}>
                   <TextField
                     fullWidth
                     label="Description"
                     multiline
                     rows={4}
-                    value={currentProject.description || ''}
+                    value={currentProject.description ?? ''}
                     onChange={(e) => setCurrentProject({ ...currentProject, description: e.target.value })}
                   />
                 </Grid>
               </Grid>
             </Box>
-      
+
             <Divider sx={{ my: 3 }} />
-      
+
             {/* Image Upload Section */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>Project Image</Typography>
@@ -500,7 +499,7 @@ export const Projects = () => {
                   <TextField
                     fullWidth
                     label="Image URL/Path"
-                    value={currentProject.image_url || ''}
+                    value={currentProject.image_url ?? ''}
                     onChange={(e) => setCurrentProject({ ...currentProject, image_url: e.target.value })}
                   />
                   <input
@@ -537,26 +536,26 @@ export const Projects = () => {
                 <ImagePreview src={currentProject.image_url} />
               </Box>
             </Box>
-      
+
             <Divider sx={{ my: 3 }} />
-      
+
             {/* URLs & Text Section */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>Links & Details</Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
                     label="Project URL"
-                    value={currentProject.project_url || ''}
+                    value={currentProject.project_url ?? ''}
                     onChange={(e) => setCurrentProject({ ...currentProject, project_url: e.target.value })}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth>
                     <InputLabel>Project Text</InputLabel>
                     <Select
-                      value={currentProject.project_text || ''}
+                      value={currentProject.project_text ?? ''}
                       onChange={(e) => setCurrentProject({ ...currentProject, project_text: e.target.value })}
                       label="Project Text"
                     >
@@ -568,20 +567,20 @@ export const Projects = () => {
                     </Select>
                   </FormControl>
                 </Grid>
-      
-                <Grid item xs={12} sm={6}>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
                     label="Repository URL"
-                    value={currentProject.repo_url || ''}
+                    value={currentProject.repo_url ?? ''}
                     onChange={(e) => setCurrentProject({ ...currentProject, repo_url: e.target.value })}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth>
                     <InputLabel>Repository Text</InputLabel>
                     <Select
-                      value={currentProject.repo_text || ''}
+                      value={currentProject.repo_text ?? ''}
                       onChange={(e) => setCurrentProject({ ...currentProject, repo_text: e.target.value })}
                       label="Repository Text"
                     >
@@ -595,14 +594,14 @@ export const Projects = () => {
                 </Grid>
               </Grid>
             </Box>
-      
+
             <Divider sx={{ my: 3 }} />
-      
+
             {/* Tags & Settings Section */}
             <Box>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>Tags</Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <FormControl fullWidth>
                       <InputLabel>Tags</InputLabel>
@@ -615,7 +614,7 @@ export const Projects = () => {
                         })}
                         renderValue={(selected) => (
                           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                            {(selected as string[]).map((tagId) => {
+                            {selected.map((tagId) => {
                               const tag = tags.find(t => t.id === tagId);
                               return tag ? (
                                 <Chip
@@ -652,8 +651,8 @@ export const Projects = () => {
                     </IconButton>
                   </Box>
                 </Grid>
-      
-                <Grid item xs={12}>
+
+                <Grid size={12}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -667,7 +666,7 @@ export const Projects = () => {
               </Grid>
             </Box>
           </Box>
-      
+
           {/* Footer */}
           <Box sx={{
             p: 2,
@@ -687,7 +686,7 @@ export const Projects = () => {
       <Dialog open={categoryDialogOpen} onClose={() => setCategoryDialogOpen(false)}>
         <DialogTitle>Manage Categories</DialogTitle>
         <DialogContent>
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 2, mt: 0.5 }}>
             <TextField
               label="New Category Name"
               value={newCategoryName}
@@ -698,6 +697,7 @@ export const Projects = () => {
             />
             <Button
               variant="outlined"
+              fullWidth
               onClick={handleCreateCategory}
               disabled={!newCategoryName}
               sx={{ mt: 1 }}
@@ -737,24 +737,30 @@ export const Projects = () => {
                 ) : (
                   <>
                     <ListItemText primary={category.name} />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        edge="end"
-                        onClick={() => {
-                          setEditingCategoryId(category.id);
-                          setEditedCategoryName(category.name);
-                        }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        edge="end"
-                        color="error"
-                        onClick={() => handleDeleteCategory(category.id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItemSecondaryAction>
+                    <ListItem
+                      secondaryAction={
+                        <>
+                          <IconButton
+                            edge="end"
+                            onClick={() => {
+                              setEditingCategoryId(category.id);
+                              setEditedCategoryName(category.name);
+                            }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            edge="end"
+                            color="error"
+                            onClick={() => handleDeleteCategory(category.id)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </>
+                      }
+                    >
+                      <ListItemText primary={category.name} />
+                    </ListItem>
                   </>
                 )}
               </ListItem>
@@ -771,8 +777,8 @@ export const Projects = () => {
         <DialogTitle>Manage Tags</DialogTitle>
         <DialogContent>
           {/* Add New Tag Section */}
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={10}>
+          <Grid container spacing={2} sx={{ mb: 2, mt: 0.5 }}>
+            <Grid size={10}>
               <TextField
                 autoFocus
                 size="small"
@@ -782,7 +788,7 @@ export const Projects = () => {
                 onChange={(e) => setNewTag({ ...newTag, title: e.target.value })}
               />
             </Grid>
-            <Grid item xs={2}>
+            <Grid size={2}>
               <IconButton
                 onClick={(e) => handleColorPickerClick(e)}
                 sx={{
@@ -795,7 +801,7 @@ export const Projects = () => {
                 <ColorLensIcon sx={{ color: getContrastText(newTag.color) }} />
               </IconButton>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Button
                 onClick={handleNewTagSave}
                 variant="outlined"

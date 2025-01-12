@@ -48,7 +48,7 @@ async function loadPosts(page, limit) {
                     month: 'short',
                     day: 'numeric'
                 });
-    
+
                 let postHTML = `
                     <div class="card blog-post-card">
                         <article>
@@ -58,6 +58,11 @@ async function loadPosts(page, limit) {
                                 <div class="post-meta">
                                     <time datetime="${post.created_at}">${date}</time>
                                 </div>
+                                ${post.tags?.length ? `
+                                    <div class="post-tags">
+                                        ${post.tags.map(tag => `<span class="tag">${tag.name}</span>`).join('')}
+                                    </div>
+                                ` : ''}
                             </header>
                             <footer>
                                 <a href="/blog/${post.slug}" class="read-more">Read more →</a>
@@ -65,8 +70,8 @@ async function loadPosts(page, limit) {
                         </article>
                     </div>
                 `;
-                    grid.innerHTML += postHTML;
-                });
+                grid.innerHTML += postHTML;
+            });
         }
 
         const totalPages = Math.ceil(total / limit);

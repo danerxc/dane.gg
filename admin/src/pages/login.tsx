@@ -48,7 +48,7 @@ const ASCII_ART = [
         }}>
             {ASCII_ART.map((line, index) => (
                 <Typography
-                    key={index}
+                    key={`ascii-line-${line}-${index}`}
                     component="div"
                     sx={{
                         opacity: visibleLines.includes(index) ? 1 : 0,
@@ -87,6 +87,7 @@ export const Login = () => {
             navigate('/admin');
         } catch (err) {
             setError(requires2FA ? 'Invalid 2FA code' : 'Invalid credentials');
+            throw err;
         }
     };
 

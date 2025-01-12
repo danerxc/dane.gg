@@ -95,6 +95,20 @@ CREATE TABLE IF NOT EXISTS website.page_views (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create tags table
+CREATE TABLE IF NOT EXISTS website.blog_tags (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(50) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create post_tags junction table
+CREATE TABLE IF NOT EXISTS website.post_tags (
+    post_id UUID REFERENCES website.posts(id) ON DELETE CASCADE,
+    tag_id UUID REFERENCES website.blog_tags(id) ON DELETE CASCADE,
+    PRIMARY KEY (post_id, tag_id)
+);
+
 -- Insert tags
 INSERT INTO website.tags (title, color) VALUES
 ('JavaScript', '#F0DB4F'),

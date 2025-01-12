@@ -12,7 +12,6 @@ import {
   ListItemIcon,
   ListItemText,
   Toolbar,
-  Typography,
   useTheme,
   useMediaQuery,
   Divider
@@ -30,7 +29,7 @@ import { BlogPosts } from './blog';
 import { Projects } from './projects';
 import { Users } from './users';
 import { Account } from './account';
-import { auth, setNavigate } from '../services/auth';
+import { auth } from '../services/auth';
 import { TokenExpirationChecker } from '../components/tokenExpirationCheck';
 import axiosInstance from '../services/axios';
 import logo from '../assets/logo.webp';
@@ -124,7 +123,7 @@ const Dashboard = () => {
       if (!user?.is_admin) {
         navigate('/admin');
       }
-    }, [navigate, user]);
+    }, [navigate]);
 
     return user?.is_admin ? <>{children}</> : null;
   };
