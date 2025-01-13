@@ -32,18 +32,19 @@ CMD ["npx", "concurrently", "npx nodemon server.js", "cd admin && npx vite"]
 FROM base AS production
 ENV NODE_ENV=production
 
-RUN pwd
-RUN ls -la /app/admin/src
-RUN tree /app/admin/src
+# Set working directory for admin build
+WORKDIR /app/admin
 
 # Build the Vite project
-RUN cd admin && npm run build
+RUN npm run build
 
-# Prune development dependencies
+# Reset working directory
+WORKDIR /app
+
+# Prune dependencies
 RUN npm prune --production
 RUN cd admin && npm prune --production
 
 EXPOSE 3000
 
-# Start the server
 CMD ["npm", "start"]
