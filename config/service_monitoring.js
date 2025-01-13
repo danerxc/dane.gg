@@ -1,7 +1,7 @@
 // config/service_monitoring.js
 const ALLOWED_SERVICES = [
-  'dane.vc',
-  'dane.lol',
+  'dane.gg (Website)',
+  'dane.lol (Website)',
   'Dane\'s Dungeon Bot'
 ];
 
