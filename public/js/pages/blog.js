@@ -39,6 +39,8 @@ async function loadPosts(page, limit) {
         pagination.innerHTML = '';
 
         if (posts.length === 0) {
+            grid.style.columnCount = 1;
+            grid.style.columns = 'unset';
             grid.innerHTML = '<h2>There are currently no posts</h2>';
             return;
         } else {
