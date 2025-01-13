@@ -577,24 +577,34 @@ nav a:hover {
 }
 
 .icon-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(20px, 1fr));
+    grid-template-rows: repeat(2, auto);
     gap: clamp(4px, 1.5vw, 8px);
-    justify-content: center;
-    width: fit-content;
+    width: 100%;
     box-sizing: border-box;
-    margin: 0 auto;
+    padding: 0 10px;
+    place-items: center;
+    justify-content: center;
 }
 
 .icon-link {
-    flex: 0 0 28px;
-    width: 28px;
-    height: 28px;
+    aspect-ratio: 1;
+    width: 100%;
+    max-width: 28px;
     color: #fff;
     transition: color 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+@media (max-width: 800px) {
+    .icon-grid {
+        gap: 4px;
+        padding: 0 5px;
+        place-items: center;
+    }
 }
 
 .icon-link:hover {
@@ -1973,10 +1983,11 @@ a[href^="mailto"] svg {
     position: fixed;
     left: 0;
     bottom: 0;
-    padding: 2px 2px;
+    background-color: #141414;
+    padding: 3px 10px;
     z-index: 1000;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid rgb(255, 255, 255);
+    border-right: 1px solid rgb(255, 255, 255);
     border-top-right-radius: 5px;
 }
 

@@ -17,5 +17,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('error-code').textContent = validErrorCode;
     document.getElementById('error-message').textContent = errorMessage;
-    document.title = `${validErrorCode} :: dane サイ���`;
+    document.title = `${validErrorCode} - dane 桜`;
 });
