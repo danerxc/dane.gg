@@ -26,7 +26,9 @@ export default class WebhooksController {
 
     async updateServiceStatus(req, res) {
         try {
-            const { heartbeat, monitor } = req.body.body;
+            console.log('Incoming webhook payload:', JSON.stringify(req.body, null, 2));
+            
+            const { heartbeat, monitor } = req.body;
     
             if (!monitor || !heartbeat) {
                 return res.status(400).json({ error: 'Invalid payload format' });
@@ -54,6 +56,7 @@ export default class WebhooksController {
             data.services[service] = {
                 status: status === 1 ? 1 : 0,
                 lastUpdate: heartbeat.time || new Date().toISOString(),
+                message: req.body.msg,
                 monitor: {
                     ...monitor,
                     lastHeartbeat: heartbeat
