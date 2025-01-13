@@ -29,6 +29,8 @@ CREATE TABLE website.users (
     password_hash VARCHAR(255) NOT NULL,
     is_admin BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    totp_secret TEXT,
+    totp_enabled BOOLEAN DEFAULT false
     CONSTRAINT valid_username CHECK (username ~ '^[a-zA-Z0-9_-]{3,50}$'),
     CONSTRAINT valid_password CHECK (char_length(password_hash) >= 60)
 );
@@ -82,8 +84,6 @@ CREATE TABLE website.projects (
         FOREIGN KEY (category_id) 
         REFERENCES website.project_categories(id)
         ON DELETE RESTRICT
-    totp_secret TEXT,
-    totp_enabled BOOLEAN DEFAULT false
 );
 
 -- Create the tags table
