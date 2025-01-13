@@ -247,7 +247,7 @@ const chatManager = {
             resetInactivityTimeout();
             addMessage({
                 username: 'System',
-                content: 'Connected to chat',
+                content: 'Connected to chat - please be respectful',
                 timestamp: new Date().toISOString(),
                 message_type: 'system'
             });
@@ -282,7 +282,7 @@ const chatManager = {
                 data.data.reverse().forEach(msg => addMessage(msg));
                 addMessage({
                     username: 'System',
-                    content: 'Connected to chat',
+                    content: 'Connected to chat - please be respectful',
                     timestamp: new Date().toISOString(),
                     message_type: 'system'
                 });
