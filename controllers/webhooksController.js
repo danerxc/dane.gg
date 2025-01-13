@@ -32,7 +32,7 @@ export default class WebhooksController {
                 return res.status(400).json({ error: 'Invalid payload format' });
             }
     
-            const service = monitor.name.toLowerCase().replace(/\s+\(website\)/i, '');
+            const service = monitor.name.toLowerCase();
             const status = heartbeat.status;
     
             if (!ALLOWED_SERVICES.includes(service)) {
