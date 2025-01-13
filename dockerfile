@@ -32,6 +32,10 @@ CMD ["npx", "concurrently", "npx nodemon server.js", "cd admin && npx vite"]
 FROM base AS production
 ENV NODE_ENV=production
 
+RUN pwd
+RUN ls -la /app/admin/src
+RUN tree /app/admin/src
+
 # Build the Vite project
 RUN cd admin && npm run build
 
