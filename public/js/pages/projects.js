@@ -44,6 +44,12 @@ async function loadProjects() {
         const projects = await projectsResponse.json();
         const categories = await categoriesResponse.json();
 
+        if (projects.length === 0) {
+            const projectsGrid = document.querySelector('.projects-grid');
+            projectsGrid.innerHTML = '<h2>There are currently no projects</h2>';
+            return;
+        }
+
         const categoryMap = categories.reduce((acc, cat) => {
             acc[cat.id] = cat.name;
             return acc;
