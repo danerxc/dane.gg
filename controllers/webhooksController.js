@@ -26,20 +26,19 @@ export default class WebhooksController {
 
     async updateServiceStatus(req, res) {
         try {
-            const { body } = req.body[0];
-            const { heartbeat, monitor } = body;
-
+            const { heartbeat, monitor } = req.body.body;
+    
             if (!monitor || !heartbeat) {
                 return res.status(400).json({ error: 'Invalid payload format' });
             }
-
+    
             const service = monitor.name.toLowerCase().replace(/\s+\(website\)/i, '');
             const status = heartbeat.status;
-
+    
             if (!ALLOWED_SERVICES.includes(service)) {
                 return res.status(400).json({ error: 'Service not allowed' });
             }
-
+    
             let data;
             try {
                 data = JSON.parse(await fs.readFile(this.STATUS_FILE, 'utf8'));
@@ -49,19 +48,18 @@ export default class WebhooksController {
                     lastUpdated: new Date().toISOString()
                 };
             }
-
+    
             if (!data.services) data.services = {};
-
+    
             data.services[service] = {
                 status: status === 1 ? 1 : 0,
                 lastUpdate: heartbeat.time || new Date().toISOString(),
-                message: body.msg,
                 monitor: {
                     ...monitor,
                     lastHeartbeat: heartbeat
                 }
             };
-
+    
             data.lastUpdated = new Date().toISOString();
             await fs.writeFile(this.STATUS_FILE, JSON.stringify(data, null, 2));
             res.json({ success: true });
