@@ -55,7 +55,6 @@ CREATE TABLE website.messages (
     message_type VARCHAR(50) NOT NULL,
     message_color VARCHAR(50),
     client_uuid UUID,
-    CONSTRAINT valid_color CHECK (message_color ~ '^#[0-9A-Fa-f]{6}$' OR message_color IS NULL),
     CONSTRAINT content_not_empty CHECK (char_length(content) > 0)
 );
 

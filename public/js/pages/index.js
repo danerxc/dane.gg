@@ -4,6 +4,7 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 let inactivityTimeout;
 const messageSound = new Audio('/assets/sounds/notification.mp3');
 let isChatSoundEnabled = getCookie('chatSoundEnabled') !== 'false';
+let isInactiveDisconnect = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -205,6 +206,7 @@ async function getStats() {
 // >> WSS CHAT SYSTEM
 // =======================================
 
+// User Identification
 function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0;
@@ -213,27 +215,166 @@ function generateUUID() {
     });
 }
 
-let userUUID = getCookie('userUUID');
-if (!userUUID) {
-    userUUID = generateUUID();
-    document.cookie = `userUUID=${userUUID};path=/;max-age=31536000`; // 1 year
-}
+const userUUID = getCookie('userUUID') || (() => {
+    const uuid = generateUUID();
+    setCookie('userUUID', uuid, 365);
+    return uuid;
+})();
 
-function handleCommand(input) {
-    const match = input.match(/^\/nick\s+(.+)$/);
-    if (match) {
-        const newUsername = match[1].trim();
-        if (newUsername) {
-            setCookie('chatUsername', newUsername);
+// Chat Manager Implementation
+const chatManager = {
+    ws: null,
+    isConnecting: false,
+    reconnectAttempts: 0,
+    maxRetries: 5,
+    reconnectTimeout: null,
+
+    connect() {
+        if (this.isInactiveDisconnect || 
+            this.isConnecting || 
+            this.ws?.readyState === WebSocket.CONNECTING || 
+            this.ws?.readyState === WebSocket.OPEN) {
+            return;
+        }
+
+        this.isConnecting = true;
+        this.ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/chat`);
+
+        this.ws.onopen = () => {
+            console.log('Connected to chat');
+            this.isConnecting = false;
+            this.reconnectAttempts = 0;
+            resetInactivityTimeout();
             addMessage({
                 username: 'System',
-                content: `Username changed to: ${newUsername}`,
-                timestamp: new Date().toISOString()
+                content: 'Connected to chat',
+                timestamp: new Date().toISOString(),
+                message_type: 'system'
             });
-            return true;
+        };
+
+        this.ws.onclose = () => {
+            this.isConnecting = false;
+            if (this.reconnectAttempts < this.maxRetries) {
+                const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+                this.reconnectAttempts++;
+                clearTimeout(this.reconnectTimeout);
+                this.reconnectTimeout = setTimeout(() => this.connect(), delay);
+            }
+            addMessage({
+                username: 'System',
+                content: 'Disconnected from chat',
+                timestamp: new Date().toISOString(),
+                message_type: 'system'
+            });
+        };
+
+        this.ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            this.isConnecting = false;
+        };
+
+        this.ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'history') {
+                const messages = document.querySelector('.messages');
+                messages.innerHTML = '';
+                data.data.reverse().forEach(msg => addMessage(msg));
+                addMessage({
+                    username: 'System',
+                    content: 'Connected to chat',
+                    timestamp: new Date().toISOString(),
+                    message_type: 'system'
+                });
+            } else if (data.type === 'message') {
+                addMessage(data.data);
+            }
+            resetInactivityTimeout();
+        };
+    },
+
+    send(content) {
+        if (this.ws?.readyState !== WebSocket.OPEN) return;
+
+        this.ws.send(JSON.stringify({
+            content: sanitizeMessage(content),
+            username: getCookie('chatUsername') || 'Anonymous',
+            userUUID,
+            message_type: 'chat',
+            message_color: '#ffffff'
+        }));
+    },
+
+    disconnect(reason = 'manual') {
+        clearTimeout(this.reconnectTimeout);
+        this.reconnectTimeout = null;
+        this.reconnectAttempts = 0;
+        this.isConnecting = false;
+        this.isInactiveDisconnect = (reason === 'inactivity');
+
+        if (this.ws) {
+            this.ws.close();
+            this.ws = null;
         }
     }
-    return false;
+};
+
+// Message Handling
+function addMessage({ username, content, timestamp, message_type, message_color, userUUID: msgUUID, isHistorical }) {
+    if (!isHistorical && msgUUID !== userUUID && username.toLowerCase() !== 'system') {
+        playMessageSound();
+    }
+
+    const messages = document.querySelector('.messages');
+    const messageDate = new Date(timestamp);
+    const timeString = formatTimestamp(messageDate);
+
+    let messageHTML = '';
+    if (username === 'System') {
+        const color = content.includes('Connected') ? '#abffb3' :
+            content.includes('Disconnected') ? '#fca9a9' :
+                content.includes('Username') ? '#abe6ff' : '#ffffff';
+
+        messageHTML = `
+        <div class="message">
+            <span class="timestamp">[${timeString}]</span>
+            <span class="nick">&lt;${username}&gt;</span>
+            <span class="text" style="color: ${color}">${content}</span>
+        </div>`;
+    } else {
+        const nickColor = message_type === 'Discord' ?
+            `style="color: #${Number(message_color).toString(16).padStart(6, '0')}"` : '';
+
+        messageHTML = `
+        <div class="message">
+            <span class="timestamp">[${timeString}]</span>
+            <span class="nick" ${nickColor}>&lt;${username}&gt;</span>
+            <span class="text">${content}</span>
+        </div>`;
+    }
+
+    messages.innerHTML += messageHTML;
+    messages.scrollTop = messages.scrollHeight;
+}
+
+// Utility Functions
+function formatTimestamp(date) {
+    const now = new Date();
+    if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString('en-US', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    return date.toLocaleString('en-US', {
+        hour12: false,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
 function sanitizeMessage(text) {
@@ -245,114 +386,31 @@ function sanitizeMessage(text) {
         .trim();
 }
 
-function setupChat() {
-    const messages = document.querySelector('.messages');
-    const input = document.querySelector('.chat-input input');
-    const button = document.querySelector('.chat-input button');
-
-    function resetInactivityTimeout() {
-        clearTimeout(inactivityTimeout);
-        inactivityTimeout = setTimeout(() => {
-            messages.innerHTML = '';
-            if (ws.readyState === WebSocket.OPEN) {
-                ws.close();
-            }
-        }, 30000); // 30 seconds
-    }
-
-    function connect() {
-        ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/chat`);
-
-        ws.onopen = () => {
-            console.log('Connected to chat');
-            reconnectAttempts = 0;
-            resetInactivityTimeout();
-        };
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'history') {
-                messages.innerHTML = '';
-                data.data.reverse().forEach(msg => addMessage(msg));
-                addMessage({
-                    username: 'System',
-                    content: 'Connected to chat server - please be respectful',
-                    timestamp: new Date().toISOString()
-                });
-            } else if (data.type === 'message') {
-                addMessage(data.data);
-                messages.scrollTop = messages.scrollHeight;
-            }
-            resetInactivityTimeout();
-        };
-
-        ws.onclose = () => {
-            console.log('Disconnected from chat');
+function handleCommand(input) {
+    const match = input.match(/^\/nick\s+(.+)$/);
+    if (match) {
+        const newUsername = match[1].trim();
+        if (newUsername) {
+            setCookie('chatUsername', newUsername);
             addMessage({
                 username: 'System',
-                content: 'Disconnected from chat',
-                timestamp: new Date().toISOString()
-            });
-        };
-
-        ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
-    }
-
-    connect();
-
-    function sendMessage() {
-        const content = input.value.trim();
-        if (!content) return;
-
-        if (handleCommand(content)) {
-            input.value = '';
-            resetInactivityTimeout();
-            return;
-        }
-
-        const sanitizedContent = sanitizeMessage(content);
-
-        if (ws.readyState === WebSocket.OPEN) {
-            const username = getCookie('chatUsername') || 'Anonymous';
-            const message = JSON.stringify({
-                username,
-                content: sanitizedContent,
+                content: `Username changed to: ${newUsername}`,
                 timestamp: new Date().toISOString(),
-                message_type: 'Web',
-                message_color: null,
-                userUUID: userUUID
+                message_type: 'system'
             });
-            ws.send(message);
-            input.value = '';
-            resetInactivityTimeout();
-        } else {
-            addMessage({
-                username: 'System',
-                content: 'Not connected to chat server',
-                timestamp: new Date()
-            });
+            return true;
         }
     }
+    return false;
+}
 
-    function reconnectOnInteraction() {
-        if (ws.readyState !== WebSocket.OPEN) {
-            connect();
-        }
-    }
 
-    button.addEventListener('click', sendMessage);
-    input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-        resetInactivityTimeout();
-    });
-
-    document.addEventListener('mousemove', resetInactivityTimeout);
-    document.addEventListener('keydown', resetInactivityTimeout);
-
-    document.addEventListener('mousemove', reconnectOnInteraction);
-    document.addEventListener('keydown', reconnectOnInteraction);
+function resetInactivityTimeout() {
+    clearTimeout(inactivityTimeout);
+    inactivityTimeout = setTimeout(() => {
+        document.querySelector('.messages').innerHTML = '';
+        chatManager.disconnect('inactivity');
+    }, 30000);
 }
 
 function playMessageSound() {
@@ -362,93 +420,54 @@ function playMessageSound() {
     }
 }
 
-function addMessage({ username, content, timestamp, message_type, message_color, userUUID, isHistorical }) {
-    if (!isHistorical &&
-        userUUID !== getCookie('userUUID') &&
-        username.toLowerCase() !== 'system') {
-        playMessageSound();
+function setupChat() {
+    const chatForm = document.querySelector('.chat-input');
+    const chatInput = chatForm?.querySelector('input');
+    const chatButton = chatForm?.querySelector('button');
+
+    if (!chatForm || !chatInput || !chatButton) {
+        console.error('Chat elements not found');
+        return;
     }
 
-    const messages = document.querySelector('.messages');
-    const messageDate = new Date(timestamp);
-    const now = new Date();
-    let timeString;
+    const handleUserActivity = () => {
+        if (chatManager.isInactiveDisconnect) {
+            chatManager.isInactiveDisconnect = false;
+            chatManager.connect();
+        }
+        resetInactivityTimeout();
+    };
 
-    if (messageDate.toDateString() === now.toDateString()) {
-        timeString = messageDate.toLocaleTimeString('en-US', {
-            hour12: false,
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    } else {
-        timeString = messageDate.toLocaleString('en-US', {
-            hour12: false,
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
+    document.addEventListener('mousemove', handleUserActivity);
+    document.addEventListener('keypress', handleUserActivity);
+    chatInput.addEventListener('focus', handleUserActivity);
 
-    function decimalToHex(decimal) {
-        const hex = Number(decimal).toString(16).padStart(6, '0');
-        return `#${hex}`;
-    }
+    const sendMessage = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
 
-    if (username === 'System') {
-        if (content.includes('Connected')) {
-            messages.innerHTML += `
-            <div class="message">
-                <span class="timestamp">[${timeString}]</span>
-                <span class="nick">&lt;${username}&gt;</span>
-                <span class="text" style="color: #abffb3">${content}</span>
-            </div>
-        `;
+        const content = chatInput.value.trim();
+        if (!content) return;
+
+        if (!handleCommand(content)) {
+            chatManager.send(content);
         }
 
-        if (content.includes('Disconnected')) {
-            messages.innerHTML += `
-            <div class="message">
-                <span class="timestamp">[${timeString}]</span>
-                <span class="nick">&lt;${username}&gt;</span>
-                <span class="text" style="color: #fca9a9">${content}</span>
-            </div>
-        `;
-        }
+        chatInput.value = '';
+        chatInput.focus();
+    };
 
-        if (content.includes('Username changed')) {
-            messages.innerHTML += `
-            <div class="message">
-                <span class="timestamp">[${timeString}]</span>
-                <span class="nick">&lt;${username}&gt;</span>
-                <span class="text" style="color: #abe6ff">${content}</span>
-            </div>
-        `;
-        }
-    }
+    chatForm.addEventListener('submit', sendMessage, false);
+    chatButton.addEventListener('click', sendMessage, false);
 
-    if (username != 'System') {
-        if (message_type === 'Discord') {
-            messages.innerHTML += `
-                <div class="message">
-                    <span class="timestamp">[${timeString}]</span>
-                    <span class="nick" style="color: ${decimalToHex(message_color)}">&lt;${username}&gt;</span>
-                    <span class="text">${content}</span>
-                </div>
-            `;
-        } else {
-            messages.innerHTML += `
-            <div class="message">
-                <span class="timestamp">[${timeString}]</span>
-                <span class="nick">&lt;${username}&gt;</span>
-                <span class="text">${content}</span>
-            </div>
-        `;
+    chatInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            sendMessage(event);
         }
-    }
+    }, false);
 
-    messages.scrollTop = messages.scrollHeight;
+    chatManager.connect();
 }
 
 // =======================================
