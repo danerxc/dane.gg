@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 export default defineConfig(({ command }) => {
   const baseConfig = {
@@ -8,10 +9,15 @@ export default defineConfig(({ command }) => {
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
-      emptyOutDir: true
+      emptyOutDir: true,
+      sourcemap: true
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src')
+      }
     }
   }
-
   // Development config
   if (command === 'serve') {
     return {
