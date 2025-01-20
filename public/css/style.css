@@ -578,7 +578,7 @@ nav a:hover {
 
 .icon-grid {
     display: grid;
-    grid-template-columns: repeat(7, minmax(20px, 1fr));
+    grid-template-columns: repeat(8, minmax(20px, 1fr));
     grid-template-rows: repeat(2, auto);
     gap: clamp(4px, 1.5vw, 8px);
     width: 100%;
