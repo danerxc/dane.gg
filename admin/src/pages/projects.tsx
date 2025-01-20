@@ -84,7 +84,8 @@ interface Project {
   id: string;
   title: string;
   description: string;
-  category_id: string;
+  category_id?: string;
+  category?: Category;
   image_url?: string;
   project_url?: string;
   repo_url?: string;
@@ -167,6 +168,19 @@ export const Projects = () => {
       setTags([]);
     }
   };
+
+const groupProjectsByCategory = (projects: Project[]) => {
+  const grouped = projects.reduce((acc, project) => {
+    const category = categories.find(c => c.id === project.category_id);
+    const categoryName = category?.name ?? 'Uncategorized';
+    if (!acc[categoryName]) {
+      acc[categoryName] = [];
+    }
+    acc[categoryName].push(project);
+    return acc;
+  }, {} as Record<string, Project[]>);
+  return grouped;
+};
 
   useEffect(() => {
     fetchProjects();
@@ -349,68 +363,75 @@ export const Projects = () => {
         Create New Project
       </Button>
 
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: { xs: 300, sm: 650 } }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Featured</TableCell>
-              <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Tags</TableCell>
-              <TableCell sx={{ width: 120 }}>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {projects.map((project) => (
-              <TableRow key={project.id}>
-                <TableCell>{project.title}</TableCell>
-                <TableCell>
-                  {project.featured ?
-                    <CheckCircleIcon color="success" sx={{ fontSize: '1.2rem' }} /> :
-                    <CancelIcon color="error" sx={{ fontSize: '1.2rem' }} />
-                  }
-                </TableCell>
-                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {project.tags?.map((tag) => (
-                      <Chip
-                        key={tag.id}
-                        label={tag.title}
+      {Object.entries(groupProjectsByCategory(projects)).map(([categoryName, categoryProjects]) => (
+        <Box key={categoryName} sx={{ mb: 4 }}>
+          <Typography variant="h6" sx={{ mb: 2, pl: 2 }}>
+            {categoryName}
+          </Typography>
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: { xs: 300, sm: 650 } }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Title</TableCell>
+                  <TableCell>Featured</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Tags</TableCell>
+                  <TableCell sx={{ width: 120 }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {categoryProjects.map((project) => (
+                  <TableRow key={project.id}>
+                    <TableCell>{project.title}</TableCell>
+                    <TableCell>
+                      {project.featured ?
+                        <CheckCircleIcon color="success" sx={{ fontSize: '1.2rem' }} /> :
+                        <CancelIcon color="error" sx={{ fontSize: '1.2rem' }} />
+                      }
+                    </TableCell>
+                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {project.tags?.map((tag) => (
+                          <Chip
+                            key={tag.id}
+                            label={tag.title}
+                            size="small"
+                            sx={{
+                              backgroundColor: tag.color,
+                              color: theme => theme.palette.getContrastText(tag.color)
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <IconButton
                         size="small"
-                        sx={{
-                          backgroundColor: tag.color,
-                          color: theme => theme.palette.getContrastText(tag.color)
+                        onClick={() => {
+                          setCurrentProject({
+                            ...project,
+                            tagIds: project.tags?.map(tag => tag.id)
+                          });
+                          setIsEditing(true);
+                          setOpen(true);
                         }}
-                      />
-                    ))}
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      setCurrentProject({
-                        ...project,
-                        tagIds: project.tags?.map(tag => tag.id)
-                      });
-                      setIsEditing(true);
-                      setOpen(true);
-                    }}
-                    sx={{ mr: 1 }}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(project.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                        sx={{ mr: 1 }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDelete(project.id)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      ))}
 
       <Drawer
         anchor="right"
