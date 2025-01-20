@@ -245,17 +245,19 @@ export const Projects = () => {
     }
   };
 
-  const handleEditCategory = async (category: Category) => {
+  const handleEditCategory = async () => {
+    if (!editingCategoryId || !editedCategoryName) return;
+
     try {
-      await axiosInstance.put(`/api/projects/category/${category.id}`, {
-        name: category.name
+      await axiosInstance.put(`/api/projects/category/${editingCategoryId}`, {
+        name: editedCategoryName
       });
-      setCategories(categories.map(c =>
-        c.id === category.id ? category : c
-      ));
+
+      await fetchCategories();
       setEditingCategoryId(null);
+      setEditedCategoryName('');
     } catch (error) {
-      console.error('Failed to update category:', error);
+      console.error('Error updating category:', error);
     }
   };
 
@@ -710,23 +712,64 @@ export const Projects = () => {
             {categories.map((category) => (
               <ListItem
                 key={category.id}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: 2,
+                  pr: 1
+                }}
                 secondaryAction={
-                  <IconButton edge="end" onClick={() => handleDeleteCategory(category.id)}>
-                    <DeleteIcon />
-                  </IconButton>
+                  <Box sx={{ display: 'flex', gap: 1, minWidth: '80px', ml: 2 }}>
+                    {editingCategoryId === category.id ? (
+                      <>
+                        <IconButton onClick={handleEditCategory} size="small">
+                          <CheckCircleIcon />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => {
+                            setEditingCategoryId(null);
+                            setEditedCategoryName('');
+                          }}
+                          size="small"
+                        >
+                          <CancelIcon />
+                        </IconButton>
+                      </>
+                    ) : (
+                      <>
+                        <IconButton
+                          onClick={() => {
+                            setEditingCategoryId(category.id);
+                            setEditedCategoryName(category.name);
+                          }}
+                          size="small"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => handleDeleteCategory(category.id)}
+                          size="small"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </>
+                    )}
+                  </Box>
                 }
               >
-                {editingCategoryId === category.id ? (
-                  <TextField
-                    value={editedCategoryName}
-                    onChange={(e) => setEditedCategoryName(e.target.value)}
-                    size="small"
-                    autoFocus
-                    fullWidth
-                  />
-                ) : (
-                  <ListItemText primary={category.name} />
-                )}
+                <Box sx={{ flexGrow: 1, mr: 12 }}>
+                  {editingCategoryId === category.id ? (
+                    <TextField
+                      value={editedCategoryName}
+                      onChange={(e) => setEditedCategoryName(e.target.value)}
+                      size="small"
+                      autoFocus
+                      fullWidth
+                    />
+                  ) : (
+                    <ListItemText primary={category.name} />
+                  )}
+                </Box>
               </ListItem>
             ))}
           </List>
