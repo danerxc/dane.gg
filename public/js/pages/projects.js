@@ -111,7 +111,9 @@ async function loadProjects() {
                                         <span class="project-tag" style="background-color: ${tag.color};">${tag.title}</span>
                                     `).join('') : ''}
                                 </div>
-                                <p>${project.description}</p>
+                                <div class="project-description">
+                                    ${marked.parse(project.description)}
+                                </div>
                                 <div class="project-links">
                                     ${project.project_url ? `<button class="project-card-button" data-url="${project.project_url}">${project.project_text || 'View Project'}</button>` : ''}
                                     ${project.repo_url ? `<button class="project-card-button" data-url="${project.repo_url}">${project.repo_text || 'View Repository'}</button>` : ''}

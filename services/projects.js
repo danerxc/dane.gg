@@ -1,4 +1,37 @@
 import pool from '../db.js';
+import { marked } from 'marked';
+
+marked.setOptions({
+    gfm: true,
+    breaks: true,
+    sanitize: true
+});
+
+marked.use({
+    extensions: [{
+        name: 'underline',
+        level: 'inline',
+        start(src) {
+            const match = src.match(/\+\+/);
+            return match ? match.index : -1;
+        },
+        tokenizer(src) {
+            const match = /^\+\+([^+]+)\+\+/.exec(src);
+            if (match) {
+                return {
+                    type: 'underline',
+                    raw: match[0],
+                    text: match[1],
+                    tokens: []
+                };
+            }
+            return undefined;
+        },
+        renderer(token) {
+            return `<u>${token.text}</u>`;
+        }
+    }]
+});
 
 class ProjectService {
     async getAllProjects() {
@@ -33,10 +66,12 @@ class ProjectService {
 
                 projects.forEach(project => {
                     project.tags = tagsByProjectId[project.id] || [];
+                    project.description = marked.parse(project.description);
                 });
             } else {
                 projects.forEach(project => {
                     project.tags = [];
+                    project.description = marked.parse(project.description);
                 });
             }
 
@@ -46,6 +81,48 @@ class ProjectService {
         }
     }
 
+    async getAllProjectsAdmin() {
+        try {
+            const { rows: projects } = await pool.query(
+                'SELECT * FROM website.projects ORDER BY display_order ASC, created_at DESC'
+            );
+
+            const projectIds = projects.map(project => project.id);
+
+            if (projectIds.length > 0) {
+                const { rows: tags } = await pool.query(
+                    `SELECT pt.project_id, t.id, t.title, t.color
+                    FROM website.project_tags pt
+                    JOIN website.tags t ON pt.tag_id = t.id
+                    WHERE pt.project_id = ANY($1::uuid[])`,
+                    [projectIds]
+                );
+
+                const tagsByProjectId = {};
+                tags.forEach(tag => {
+                    const projectId = tag.project_id;
+                    if (!tagsByProjectId[projectId]) {
+                        tagsByProjectId[projectId] = [];
+                    }
+                    tagsByProjectId[projectId].push({
+                        id: tag.id,
+                        title: tag.title,
+                        color: tag.color
+                    });
+                });
+
+                projects.forEach(project => {
+                    project.tags = tagsByProjectId[project.id] || [];
+                });
+            }
+
+            return projects;
+        } catch (err) {
+            throw new Error('Failed to fetch projects: ' + err.message);
+        }
+    }
+
+    
     async getFeaturedProjects() {
         try {
             const { rows: projects } = await pool.query(
@@ -78,10 +155,12 @@ class ProjectService {
 
                 projects.forEach(project => {
                     project.tags = tagsByProjectId[project.id] || [];
+                    project.description = marked.parse(project.description);
                 });
             } else {
                 projects.forEach(project => {
                     project.tags = [];
+                    project.description = marked.parse(project.description);
                 });
             }
 
@@ -94,11 +173,7 @@ class ProjectService {
     async getProjectsByCategory(categoryId) {
         try {
             const { rows: projects } = await pool.query(
-                `SELECT p.*, c.name as category_name 
-                FROM website.projects p 
-                JOIN website.project_categories c ON p.category_id = c.id 
-                WHERE p.category_id = $1 
-                ORDER BY p.display_order ASC, p.created_at DESC`,
+                'SELECT * FROM website.projects WHERE category_id = $1 ORDER BY display_order ASC, created_at DESC',
                 [categoryId]
             );
 
@@ -128,10 +203,12 @@ class ProjectService {
 
                 projects.forEach(project => {
                     project.tags = tagsByProjectId[project.id] || [];
+                    project.description = marked.parse(project.description);
                 });
             } else {
                 projects.forEach(project => {
                     project.tags = [];
+                    project.description = marked.parse(project.description);
                 });
             }
 
@@ -139,7 +216,6 @@ class ProjectService {
         } catch (err) {
             throw new Error('Failed to fetch projects by category: ' + err.message);
         }
-
     }
 
     async createProject(projectData) {
