@@ -69,6 +69,24 @@ export default class ProjectsController {
         }
     }
 
+    async updateProjectOrder(req, res) {
+        try {
+            await projectService.updateProjectOrder(req.params.id, req.body.newOrder);
+            res.json({ message: 'Project order updated successfully' });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    }
+
+    async updateProjectCategoryAndOrder(req, res) {
+        try {
+          await projectService.updateProjectCategoryAndOrder(req.params.id, req.body);
+          res.json({ message: 'Project category and order updated successfully' });
+        } catch (err) {
+          res.status(500).json({ error: err.message });
+        }
+      }
+
     // CATEGORY MANAGEMENT
     async getCategories(req, res) {
         try {

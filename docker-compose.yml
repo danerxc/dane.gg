@@ -30,19 +30,19 @@ services:
       timeout: 10s
       retries: 3
 
-  # db:
-  #   image: postgres:16
-  #   ports:
-  #     - "5432:5432"
-  #   environment:
-  #     - POSTGRES_USER=user
-  #     - POSTGRES_PASSWORD=password
-  #     - POSTGRES_DB=website
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
-  #     - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+  db:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=website
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
 volumes:
     widget_data:
     user_uploads:
-#   pgdata:
+    pgdata:
