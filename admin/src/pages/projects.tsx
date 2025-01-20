@@ -708,60 +708,24 @@ export const Projects = () => {
           <Divider sx={{ my: 2 }} />
           <List>
             {categories.map((category) => (
-              <ListItem key={category.id}>
+              <ListItem
+                key={category.id}
+                secondaryAction={
+                  <IconButton edge="end" onClick={() => handleDeleteCategory(category.id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                }
+              >
                 {editingCategoryId === category.id ? (
-                  <>
-                    <TextField
-                      value={editedCategoryName}
-                      onChange={(e) => setEditedCategoryName(e.target.value)}
-                      size="small"
-                      autoFocus
-                      fullWidth
-                    />
-                    <IconButton
-                      onClick={() => handleEditCategory({
-                        id: category.id,
-                        name: editedCategoryName
-                      })}
-                      color="primary"
-                    >
-                      <CheckCircleIcon />
-                    </IconButton>
-                    <IconButton
-                      onClick={() => setEditingCategoryId(null)}
-                      color="default"
-                    >
-                      <CancelIcon />
-                    </IconButton>
-                  </>
+                  <TextField
+                    value={editedCategoryName}
+                    onChange={(e) => setEditedCategoryName(e.target.value)}
+                    size="small"
+                    autoFocus
+                    fullWidth
+                  />
                 ) : (
-                  <>
-                    <ListItemText primary={category.name} />
-                    <ListItem
-                      secondaryAction={
-                        <>
-                          <IconButton
-                            edge="end"
-                            onClick={() => {
-                              setEditingCategoryId(category.id);
-                              setEditedCategoryName(category.name);
-                            }}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            edge="end"
-                            color="error"
-                            onClick={() => handleDeleteCategory(category.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </>
-                      }
-                    >
-                      <ListItemText primary={category.name} />
-                    </ListItem>
-                  </>
+                  <ListItemText primary={category.name} />
                 )}
               </ListItem>
             ))}
