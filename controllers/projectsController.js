@@ -36,6 +36,15 @@ export default class ProjectsController {
     // PROTECTED MANAGEMENT ROUTES
     // =================
 
+    async getAllProjectsAdmin(req, res) {
+        try {
+            const projects = await projectService.getAllProjectsAdmin();
+            res.json(projects);
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    }
+
     async createProject(req, res) {
         try {
             const project = await projectService.createProject(req.body);

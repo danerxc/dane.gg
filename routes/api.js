@@ -62,6 +62,7 @@ router.get('/projects/category/:categoryId', projectsController.getProjectsByCat
 router.get('/projects/featured', projectsController.getFeaturedProjects.bind(projectsController));
 
 // - PROJECT MANAGEMENT ROUTES
+router.get('/projects/admin', authenticateToken, projectsController.getAllProjectsAdmin.bind(projectsController));
 router.post('/projects/', authenticateToken, projectsController.createProject.bind(projectsController));
 router.put('/projects/:id', authenticateToken, projectsController.updateProject.bind(projectsController));
 router.delete('/projects/:id', authenticateToken, projectsController.deleteProject.bind(projectsController));

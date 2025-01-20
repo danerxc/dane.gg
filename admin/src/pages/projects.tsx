@@ -51,6 +51,24 @@ import axiosInstance from '../services/axios';
 import { useFileUpload } from '../hooks/upload';
 import { ImagePreview } from '../components/imagePreview';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import MdEditor from 'react-markdown-editor-lite';
+import { marked } from 'marked';
+import 'react-markdown-editor-lite/lib/index.css';
+
+const TOOLBAR_OPTIONS: string[] = [
+  'font-bold',
+  'font-italic',
+  'font-underline',
+  'font-strikethrough',
+  'list-unordered',
+  'list-ordered',
+  'link',
+  'clear',
+  'logger',
+  'mode-toggle',
+  'full-screen',
+  'tab-insert'
+];
 
 const PROJECT_TEXT_OPTIONS = [
   'View Project',
@@ -145,7 +163,7 @@ export const Projects = () => {
     try {
       setLoading(true);
       setError(null);
-      const { data } = await axiosInstance.get('/api/projects');
+      const { data } = await axiosInstance.get('/api/projects/admin');
       setProjects(data);
     } catch (err) {
       console.error('Failed to fetch projects:', err);
@@ -290,6 +308,13 @@ export const Projects = () => {
     }
   };
 
+  const handleEditorChange = ({ text }: { text: string }) => {
+    setCurrentProject(prev => ({
+      ...prev,
+      description: text
+    }));
+  };
+
   const handleThumbnailChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const filePath = await handleFileUpload(e);
     if (filePath) {
@@ -353,41 +378,41 @@ export const Projects = () => {
 
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
-  
+
     const sourceIndex = result.source.index;
     const destinationIndex = result.destination.index;
     const projectId = result.draggableId;
-    
+
     const sourceCategoryName = result.source.droppableId.replace('category-', '');
     const destinationCategoryName = result.destination.droppableId.replace('category-', '');
-    
+
     const originalState = [...projects];
     setIsUpdatingOrder(true);
-    
+
     try {
       const destinationCategory = categories.find(c => c.name === destinationCategoryName);
-      
+
       if (!destinationCategory) return;
-  
+
       if (sourceCategoryName === destinationCategoryName) {
         const response = await axiosInstance.put(`/api/projects/${projectId}/order`, {
           newOrder: destinationIndex
         });
-  
+
         if (response.status === 200) {
           setProjects(prevProjects => {
             const newProjects = [...prevProjects];
             const categoryProjects = newProjects.filter(
               p => p.category_id === destinationCategory.id
             );
-  
+
             const [movedProject] = categoryProjects.splice(sourceIndex, 1);
             categoryProjects.splice(destinationIndex, 0, movedProject);
-            
+
             categoryProjects.forEach((project, index) => {
               project.display_order = index;
             });
-  
+
             return newProjects.map(p => {
               const updatedProject = categoryProjects.find(cp => cp.id === p.id);
               return updatedProject || p;
@@ -399,11 +424,11 @@ export const Projects = () => {
           categoryId: destinationCategory.id,
           newOrder: destinationIndex
         });
-  
+
         if (response.status === 200) {
           setProjects(prevProjects => {
             const newProjects = [...prevProjects];
-            
+
             const projectIndex = newProjects.findIndex(p => p.id === projectId);
             if (projectIndex !== -1) {
               newProjects[projectIndex] = {
@@ -411,7 +436,7 @@ export const Projects = () => {
                 category_id: destinationCategory.id,
                 display_order: destinationIndex
               };
-  
+
               newProjects
                 .filter(p => p.category_id === destinationCategory.id && p.id !== projectId)
                 .forEach(p => {
@@ -420,12 +445,12 @@ export const Projects = () => {
                   }
                 });
             }
-            
+
             return newProjects;
           });
         }
       }
-  
+
     } catch (error) {
       console.error('Failed to update project order:', error);
       setProjects(originalState);
@@ -632,13 +657,13 @@ export const Projects = () => {
                 </Grid>
 
                 <Grid size={12}>
-                  <TextField
-                    fullWidth
-                    label="Description"
-                    multiline
-                    rows={4}
+                  <Typography variant="subtitle1" sx={{ mb: 2 }}>Description</Typography>
+                  <MdEditor
                     value={currentProject.description ?? ''}
-                    onChange={(e) => setCurrentProject({ ...currentProject, description: e.target.value })}
+                    style={{ height: '300px' }}
+                    renderHTML={(text) => marked.parse(text)}
+                    onChange={handleEditorChange}
+                    plugins={TOOLBAR_OPTIONS}
                   />
                 </Grid>
               </Grid>
