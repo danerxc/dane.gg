@@ -4,7 +4,7 @@ class ProjectService {
     async getAllProjects() {
         try {
             const { rows: projects } = await pool.query(
-                'SELECT * FROM website.projects ORDER BY created_at DESC'
+                'SELECT * FROM website.projects ORDER BY display_order ASC, created_at DESC'
             );
 
             const projectIds = projects.map(project => project.id);
@@ -49,7 +49,7 @@ class ProjectService {
     async getFeaturedProjects() {
         try {
             const { rows: projects } = await pool.query(
-                'SELECT * FROM website.projects WHERE featured = true ORDER BY created_at DESC'
+                'SELECT * FROM website.projects WHERE featured = true ORDER BY display_order ASC, created_at DESC'
             );
 
             const projectIds = projects.map(project => project.id);
@@ -95,15 +95,15 @@ class ProjectService {
         try {
             const { rows: projects } = await pool.query(
                 `SELECT p.*, c.name as category_name 
-                 FROM website.projects p 
-                 JOIN website.project_categories c ON p.category_id = c.id 
-                 WHERE p.category_id = $1 
-                 ORDER BY p.created_at DESC`,
+                FROM website.projects p 
+                JOIN website.project_categories c ON p.category_id = c.id 
+                WHERE p.category_id = $1 
+                ORDER BY p.display_order ASC, p.created_at DESC`,
                 [categoryId]
             );
-    
+
             const projectIds = projects.map(project => project.id);
-    
+
             if (projectIds.length > 0) {
                 const { rows: tags } = await pool.query(
                     `SELECT pt.project_id, t.id, t.title, t.color
@@ -112,7 +112,7 @@ class ProjectService {
                     WHERE pt.project_id = ANY($1::uuid[])`,
                     [projectIds]
                 );
-    
+
                 const tagsByProjectId = {};
                 tags.forEach(tag => {
                     const projectId = tag.project_id;
@@ -125,7 +125,7 @@ class ProjectService {
                         color: tag.color
                     });
                 });
-    
+
                 projects.forEach(project => {
                     project.tags = tagsByProjectId[project.id] || [];
                 });
@@ -134,30 +134,31 @@ class ProjectService {
                     project.tags = [];
                 });
             }
-    
+
             return projects;
         } catch (err) {
             throw new Error('Failed to fetch projects by category: ' + err.message);
         }
+
     }
 
-        async createProject(projectData) {
-        const { 
-            title, 
-            description, 
-            category_id, 
-            featured, 
-            image_url, 
-            project_url, 
-            project_text, 
-            repo_url, 
+    async createProject(projectData) {
+        const {
+            title,
+            description,
+            category_id,
+            featured,
+            image_url,
+            project_url,
+            project_text,
+            repo_url,
             repo_text,
             tagIds = []
         } = projectData;
-        
+
         try {
             await pool.query('BEGIN');
-            
+
             const { rows } = await pool.query(
                 `INSERT INTO website.projects 
                 (title, description, category_id, featured, image_url, project_url, project_text, repo_url, repo_text) 
@@ -165,17 +166,16 @@ class ProjectService {
                 RETURNING *`,
                 [title, description, category_id, featured, image_url, project_url, project_text, repo_url, repo_text]
             );
-    
+
             const project = rows[0];
-    
-            // Assign tags if provided
+
             for (const tagId of tagIds) {
                 await pool.query(
                     'INSERT INTO website.project_tags (project_id, tag_id) VALUES ($1, $2)',
                     [project.id, tagId]
                 );
             }
-    
+
             await pool.query('COMMIT');
             return project;
         } catch (err) {
@@ -185,18 +185,18 @@ class ProjectService {
     }
 
     async updateProject(id, projectData) {
-        const { 
-            title, 
-            description, 
-            category_id, 
-            featured, 
-            image_url, 
-            project_url, 
-            project_text, 
-            repo_url, 
-            repo_text 
+        const {
+            title,
+            description,
+            category_id,
+            featured,
+            image_url,
+            project_url,
+            project_text,
+            repo_url,
+            repo_text
         } = projectData;
-        
+
         const { rows } = await pool.query(
             `UPDATE website.projects 
             SET title = $1, description = $2, category_id = $3, featured = $4, 
@@ -212,6 +212,66 @@ class ProjectService {
         const { rowCount } = await pool.query('DELETE FROM website.projects WHERE id = $1', [id]);
         return rowCount > 0;
     }
+
+    async updateProjectOrder(id, newOrder) {
+        try {
+            await pool.query('BEGIN');
+
+            const { rows: [project] } = await pool.query(
+                'SELECT id, display_order, category_id FROM website.projects WHERE id = $1',
+                [id]
+            );
+
+            if (!project) {
+                throw new Error('Project not found');
+            }
+
+            await pool.query(`
+                UPDATE website.projects
+                SET display_order = CASE
+                    WHEN id = $1 THEN $2
+                    WHEN display_order >= $2 AND display_order < $3 THEN display_order + 1
+                    WHEN display_order <= $2 AND display_order > $3 THEN display_order - 1
+                    ELSE display_order
+                END
+                WHERE category_id = $4
+            `, [id, newOrder, project.display_order, project.category_id]);
+
+            await pool.query('COMMIT');
+            return true;
+        } catch (err) {
+            await pool.query('ROLLBACK');
+            throw new Error('Failed to update project order: ' + err.message);
+        }
+    }
+
+    async updateProjectCategoryAndOrder(projectId, { categoryId, newOrder }) {
+        try {
+          await pool.query('BEGIN');
+          
+          await pool.query(
+            `UPDATE website.projects 
+             SET category_id = $1, 
+                 display_order = $2
+             WHERE id = $3`,
+            [categoryId, newOrder, projectId]
+          );
+      
+          await pool.query(
+            `UPDATE website.projects 
+             SET display_order = display_order + 1
+             WHERE category_id = $1 
+             AND id != $2
+             AND display_order >= $3`,
+            [categoryId, projectId, newOrder]
+          );
+      
+          await pool.query('COMMIT');
+        } catch (err) {
+          await pool.query('ROLLBACK');
+          throw new Error('Failed to update project category and order: ' + err.message);
+        }
+      }
 
     async getCategories() {
         try {
@@ -235,7 +295,7 @@ class ProjectService {
             throw new Error('Failed to create category: ' + err.message);
         }
     }
-    
+
     async updateCategory(id, name) {
         try {
             const { rows } = await pool.query(
@@ -247,7 +307,7 @@ class ProjectService {
             throw new Error('Failed to update category: ' + err.message);
         }
     }
-    
+
     async deleteCategory(id) {
         try {
             const { rowCount } = await pool.query(
@@ -260,7 +320,7 @@ class ProjectService {
         }
     }
 
-        async getAllTags() {
+    async getAllTags() {
         try {
             const { rows } = await pool.query(
                 'SELECT * FROM website.tags ORDER BY title'
@@ -270,7 +330,7 @@ class ProjectService {
             throw new Error('Failed to fetch tags: ' + err.message);
         }
     }
-    
+
     async createTag({ title, color }) {
         try {
             const { rows } = await pool.query(
@@ -282,7 +342,7 @@ class ProjectService {
             throw new Error('Failed to create tag: ' + err.message);
         }
     }
-    
+
     async updateTag(id, { title, color }) {
         try {
             const { rows } = await pool.query(
@@ -294,7 +354,7 @@ class ProjectService {
             throw new Error('Failed to update tag: ' + err.message);
         }
     }
-    
+
     async deleteTag(id) {
         try {
             const { rowCount } = await pool.query(
@@ -306,25 +366,25 @@ class ProjectService {
             throw new Error('Failed to delete tag: ' + err.message);
         }
     }
-    
+
     async assignTagsToProject(projectId, tagIds) {
         try {
             await pool.query('BEGIN');
-    
+
             await pool.query(
                 'DELETE FROM website.project_tags WHERE project_id = $1',
                 [projectId]
             );
-    
+
             for (const tagId of tagIds) {
                 await pool.query(
                     'INSERT INTO website.project_tags (project_id, tag_id) VALUES ($1, $2)',
                     [projectId, tagId]
                 );
             }
-    
+
             await pool.query('COMMIT');
-    
+
             const { rows: projects } = await pool.query(
                 `SELECT p.*, array_agg(json_build_object('id', t.id, 'title', t.title, 'color', t.color)) as tags
                  FROM website.projects p
@@ -334,14 +394,14 @@ class ProjectService {
                  GROUP BY p.id`,
                 [projectId]
             );
-    
+
             return projects[0];
         } catch (err) {
             await pool.query('ROLLBACK');
             throw new Error('Failed to assign tags to project: ' + err.message);
         }
     }
-    
+
     async removeTagFromProject(projectId, tagId) {
         try {
             const { rowCount } = await pool.query(

@@ -78,6 +78,7 @@ CREATE TABLE website.projects (
     project_text VARCHAR(50) DEFAULT 'View Project',
     repo_url VARCHAR(255),
     repo_text VARCHAR(50) DEFAULT 'View Repository',
+    display_order INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_project_category 
@@ -145,6 +146,7 @@ CREATE INDEX idx_projects_category_id ON website.projects(category_id);
 CREATE INDEX idx_categories_name ON website.project_categories(name);
 CREATE INDEX idx_page_views_visitor_id ON website.page_views(visitor_id);
 CREATE INDEX idx_page_views_created_at ON website.page_views(created_at);
+CREATE INDEX idx_projects_display_order ON website.projects(category_id, display_order);
 
 -- Grant permissions on all existing tables
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA website TO dane_gg;

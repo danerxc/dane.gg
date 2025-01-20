@@ -65,6 +65,8 @@ router.get('/projects/featured', projectsController.getFeaturedProjects.bind(pro
 router.post('/projects/', authenticateToken, projectsController.createProject.bind(projectsController));
 router.put('/projects/:id', authenticateToken, projectsController.updateProject.bind(projectsController));
 router.delete('/projects/:id', authenticateToken, projectsController.deleteProject.bind(projectsController));
+router.put('/projects/:id/order', authenticateToken, projectsController.updateProjectOrder.bind(projectsController));
+router.put('/projects/:id/category-order', authenticateToken, projectsController.updateProjectCategoryAndOrder.bind(projectsController));
 
 // - CATEGORY MANAGEMENT ROUTES
 router.get('/projects/categories', projectsController.getCategories.bind(projectsController));

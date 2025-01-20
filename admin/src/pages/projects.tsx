@@ -41,13 +41,16 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   ColorLens as ColorLensIcon,
-  CloudUpload as CloudUploadIcon
+  CloudUpload as CloudUploadIcon,
+  DragHandle as DragHandleIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 import { ChromePicker } from 'react-color';
 import { useState, useEffect, ChangeEvent } from 'react';
 import axiosInstance from '../services/axios';
 import { useFileUpload } from '../hooks/upload';
 import { ImagePreview } from '../components/imagePreview';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 const PROJECT_TEXT_OPTIONS = [
   'View Project',
@@ -98,6 +101,7 @@ interface Project {
   }>;
   project_text?: typeof PROJECT_TEXT_OPTIONS[number];
   repo_text?: typeof REPO_TEXT_OPTIONS[number];
+  display_order: number;
 }
 
 const getContrastText = (hexcolor: string) => {
@@ -126,6 +130,8 @@ export const Projects = () => {
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [inlineEditingTagId, setInlineEditingTagId] = useState<string | null>(null);
   const [inlineEditTag, setInlineEditTag] = useState({ title: '', color: '' });
+  const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
+  const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
   const { uploadProgress, uploadComplete, fileInputRef, handleFileUpload, resetUploadState } = useFileUpload();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -140,10 +146,11 @@ export const Projects = () => {
       setLoading(true);
       setError(null);
       const { data } = await axiosInstance.get('/api/projects');
-      setProjects(Array.isArray(data) ? data : []);
-    } catch (error) {
+      setProjects(data);
+    } catch (err) {
+      console.error('Failed to fetch projects:', err);
       setError('Failed to fetch projects');
-      console.error('Failed to fetch projects:', error);
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -153,6 +160,7 @@ export const Projects = () => {
     try {
       const { data } = await axiosInstance.get('/api/projects/categories');
       setCategories(Array.isArray(data) ? data : []);
+      setCategoryOrder(data.map((cat: Category) => cat.name));
     } catch (err) {
       console.error('Failed to fetch categories:', err);
       setCategories([]);
@@ -169,24 +177,31 @@ export const Projects = () => {
     }
   };
 
-const groupProjectsByCategory = (projects: Project[]) => {
-  const grouped = projects.reduce((acc, project) => {
-    const category = categories.find(c => c.id === project.category_id);
-    const categoryName = category?.name ?? 'Uncategorized';
-    if (!acc[categoryName]) {
-      acc[categoryName] = [];
-    }
-    acc[categoryName].push(project);
-    return acc;
-  }, {} as Record<string, Project[]>);
-  return grouped;
-};
+  const groupProjectsByCategory = (projects: Project[]) => {
+    const grouped = projects.reduce((acc, project) => {
+      const category = categories.find(c => c.id === project.category_id);
+      const categoryName = category?.name ?? 'Uncategorized';
+      if (!acc[categoryName]) {
+        acc[categoryName] = [];
+      }
+      acc[categoryName].push(project);
+      return acc;
+    }, {} as Record<string, Project[]>);
+
+    Object.keys(grouped).forEach(category => {
+      grouped[category].sort((a, b) => a.display_order - b.display_order);
+    });
+
+    return grouped;
+  };
 
   useEffect(() => {
-    fetchProjects();
-    fetchCategories();
-    fetchTags();
-  }, []);
+    if (!isUpdatingOrder) {
+      fetchProjects();
+      fetchCategories();
+      fetchTags();
+    }
+  }, [isUpdatingOrder]);
 
   useEffect(() => {
     resetUploadState();
@@ -336,6 +351,89 @@ const groupProjectsByCategory = (projects: Project[]) => {
     }
   };
 
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+  
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    const projectId = result.draggableId;
+    
+    const sourceCategoryName = result.source.droppableId.replace('category-', '');
+    const destinationCategoryName = result.destination.droppableId.replace('category-', '');
+    
+    const originalState = [...projects];
+    setIsUpdatingOrder(true);
+    
+    try {
+      const destinationCategory = categories.find(c => c.name === destinationCategoryName);
+      
+      if (!destinationCategory) return;
+  
+      if (sourceCategoryName === destinationCategoryName) {
+        const response = await axiosInstance.put(`/api/projects/${projectId}/order`, {
+          newOrder: destinationIndex
+        });
+  
+        if (response.status === 200) {
+          setProjects(prevProjects => {
+            const newProjects = [...prevProjects];
+            const categoryProjects = newProjects.filter(
+              p => p.category_id === destinationCategory.id
+            );
+  
+            const [movedProject] = categoryProjects.splice(sourceIndex, 1);
+            categoryProjects.splice(destinationIndex, 0, movedProject);
+            
+            categoryProjects.forEach((project, index) => {
+              project.display_order = index;
+            });
+  
+            return newProjects.map(p => {
+              const updatedProject = categoryProjects.find(cp => cp.id === p.id);
+              return updatedProject || p;
+            });
+          });
+        }
+      } else {
+        const response = await axiosInstance.put(`/api/projects/${projectId}/category-order`, {
+          categoryId: destinationCategory.id,
+          newOrder: destinationIndex
+        });
+  
+        if (response.status === 200) {
+          setProjects(prevProjects => {
+            const newProjects = [...prevProjects];
+            
+            const projectIndex = newProjects.findIndex(p => p.id === projectId);
+            if (projectIndex !== -1) {
+              newProjects[projectIndex] = {
+                ...newProjects[projectIndex],
+                category_id: destinationCategory.id,
+                display_order: destinationIndex
+              };
+  
+              newProjects
+                .filter(p => p.category_id === destinationCategory.id && p.id !== projectId)
+                .forEach(p => {
+                  if (p.display_order >= destinationIndex) {
+                    p.display_order += 1;
+                  }
+                });
+            }
+            
+            return newProjects;
+          });
+        }
+      }
+  
+    } catch (error) {
+      console.error('Failed to update project order:', error);
+      setProjects(originalState);
+    } finally {
+      await fetchProjects();
+      setIsUpdatingOrder(false);
+    }
+  };
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
@@ -363,75 +461,110 @@ const groupProjectsByCategory = (projects: Project[]) => {
         Create New Project
       </Button>
 
-      {Object.entries(groupProjectsByCategory(projects)).map(([categoryName, categoryProjects]) => (
-        <Box key={categoryName} sx={{ mb: 4 }}>
-          <Typography variant="h6" sx={{ mb: 2, pl: 2 }}>
-            {categoryName}
-          </Typography>
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: { xs: 300, sm: 650 } }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Featured</TableCell>
-                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Tags</TableCell>
-                  <TableCell sx={{ width: 120 }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {categoryProjects.map((project) => (
-                  <TableRow key={project.id}>
-                    <TableCell>{project.title}</TableCell>
-                    <TableCell>
-                      {project.featured ?
-                        <CheckCircleIcon color="success" sx={{ fontSize: '1.2rem' }} /> :
-                        <CancelIcon color="error" sx={{ fontSize: '1.2rem' }} />
-                      }
-                    </TableCell>
-                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {project.tags?.map((tag) => (
-                          <Chip
-                            key={tag.id}
-                            label={tag.title}
-                            size="small"
-                            sx={{
-                              backgroundColor: tag.color,
-                              color: theme => theme.palette.getContrastText(tag.color)
-                            }}
-                          />
+      <DragDropContext onDragEnd={handleDragEnd}>
+        {categoryOrder.map((categoryName) => {
+          const categoryProjects = groupProjectsByCategory(projects)[categoryName];
+          if (!categoryProjects?.length) return null;
+
+          return (
+            <Box key={categoryName} sx={{ mb: 4 }}>
+              <Typography variant="h6" sx={{ mb: 2, pl: 2 }}>
+                {categoryName}
+              </Typography>
+              <Droppable droppableId={`category-${categoryName}`}>
+                {(provided) => (
+                  <TableContainer
+                    component={Paper}
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                  >
+                    <Table sx={{ minWidth: { xs: 300, sm: 650 } }}>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell width="40px"></TableCell>
+                          <TableCell>Title</TableCell>
+                          <TableCell>Featured</TableCell>
+                          <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Tags</TableCell>
+                          <TableCell sx={{ width: 120 }}>Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {categoryProjects.map((project, index) => (
+                          <Draggable
+                            key={project.id}
+                            draggableId={project.id}
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              <TableRow
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                sx={{
+                                  bgcolor: snapshot.isDragging ? 'action.hover' : 'inherit',
+                                  '& td': { borderBottom: snapshot.isDragging ? 'none' : 'inherit' }
+                                }}
+                              >
+                                <TableCell {...provided.dragHandleProps}>
+                                  <DragHandleIcon sx={{ color: 'action.active' }} />
+                                </TableCell>
+                                <TableCell>{project.title}</TableCell>
+                                <TableCell>
+                                  {project.featured ?
+                                    <CheckCircleIcon color="success" sx={{ fontSize: '1.2rem' }} /> :
+                                    <CancelIcon color="error" sx={{ fontSize: '1.2rem' }} />
+                                  }
+                                </TableCell>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                    {project.tags?.map((tag) => (
+                                      <Chip
+                                        key={tag.id}
+                                        label={tag.title}
+                                        size="small"
+                                        sx={{
+                                          backgroundColor: tag.color,
+                                          color: theme => theme.palette.getContrastText(tag.color)
+                                        }}
+                                      />
+                                    ))}
+                                  </Box>
+                                </TableCell>
+                                <TableCell>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                      setCurrentProject({
+                                        ...project,
+                                        tagIds: project.tags?.map(tag => tag.id)
+                                      });
+                                      setIsEditing(true);
+                                      setOpen(true);
+                                    }}
+                                    sx={{ mr: 1 }}
+                                  >
+                                    <EditIcon />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleDelete(project.id)}
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </Draggable>
                         ))}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          setCurrentProject({
-                            ...project,
-                            tagIds: project.tags?.map(tag => tag.id)
-                          });
-                          setIsEditing(true);
-                          setOpen(true);
-                        }}
-                        sx={{ mr: 1 }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDelete(project.id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      ))}
+                        {provided.placeholder}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </Droppable>
+            </Box>
+          );
+        })}
+      </DragDropContext>
 
       <Drawer
         anchor="right"
@@ -445,20 +578,19 @@ const groupProjectsByCategory = (projects: Project[]) => {
         }}
       >
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          {/* Header */}
           <Box sx={{
             p: 2,
             borderBottom: 1,
             borderColor: 'divider',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            alignItems: 'center'
           }}>
             <Typography variant="h6">
-              {isEditing ? 'Edit Project' : 'Create Project'}
+              {isEditing ? 'Edit Project' : 'Create New Project'}
             </Typography>
             <IconButton onClick={() => setOpen(false)}>
-              <CancelIcon />
+              <CloseIcon />
             </IconButton>
           </Box>
 
