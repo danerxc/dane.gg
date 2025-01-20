@@ -24,3 +24,5 @@ admin/.env*
 admin/*.log
 admin/cypress/videos
 admin/cypress/screenshots
+
+sonar-project.properties
