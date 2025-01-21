@@ -2026,3 +2026,47 @@ a[href^="mailto"] svg {
 .next-post {
     font-weight: bold;
 }
+
+.project-description {
+    margin: 1rem 0;
+    color: #666;
+    line-height: 1.6;
+  }
+  
+  .project-description p {
+    margin-bottom: 1rem;
+    color: #666;
+  }
+  
+  .project-description a {
+    color: #c27a7a;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  
+  .project-description a:hover {
+    color: #e48f8f;
+    text-decoration: underline;
+  }
+  
+  .project-description ul {
+    padding-left: 2rem;
+    list-style-type: disc;
+    color: #666;
+  }
+  
+  .project-description ol {
+    padding-left: 2rem;
+    list-style-type: decimal;
+    color: #666;
+  }
+  
+  .project-description li {
+    display: list-item;
+  }
+  
+  .project-description hr {
+    border: none;
+    border-top: 1px solid #666;
+    margin: 1.5rem 0;
+  }
