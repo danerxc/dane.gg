@@ -1,10 +1,25 @@
 import pool from '../db.js';
 import { marked } from 'marked';
+import { JSDOM } from 'jsdom';
+import createDOMPurify from 'dompurify';
+
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
+
+const ALLOWED_TAGS = ['strong', 'em', 'u', 'strike', 'ul', 'ol', 'li', 'a', 'p'];
+const ALLOWED_ATTR = ['href'];
+
+const purifyConfig = {
+    ALLOWED_TAGS: ALLOWED_TAGS,
+    ALLOWED_ATTR: ALLOWED_ATTR,
+    RETURN_DOM_FRAGMENT: false,
+    RETURN_DOM: false
+};
 
 marked.setOptions({
     gfm: true,
     breaks: true,
-    sanitize: true
+    sanitize: false
 });
 
 marked.use({
@@ -66,12 +81,14 @@ class ProjectService {
 
                 projects.forEach(project => {
                     project.tags = tagsByProjectId[project.id] || [];
-                    project.description = marked.parse(project.description);
+                    const htmlContent = marked.parse(project.description);
+                    project.description = DOMPurify.sanitize(htmlContent, purifyConfig);
                 });
             } else {
                 projects.forEach(project => {
                     project.tags = [];
-                    project.description = marked.parse(project.description);
+                    const htmlContent = marked.parse(project.description);
+                    project.description = DOMPurify.sanitize(htmlContent, purifyConfig);
                 });
             }
 
@@ -155,12 +172,14 @@ class ProjectService {
 
                 projects.forEach(project => {
                     project.tags = tagsByProjectId[project.id] || [];
-                    project.description = marked.parse(project.description);
+                    const htmlContent = marked.parse(project.description);
+                    project.description = DOMPurify.sanitize(htmlContent, purifyConfig);
                 });
             } else {
                 projects.forEach(project => {
                     project.tags = [];
-                    project.description = marked.parse(project.description);
+                    const htmlContent = marked.parse(project.description);
+                    project.description = DOMPurify.sanitize(htmlContent, purifyConfig);
                 });
             }
 
@@ -203,12 +222,14 @@ class ProjectService {
 
                 projects.forEach(project => {
                     project.tags = tagsByProjectId[project.id] || [];
-                    project.description = marked.parse(project.description);
+                    const htmlContent = marked.parse(project.description);
+                    project.description = DOMPurify.sanitize(htmlContent, purifyConfig);
                 });
             } else {
                 projects.forEach(project => {
                     project.tags = [];
-                    project.description = marked.parse(project.description);
+                    const htmlContent = marked.parse(project.description);
+                    project.description = DOMPurify.sanitize(htmlContent, purifyConfig);
                 });
             }
 
