@@ -1,5 +1,15 @@
-# dane.gg
-My personal portfolio/blog site w/ admin CMS dashboard.
+<p align="center">
+<img src="https://i.imgur.com/pRf4zZU.png" alt="dane.gg" />
+</p>
+
+<p align="center">
+  <b>My personal portfolio/blog site + admin management (CMS) dashboard</b>
+</p>
+
+<p align="center">
+<a href="https://dane.gg"><img src="https://img.shields.io/website-up-down-green-red/http/dane.gg.svg" alt="" /></a>
+<a href="https://github.com/danexrc/dane.gg/blob/master/LICENSE"><img src="https://img.shields.io/github/license/danexrc/dane.gg.svg" alt="License" /></a>
+</p>
 
 ## Features
 
@@ -20,11 +30,11 @@ My personal portfolio/blog site w/ admin CMS dashboard.
 Create a ``.env`` file in the root directory:
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-LASTFM_USERNAME=your_lastfm_username
-LASTFM_API_KEY=your_lastfm_api_key
-WEBHOOK_AUTH_TOKEN=your_webhook_token
-DEFAULT_WEATHER=snow/rain
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname //PostgreSQL datatbase connection string
+LASTFM_USERNAME=your_lastfm_username //Last.fm username
+LASTFM_API_KEY=your_lastfm_api_key //API key from last.fm development account
+WEBHOOK_AUTH_TOKEN=your_webhook_token //Random token to use for authorization when posting to the webhook endpoints
+DEFAULT_WEATHER=snow/rain //
 JWT_SECRET=your_jwt_secret
 ```
 ## 📦 Build
