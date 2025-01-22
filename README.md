@@ -11,14 +11,6 @@
 <a href="https://github.com/danexrc/dane.gg/blob/master/LICENSE"><img src="https://img.shields.io/github/license/danexrc/dane.gg.svg" alt="License" /></a>
 </p>
 
-## Features
-
-- 🌐 Public website with blog and project showcase
-- 📊 Admin panel for content management
-  - 🔒 Secure authentication with 2FA support
-- 📱 Responsive design
-- 🐳 Docker support for both development and production
-
 ## Prerequisites
 
 - Node.js 20+
