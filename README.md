@@ -11,13 +11,37 @@
 <a href="https://github.com/danexrc/dane.gg/blob/master/LICENSE"><img src="https://img.shields.io/github/license/danexrc/dane.gg.svg" alt="License" /></a>
 </p>
 
-## Prerequisites
+<hr>
+
+## 📂 Project Structure
+
+- The files for the public website are located within the **``/public``** folder
+- The admin panel react project is located within the **``/admin``** folder
+
+*The full project structure is shown below:*
+```
+.
+├── admin/             # React admin panel
+├── config/            # Configuration for uptime status monitoring
+├── controllers/       # API/webhook controllers
+├── data/              # JSON files to store API data (latest tweet, online/offline status, services status)
+├── middleware/        # Express auth/stats tracking middleware
+├── public/            # Public website files
+├── routes/            # Express routes
+├── services/          # Express API service logic
+└── server.js          # Express app entry point
+```
+<hr>
+
+## 📦 Build
+
+### Prerequisites
 
 - Node.js 20+
 - PostgreSQL database
 - Docker (Recommended)
 
-## Environment Variables
+### Environment Variables
 
 Create a ``.env`` file in the root directory:
 
@@ -29,10 +53,10 @@ WEBHOOK_AUTH_TOKEN=your_webhook_token //Random token to use for authorization wh
 DEFAULT_WEATHER=snow/rain //
 JWT_SECRET=your_jwt_secret
 ```
-## 📦 Build
-### Docker (Recommended)
+
+## Docker (Recommended)
 <details>
-<summary>Development</summary>
+<summary><b>Development</b></summary>
 
 1. Build the development image
 ```sh
@@ -57,7 +81,7 @@ This will start:
 </details>
 
 <details>
-  <summary>Production</summary>
+  <summary><b>Production</b></summary>
 
   1. Build the production image
 ```sh
@@ -75,10 +99,10 @@ docker compose -f docker-compose.prod.yml exec web node createInitialUser.js <us
 ```
 </details>
 
-### Node.js
+## Node.js
 
 <details>
-  <summary>Development</summary>
+  <summary><b>Development</b></summary>
 
   1. Install dependencies:
 ```sh
@@ -103,7 +127,7 @@ This will start:
 </details>
 
 <details>
-  <summary>Production</summary>
+  <summary><b>Production</b></summary>
 
   1. Install dependencies and build admin panel:
 ```
@@ -124,22 +148,11 @@ npm start
 
 </details>
 
-## Project Structure
-
-```
-.
-├── admin/              # React admin panel
-├── controllers/        # Route controllers
-├── middleware/         # Express middleware
-├── public/            # Static files
-├── routes/            # Express routes
-├── services/          # Business logic
-└── server.js          # Express app entry point
-```
+<hr>
 
 ## Technologies
 
-- Backend: Node.js, Express
+- Backend: ![Node.js](https://img.shields.io/badge/Node%20js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) ![Express](https://img.shields.io/badge/Express%20js-000000?style=for-the-badge&logo=express&logoColor=whit)
 - Frontend: HTML, CSS, JavaScript
 - Admin Panel: React, TypeScript, Material-UI
 - Database: PostgreSQL
