@@ -54,7 +54,7 @@ export default class RssService {
   }
 
   processImageUrl(thumbnail) {
-    if (!thumbnail) return 'https://dane.gg/assets/img/misc/social-thumbnail.jpg';
+    if (!thumbnail) return undefined;
     return thumbnail.startsWith('http') ? thumbnail : `https://dane.gg${thumbnail}`;
   }
 
