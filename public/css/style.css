@@ -858,6 +858,7 @@ nav a:hover {
     color: #888;
     font-size: 0.9rem;
 }
+
 .reading-time {
     margin-left: 1rem;
 }
@@ -888,14 +889,42 @@ nav a:hover {
 .post-navigation {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-top: 2rem;
+    position: relative;
 }
 
 .prev-post,
 .next-post {
     color: #fff;
     text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 40%;
+    display: flex;
+    align-items: center;
 }
+
+.prev-post::before,
+.next-post::after {
+    content: "";
+    display: inline-block;
+    width: 1.2em;
+    text-indent: 0;
+    overflow: visible;
+}
+
+.prev-post::before {
+    content: "←";
+    margin-right: 0.5em;
+}
+
+.next-post::after {
+    content: "→";
+    margin-left: 0.5em;
+}
+
 
 .prev-post:hover,
 .next-post:hover {
@@ -2031,42 +2060,106 @@ a[href^="mailto"] svg {
     margin: 1rem 0;
     color: #666;
     line-height: 1.6;
-  }
-  
-  .project-description p {
+}
+
+.project-description p {
     margin-bottom: 1rem;
     color: #666;
-  }
-  
-  .project-description a {
+}
+
+.project-description a {
     color: #c27a7a;
     text-decoration: none;
     transition: color 0.2s ease;
-  }
-  
-  .project-description a:hover {
+}
+
+.project-description a:hover {
     color: #e48f8f;
     text-decoration: underline;
-  }
-  
-  .project-description ul {
+}
+
+.project-description ul {
     padding-left: 2rem;
     list-style-type: disc;
     color: #666;
-  }
-  
-  .project-description ol {
+}
+
+.project-description ol {
     padding-left: 2rem;
     list-style-type: decimal;
     color: #666;
-  }
-  
-  .project-description li {
+}
+
+.project-description li {
     display: list-item;
-  }
-  
-  .project-description hr {
+}
+
+.project-description hr {
     border: none;
     border-top: 1px solid #666;
     margin: 1.5rem 0;
-  }
+}
+
+.rss-icon {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.rss-icon a {
+    display: inline-block;
+}
+
+.rss-icon svg {
+    width: 18px;
+    height: 18px;
+    color: #ffffff;
+}
+
+.rss-icon svg:hover {
+    color: #e48f8f;
+}
+
+.post-navigation .rss-icon {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 0;
+}
+
+@media (max-width: 600px) {
+    .post-navigation {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .prev-post,
+    .next-post {
+        width: auto;
+        max-width: 40px;
+        font-size: 24px;
+        text-indent: -9999px;
+        position: relative;
+        overflow: visible;
+    }
+
+    .prev-post::before {
+        content: "←";
+        position: absolute;
+        left: 0;
+        text-indent: 0;
+    }
+
+    .next-post::after {
+        content: "→";
+        position: absolute;
+        right: 0;
+        text-indent: 0;
+    }
+
+    .post-navigation .rss-icon {
+        position: static;
+        transform: none;
+        margin: 0;
+    }
+}
