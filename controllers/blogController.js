@@ -1,4 +1,5 @@
 import blogService from '../services/blog.js';
+import RssService from '../services/rss.js';
 import { fileURLToPath } from 'url';
 import path, { dirname } from 'path';
 
@@ -11,6 +12,9 @@ function processImageUrl(thumbnail) {
 }
 
 export default class BlogController {
+  constructor() {
+    this.rssService = new RssService();
+  }
 
   // =================
   // PUBLIC ROUTES 
@@ -61,6 +65,17 @@ export default class BlogController {
     } catch (err) {
       console.error(err);
       res.status(500).render('500');
+    }
+  }
+
+  async getRssFeed(req, res) {
+    try {
+      const feed = await this.rssService.generateFeed();
+      res.set('Content-Type', 'application/rss+xml');
+      res.send(feed);
+    } catch (error) {
+      console.error('RSS Feed Error:', error);
+      res.status(500).send('Error generating feed');
     }
   }
 
