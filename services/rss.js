@@ -60,6 +60,8 @@ export default class RssService {
 
   async generateFeed() {
     try {
+      this.feed.items = [];
+
       const query = `
         SELECT 
           title,
