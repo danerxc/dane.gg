@@ -62,14 +62,14 @@ export default class RssService {
     try {
       const query = `
         SELECT 
-          p.title,
-          p.slug,
-          p.content,
-          p.created_at,
-          p.thumbnail
-        FROM website.posts p
-        WHERE p.published = true 
-        ORDER BY p.created_at DESC
+          title,
+          slug,
+          content,
+          created_at,
+          thumbnail
+        FROM website.posts
+        WHERE published = true 
+        ORDER BY created_at DESC
         LIMIT 15`;
       
       const { rows: posts } = await pool.query(query);
