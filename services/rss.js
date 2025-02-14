@@ -36,6 +36,15 @@ export default class RssService {
       }]
     });
 
+    marked.use({
+      renderer: {
+        image(href, title, text) {
+          const imageUrl = href.startsWith('/') ? `https://dane.gg${href}` : href;
+          return `<img src="${imageUrl}" alt="${text}"${title ? ` title="${title}"` : ''}>`;
+        }
+      }
+    });
+
     this.feed = new Feed({
       title: "dane 桜",
       description: "I write the words which computers like!",
@@ -67,11 +76,12 @@ export default class RssService {
           title,
           slug,
           content,
-          created_at,
+          published_at,
+          updated_at,
           thumbnail
         FROM website.posts
         WHERE published = true 
-        ORDER BY created_at DESC
+        ORDER BY published_at DESC
         LIMIT 15`;
       
       const { rows: posts } = await pool.query(query);
@@ -100,7 +110,9 @@ export default class RssService {
           link: `https://dane.gg/blog/${post.slug}`,
           description: parsedContent.substring(0, 160),
           content: parsedContent,
-          date: new Date(post.created_at || Date.now()),
+          date: new Date(post.published_at || Date.now()),
+          published: new Date(post.published_at || Date.now()),
+          updated: new Date(post.updated_at || post.published_at || Date.now()),
           image: this.processImageUrl(post.thumbnail)
         });
       });

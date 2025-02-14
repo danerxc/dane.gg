@@ -34,37 +34,39 @@ export default class BlogController {
 
   async getPostBySlug(req, res) {
     try {
-      const post = await blogService.getPostBySlug(req.params.slug);
-      if (!post) {
-        return res.status(404).render('404');
-      }
+        const post = await blogService.getPostBySlug(req.params.slug);
+        if (!post) {
+            return res.status(404).render('404');
+        }
 
-      const { prev_post, next_post } = await blogService.getAdjacentPosts(post.id);
+        const { prev_post, next_post } = await blogService.getAdjacentPosts(post.id);
 
-      const content_preview = post.content
-      .replace(/<[^>]*>/g, '')
-      .replace(/[#*`]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 160);
+        const content_preview = post.content
+            .replace(/<[^>]*>/g, '')
+            .replace(/[#*`]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 160);
 
-      res.render('post', {
-        title: post.title,
-        slug: post.slug,
-        thumbnail: post.thumbnail,
-        social_thumbnail: processImageUrl(post.thumbnail),
-        content: post.content,
-        content_preview: content_preview + (content_preview.length >= 160 ? '...' : ''),
-        date: new Date(post.created_at).toLocaleDateString(),
-        date_iso: post.created_at,
-        reading_time: Math.ceil(post.content.split(' ').length / 200),
-        tags: post.tags,
-        prev_post,
-        next_post
-      });
+        res.render('post', {
+            title: post.title,
+            slug: post.slug,
+            thumbnail: post.thumbnail,
+            social_thumbnail: processImageUrl(post.thumbnail),
+            content: post.content,
+            content_preview: content_preview + (content_preview.length >= 160 ? '...' : ''),
+            published_date: new Date(post.published_at).toLocaleDateString(),
+            published_at_iso: post.published_at,
+            updated_date: new Date(post.updated_at).toLocaleDateString(),
+            updated_at_iso: post.updated_at,
+            reading_time: Math.ceil(post.content.split(' ').length / 200),
+            tags: post.tags,
+            prev_post,
+            next_post
+        });
     } catch (err) {
-      console.error(err);
-      res.status(500).render('500');
+        console.error(err);
+        res.status(500).render('500');
     }
   }
 

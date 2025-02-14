@@ -2162,4 +2162,21 @@ a[href^="mailto"] svg {
         transform: none;
         margin: 0;
     }
+
+    .post-meta {
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #888;
+        font-size: 0.9rem;
+    }
+
+    .edit-separator {
+        color: #555;
+    }
+
+    .edited-date {
+        color: #777;
+    }
 }
