@@ -42,6 +42,7 @@ CREATE TABLE website.posts (
     content TEXT NOT NULL,
     thumbnail VARCHAR(255),
     published BOOLEAN DEFAULT false,
+    published_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT title_length CHECK (char_length(title) >= 3),
