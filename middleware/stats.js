@@ -37,7 +37,7 @@ export const trackPageView = async (req, res, next) => {
             
             const fullPath = req.originalUrl || req.url;
             
-            const isBlogPost = fullPath.startsWith('/blog/') && !fullPath.endsWith('.html');
+            const isBlogPost = fullPath.startsWith('/blog/') && !fullPath.endsWith('.html') || !fullPath === '/blog/rss';
             const isProjectPage = fullPath.startsWith('/projects/') && !fullPath.includes('.');
             const isTrackablePage = TRACKABLE_PAGES.includes(fullPath);
 
