@@ -40,6 +40,9 @@
     <title>{{title}} - dane 桜</title>
     <script src="../js/shared.js"></script>
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
 </head>
 
@@ -95,8 +98,14 @@
                 {{/if}}
                 <h1>{{title}}</h1>
                 <div class="post-meta">
-                    <time datetime="{{date_iso}}">{{date}}</time>
-                    <span class="reading-time">{{reading_time}} min read</span>
+                    <i class="fa-regular fa-calendar"></i>
+                    <time datetime="{{published_at_iso}}"><b>{{published_date}}</b></time>
+                    {{#if updated_at_iso}}
+                    <span class="edit-separator"> • </span>
+                    <time datetime="{{updated_at_iso}}" class="edited-date"><i><b>Edited:</b> {{updated_date}}</i></time>
+                    {{/if}}
+
+                    <span class="reading-time"><i class="fa-regular fa-clock"></i> <b>{{reading_time}} min</b> read</span>
                 </div>
             </div>
 
@@ -121,7 +130,9 @@
                     <div class="rss-icon">
                         <a href="/blog/rss">
                             <svg height="200" width="200" viewBox="0 0 344 384" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M47 269q19 0 33 13.5t14 33T80 349t-33 14t-33-14t-14-33.5t14-33T47 269zM0 146q90 0 153.5 63.5T217 363h-62q0-64-45.5-109.5T0 208v-62zM0 21q93 0 171.5 46t124 124.5T341 363h-62q0-116-81.5-198T0 83V21z" fill="currentColor"/>
+                                <path
+                                    d="M47 269q19 0 33 13.5t14 33T80 349t-33 14t-33-14t-14-33.5t14-33T47 269zM0 146q90 0 153.5 63.5T217 363h-62q0-64-45.5-109.5T0 208v-62zM0 21q93 0 171.5 46t124 124.5T341 363h-62q0-116-81.5-198T0 83V21z"
+                                    fill="currentColor" />
                             </svg>
                         </a>
                     </div>
@@ -156,6 +167,9 @@
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js"
+        integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="../js/oneko.js" data-cat="../assets/fonts/oneko.gif"></script>
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {

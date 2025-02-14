@@ -198,10 +198,13 @@ class BlogService {
     async createPost({ title, content, slug, thumbnail, published, tags }) {
         try {
             const { rows } = await pool.query(
-                `INSERT INTO website.posts (title, content, slug, thumbnail, published) 
-                 VALUES ($1, $2, $3, $4, $5) 
-                 RETURNING *`,
-                [title, content, slug, thumbnail, published]
+                `INSERT INTO website.posts (
+                    title, content, slug, thumbnail, published, 
+                    published_at, created_at
+                ) 
+                VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP) 
+                RETURNING *`,
+                [title, content, slug, thumbnail, published, published ? new Date() : null]
             );
 
             if (tags?.length) {
@@ -216,16 +219,26 @@ class BlogService {
 
     async updatePost(slug, { title, content, thumbnail, published, tags }) {
         try {
+            const { rows: existingPost } = await pool.query(
+                'SELECT published, published_at FROM website.posts WHERE slug = $1',
+                [slug]
+            );
+
+            const shouldSetPublishedAt = published && !existingPost[0].published_at;
+            
             const { rows } = await pool.query(
                 `UPDATE website.posts 
-             SET title = COALESCE($1, title),
-                 content = COALESCE($2, content),
-                 thumbnail = COALESCE($3, thumbnail),
-                 published = COALESCE($4, published),
-                 updated_at = CURRENT_TIMESTAMP
-             WHERE slug = $5
-             RETURNING *`,
-                [title, content, thumbnail, published, slug]
+                SET title = COALESCE($1, title),
+                    content = COALESCE($2, content),
+                    thumbnail = COALESCE($3, thumbnail),
+                    published = COALESCE($4, published),
+                    published_at = CASE 
+                        WHEN $5 = true THEN CURRENT_TIMESTAMP 
+                        ELSE published_at 
+                    END
+                WHERE slug = $6
+                RETURNING *`,
+                [title, content, thumbnail, published, shouldSetPublishedAt, slug]
             );
 
             if (tags?.length && rows[0]) {

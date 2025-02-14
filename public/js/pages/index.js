@@ -54,7 +54,7 @@ async function loadPosts(page = 1, limit = 4) {
         return;
     } else {
         posts.forEach((post) => {
-            const date = new Date(post.created_at).toISOString().split('T')[0];
+            const date = new Date(post.published_at).toISOString().split('T')[0];
             const postHTML = `
                 <li><a href="/blog/${post.slug}" class="blog-post"><b>${date}</b> :: ${post.title}</a></li>
             `;

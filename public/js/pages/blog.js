@@ -45,7 +45,7 @@ async function loadPosts(page, limit) {
             return;
         } else {
             posts.forEach((post) => {
-                const date = new Date(post.created_at).toLocaleDateString('en-US', {
+                const date = new Date(post.published_at).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric'
@@ -58,7 +58,8 @@ async function loadPosts(page, limit) {
                                 ${post.thumbnail ? `<img src="${post.thumbnail}" alt="${post.title}" class="blog-post-thumbnail" />` : ''}
                                 <h2><a href="/blog/${post.slug}">${post.title}</a></h2>
                                 <div class="post-meta">
-                                    <time datetime="${post.created_at}">${date}</time>
+                                    <i class="fa-regular fa-calendar"></i>
+                                    <time datetime="${post.published_at}">${date}</time>
                                 </div>
                                 ${post.tags?.length ? `
                                     <div class="post-tags">
