@@ -1,11 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
-import SendIcon from '@mui/icons-material/Send'; // <-- Add this import
+import SendIcon from '@mui/icons-material/Send';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Typography } from '@mui/material';
 
 export const ChatModeration = () => {
     const [messages, setMessages] = useState<any[]>([]);
     const wsRef = useRef<WebSocket | null>(null);
+
+    // Dialog state
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [dialogUser, setDialogUser] = useState<{ userUUID: string, username: string } | null>(null);
+    const [newUsername, setNewUsername] = useState('');
 
     // Get JWT from localStorage (same as your axiosInstance)
     const getToken = () => localStorage.getItem('adminToken');
@@ -63,6 +69,27 @@ export const ChatModeration = () => {
 
     // For better UX, use a ref for the input and clear after send
     const adminMsgRef = useRef<HTMLInputElement>(null);
+
+    // Dialog handlers
+    const openUsernameDialog = (userUUID: string, username: string) => {
+        setDialogUser({ userUUID, username });
+        setNewUsername(username);
+        setDialogOpen(true);
+    };
+
+    const handleDialogSave = () => {
+        if (dialogUser) {
+            changeUsername(dialogUser.userUUID, newUsername.trim() || 'Anonymous');
+            setDialogOpen(false);
+        }
+    };
+
+    const handleDialogRemove = () => {
+        if (dialogUser) {
+            changeUsername(dialogUser.userUUID, 'Anonymous');
+            setDialogOpen(false);
+        }
+    };
 
     return (
         <div
@@ -124,15 +151,12 @@ export const ChatModeration = () => {
                                     <span
                                         style={{
                                             cursor: 'pointer',
-                                            color: '#e48f8f',
+                                            color: '#7fd6ff', // Contrasting blue/cyan to red
                                             display: 'inline-flex',
                                             alignItems: 'center',
                                         }}
                                         title="Change username"
-                                        onClick={() => {
-                                            const newUsername = prompt('New username:', msg.username);
-                                            if (newUsername !== null) changeUsername(msg.userUUID, newUsername);
-                                        }}
+                                        onClick={() => openUsernameDialog(msg.userUUID, msg.username)}
                                     >
                                         <AssignmentIndIcon fontSize="small" />
                                     </span>
@@ -215,6 +239,102 @@ export const ChatModeration = () => {
                     <SendIcon fontSize="medium" />
                 </button>
             </form>
+
+            {/* Username Change Dialog */}
+            <Dialog
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                PaperProps={{
+                    style: {
+                        background: '#181818',
+                        color: '#fff',
+                        borderRadius: 8,
+                        minWidth: 320,
+                        maxWidth: 400,
+                        width: '100%',
+                        border: '1.5px solid #e48f8f'
+                    }
+                }}
+            >
+                <DialogTitle sx={{ color: '#e48f8f', fontWeight: 700, fontFamily: 'monospace' }}>
+                    Change Username
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" sx={{ color: '#aaa', mb: 1 }}>
+                            Set a new username for this user or remove it to revert to <b>Anonymous</b>.
+                        </Typography>
+                        <TextField
+                            autoFocus
+                            fullWidth
+                            variant="outlined"
+                            label="Username"
+                            value={newUsername}
+                            onChange={e => setNewUsername(e.target.value)}
+                            sx={{
+                                input: {
+                                    color: '#fff',
+                                    background: '#232323'
+                                },
+                                label: { color: '#e48f8f' },
+                                '& .MuiOutlinedInput-root': {
+                                    '& fieldset': { borderColor: '#e48f8f' },
+                                    '&:hover fieldset': { borderColor: '#e48f8f' },
+                                    '&.Mui-focused fieldset': { borderColor: '#e48f8f' }
+                                }
+                            }}
+                            InputLabelProps={{
+                                style: { color: '#e48f8f' }
+                            }}
+                        />
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ justifyContent: 'space-between', px: 3, pb: 2 }}>
+                    <Button
+                        variant="outlined"
+                        onClick={handleDialogRemove}
+                        sx={{
+                            borderColor: '#e48f8f',
+                            color: '#e48f8f',
+                            fontWeight: 600,
+                            fontFamily: 'monospace',
+                            '&:hover': {
+                                background: '#2a1818',
+                                borderColor: '#e48f8f'
+                            }
+                        }}
+                    >
+                        Remove
+                    </Button>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                            onClick={() => setDialogOpen(false)}
+                            sx={{
+                                color: '#fff',
+                                fontFamily: 'monospace'
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="contained"
+                            onClick={handleDialogSave}
+                            sx={{
+                                background: 'linear-gradient(90deg, #e48f8f 0%, #ba7373 100%)',
+                                color: '#fff',
+                                fontWeight: 600,
+                                fontFamily: 'monospace',
+                                boxShadow: '0 2px 8px #0002',
+                                '&:hover': {
+                                    background: 'linear-gradient(90deg, #ba7373 0%, #e48f8f 100%)'
+                                }
+                            }}
+                        >
+                            Save
+                        </Button>
+                    </Box>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };
