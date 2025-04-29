@@ -288,6 +288,14 @@ const chatManager = {
                 });
             } else if (data.type === 'message') {
                 addMessage(data.data);
+            } else if (data.type === 'message_deleted') {
+                // Remove message from DOM by ID
+                document.querySelector(`.message[data-id="${data.messageId}"]`)?.remove();
+            } else if (data.type === 'username_changed') {
+                // Update username in all messages with this userUUID
+                document.querySelectorAll(`.message[data-uuid="${data.userUUID}"] .nick`).forEach(nickEl => {
+                    nickEl.textContent = `<${data.newUsername}>`;
+                });
             }
             resetInactivityTimeout();
         };
@@ -320,7 +328,7 @@ const chatManager = {
 };
 
 // Message Handling
-function addMessage({ username, content, timestamp, message_type, message_color, userUUID: msgUUID, isHistorical }) {
+function addMessage({ id, username, content, timestamp, message_type, message_color, userUUID: msgUUID, isHistorical }) {
     if (!isHistorical && msgUUID !== userUUID && username.toLowerCase() !== 'system') {
         playMessageSound();
     }
@@ -336,7 +344,7 @@ function addMessage({ username, content, timestamp, message_type, message_color,
                 content.includes('Username') ? '#abe6ff' : '#ffffff';
 
         messageHTML = `
-        <div class="message">
+        <div class="message" data-id="${id || ''}" data-uuid="${msgUUID || ''}">
             <span class="timestamp">[${timeString}]</span>
             <span class="nick">&lt;${username}&gt;</span>
             <span class="text" style="color: ${color}">${content}</span>
@@ -346,7 +354,7 @@ function addMessage({ username, content, timestamp, message_type, message_color,
             `style="color: #${Number(message_color).toString(16).padStart(6, '0')}"` : '';
 
         messageHTML = `
-        <div class="message">
+        <div class="message" data-id="${id || ''}" data-uuid="${msgUUID || ''}">
             <span class="timestamp">[${timeString}]</span>
             <span class="nick" ${nickColor}>&lt;${username}&gt;</span>
             <span class="text">${content}</span>

@@ -34,6 +34,11 @@ export default defineConfig(({ command }) => {
             target: 'http://localhost:3000',
             changeOrigin: true
           },
+          '/api/chat': {
+            target: 'ws://localhost:3000',
+            changeOrigin: true,
+            ws: true
+          },
           '/auth': {
             target: 'http://localhost:3000',
             changeOrigin: true

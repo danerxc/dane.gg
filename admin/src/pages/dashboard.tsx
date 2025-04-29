@@ -20,11 +20,13 @@ import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import PeopleIcon from '@mui/icons-material/People';
+import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import HighlightAltIcon from '@mui/icons-material/HighlightAlt';
 import { Link } from 'react-router-dom';
 import { Stats } from './stats';
+import { ChatModeration } from './chat';
 import { BlogPosts } from './blog';
 import { Projects } from './projects';
 import { Users } from './users';
@@ -98,6 +100,11 @@ const Dashboard = () => {
       text: 'Dashboard',
       path: '/admin',
       icon: <DashboardIcon />
+    },
+    {
+      text: 'Chat',
+      path: '/admin/chat',
+      icon: <ChatBubbleIcon />
     },
     {
       text: 'Blog Posts',
@@ -287,10 +294,10 @@ const Dashboard = () => {
           <Routes>
             <Route path="/" element={<Stats />} />
             <Route path="/stats" element={<Stats />} />
+            <Route path="/chat" element={<ChatModeration />} />
             <Route path="/blog" element={<BlogPosts />} />
             <Route path="/projects" element={<Projects />} />
             <Route
-              path="/users"
               element={
                 <ProtectedRoute>
                   <Users />
