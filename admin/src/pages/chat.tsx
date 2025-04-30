@@ -1,19 +1,18 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import SendIcon from '@mui/icons-material/Send';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Typography } from '@mui/material';
 
 export const ChatModeration = () => {
     const [messages, setMessages] = useState<any[]>([]);
     const wsRef = useRef<WebSocket | null>(null);
 
-    // Dialog state
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogUser, setDialogUser] = useState<{ userUUID: string, username: string } | null>(null);
     const [newUsername, setNewUsername] = useState('');
 
-    // Get JWT from localStorage (same as your axiosInstance)
     const getToken = () => localStorage.getItem('adminToken');
 
     useEffect(() => {
@@ -25,10 +24,24 @@ export const ChatModeration = () => {
         };
         wsRef.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
+
+            const ref = scrollContainerRef.current;
+            if (ref) {
+                wasAtBottomRef.current =
+                    Math.abs(ref.scrollHeight - ref.scrollTop - ref.clientHeight) < 10;
+            }
+
             if (data.type === 'history') {
                 setMessages(data.data.reverse());
             } else if (data.type === 'message') {
-                setMessages(prev => [...prev, data.data]);
+                if (wasAtBottomRef.current) {
+                    setMessages(prev => [...prev, data.data]);
+                    // Immediate scroll after new message if at bottom
+                    setTimeout(() => scrollToBottom(), 0);
+                } else {
+                    setMessages(prev => [...prev, data.data]);
+                    setNewMessageWhileNotAtBottom(true);
+                }
             } else if (data.type === 'message_deleted') {
                 setMessages(prev => prev.filter(msg => msg.id !== data.messageId));
             } else if (data.type === 'username_changed') {
@@ -91,6 +104,70 @@ export const ChatModeration = () => {
         }
     };
 
+    // Helper for timestamp formatting
+    const formatTimestamp = (timestamp: string) => {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const isToday =
+            date.getFullYear() === now.getFullYear() &&
+            date.getMonth() === now.getMonth() &&
+            date.getDate() === now.getDate();
+        return isToday
+            ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : date.toLocaleString([], { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    };
+
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [hasAutoScrolled, setHasAutoScrolled] = useState(false);
+    const [newMessageWhileNotAtBottom, setNewMessageWhileNotAtBottom] = useState(false);
+    const wasAtBottomRef = useRef(true);
+    const prevMessagesLength = useRef(0);
+
+    const scrollToBottom = () => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+        }
+        setNewMessageWhileNotAtBottom(false);
+    };
+
+    useLayoutEffect(() => {
+        const ref = scrollContainerRef.current;
+        if (!ref) return;
+        if (messages.length > prevMessagesLength.current) {
+            wasAtBottomRef.current =
+                Math.abs(ref.scrollHeight - ref.scrollTop - ref.clientHeight) < 10;
+        }
+        prevMessagesLength.current = messages.length;
+    }, [messages.length]);
+
+    useLayoutEffect(() => {
+        if (messages.length && !hasAutoScrolled) {
+            scrollToBottom();
+            setHasAutoScrolled(true);
+        }
+    }, [messages]);
+
+    useEffect(() => {
+        if (!hasAutoScrolled) return;
+        if (wasAtBottomRef.current) {
+            setTimeout(() => {
+                scrollToBottom();
+            }, 0);
+            setNewMessageWhileNotAtBottom(false);
+        } else {
+            setNewMessageWhileNotAtBottom(true);
+        }
+    }, [messages, hasAutoScrolled]);
+
+    const handleTableScroll = () => {
+        const ref = scrollContainerRef.current;
+        if (!ref) return;
+        const isAtBottom =
+            Math.abs(ref.scrollHeight - ref.scrollTop - ref.clientHeight) < 10;
+        wasAtBottomRef.current = isAtBottom;
+        if (isAtBottom) setNewMessageWhileNotAtBottom(false);
+    };
+
     return (
         <div
             style={{
@@ -106,9 +183,47 @@ export const ChatModeration = () => {
                 flexDirection: 'column',
                 height: '60vh',
                 minWidth: 0,
+                position: 'relative',
             }}
         >
+            {/* New messages pill */}
+            {newMessageWhileNotAtBottom && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        left: '50%',
+                        // Place just above the chat message list container (which has marginBottom: 16)
+                        bottom: 72, // 16px margin + ~56px for the textbox area (adjust if needed)
+                        transform: 'translateX(-50%)',
+                        zIndex: 20,
+                        background: '#e48f8f',
+                        color: '#fff',
+                        borderRadius: 999,
+                        boxShadow: '0 2px 8px #0007',
+                        cursor: 'pointer',
+                        minWidth: 0,
+                        padding: '8px 20px 8px 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontWeight: 600,
+                        fontFamily: 'monospace',
+                        fontSize: 16,
+                        border: '2px solid #fff',
+                        opacity: 0.97,
+                        gap: 8,
+                        userSelect: 'none',
+                        pointerEvents: 'auto',
+                    }}
+                    onClick={scrollToBottom}
+                    title="Scroll to latest"
+                >
+                    <ArrowDownwardIcon fontSize="small" style={{ marginRight: 4 }} />
+                    New messages
+                </div>
+            )}
+
             <div
+                ref={scrollContainerRef}
                 style={{
                     flex: 1,
                     overflowY: 'auto',
@@ -117,16 +232,22 @@ export const ChatModeration = () => {
                     background: '#181818',
                     marginBottom: 16,
                     minHeight: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    position: 'relative',
                 }}
+                onScroll={handleTableScroll}
             >
-                <table style={{
-                    width: '100%',
-                    borderCollapse: 'collapse',
-                    fontFamily: 'monospace',
-                    background: 'transparent',
-                    color: '#fff',
-                    fontSize: 14,
-                }}>
+                <table
+                    style={{
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        fontFamily: 'monospace',
+                        background: 'transparent',
+                        color: '#fff',
+                        fontSize: 14,
+                    }}
+                >
                     <thead>
                         <tr style={{ background: '#232323', position: 'sticky', top: 0 }}>
                             <th style={{ padding: '6px 8px', borderBottom: '1px solid #333', minWidth: 60 }}>Time</th>
@@ -139,7 +260,7 @@ export const ChatModeration = () => {
                         {messages.map(msg => (
                             <tr key={msg.id} style={{ borderBottom: '1px solid #222' }}>
                                 <td style={{ padding: '4px 8px', color: '#aaa', whiteSpace: 'nowrap' }}>
-                                    {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : ''}
+                                    {msg.timestamp ? formatTimestamp(msg.timestamp) : ''}
                                 </td>
                                 <td style={{ padding: '4px 8px', color: '#7fd6ff', wordBreak: 'break-all' }}>
                                     {msg.username}
@@ -151,7 +272,7 @@ export const ChatModeration = () => {
                                     <span
                                         style={{
                                             cursor: 'pointer',
-                                            color: '#7fd6ff', // Contrasting blue/cyan to red
+                                            color: '#7fd6ff',
                                             display: 'inline-flex',
                                             alignItems: 'center',
                                         }}
