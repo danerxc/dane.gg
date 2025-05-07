@@ -99,6 +99,14 @@
 - Option to setup & enable app-based 2FA authentication on account
 </details>
 
+<details>
+<summary><h3><b>Discord Integrations</b></h3></summary>
+I use a custom Discord bot for both the logic behind retrieving and displaying my latest tweet from Twitter & to enable the websockets chat to post/send from a channel in my Discord channel.
+<br>
+<br>
+You can read the <a href="https://github.com/danerxc/dane.gg/wiki">repo wiki</a> for information on these integrations & how to set them up.
+</details>
+
 <hr>
 
 ## 📂 Project Structure
