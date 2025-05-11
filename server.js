@@ -8,6 +8,7 @@ import http from 'http';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { trackPageView } from './middleware/stats.js';
 import cookieParser from 'cookie-parser';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
