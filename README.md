@@ -8,7 +8,7 @@
 
 <p align="center">
 <a href="https://dane.gg"><img src="https://img.shields.io/website-up-down-green-red/http/dane.gg.svg" alt="" /></a>
-<a href="https://github.com/danexrc/dane.gg/blob/master/LICENSE"><img src="https://img.shields.io/github/license/danexrc/dane.gg.svg" alt="License" /></a>
+<a href="https://github.com/danerxc/dane.gg/blob/master/LICENSE"><img src="https://img.shields.io/github/license/danexrc/dane.gg.svg" alt="License" /></a>
 </p>
 
 <hr>
@@ -97,6 +97,14 @@
 - Option to change username w/ availability checking
 - Option to change password w/ existing password checking
 - Option to setup & enable app-based 2FA authentication on account
+</details>
+
+<details>
+<summary><h3><b>Discord Integrations</b></h3></summary>
+I use a custom Discord bot for both the logic behind retrieving and displaying my latest tweet from Twitter & to enable the websockets chat to post/send from a channel in my Discord channel.
+<br>
+<br>
+You can read the <a href="https://github.com/danerxc/dane.gg/wiki">repo wiki</a> for information on these integrations & how to set them up.
 </details>
 
 <hr>
@@ -240,10 +248,10 @@ npm start
 
 ## Technologies
 
-- Backend: ![Node.js](https://img.shields.io/badge/Node%20js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) ![Express](https://img.shields.io/badge/Express%20js-000000?style=for-the-badge&logo=express&logoColor=whit)
-- Frontend: HTML, CSS, JavaScript
-- Admin Panel: React, TypeScript, Material-UI
-- Database: PostgreSQL
-- Real-time: WebSocket
-- Authentication: JWT, TOTP
-- Container: Docker
+- Backend: <img alt="Node JS" src="https://img.shields.io/badge/Node%20JS-87cf30?style=flat&logo=nodedotjs&logoColor=87cf30&labelColor=595959&color=87cf30" height="18"> <img alt="Express JS" src="https://img.shields.io/badge/Express_JS-000000?style=flat&logo=express&logoColor=000000&labelColor=595959&color=000000" height="18">
+- Frontend: <img alt="HTML" src="https://img.shields.io/badge/HTML-dd4b25?style=flat&logo=html5&logoColor=dd4b25&labelColor=595959&color=dd4b25" height="18"> <img alt="Static Badge" src="https://img.shields.io/badge/CSS-2d53e5?style=flat&logo=css3&logoColor=2d53e5&labelColor=595959&color=2d53e5" height="18"> <img alt="Static Badge" src="https://img.shields.io/badge/JavaScript-f7e025?style=flat&logo=javascript&logoColor=f7e025&labelColor=595959&color=f7e025" height="18"> <img alt="Static Badge" src="https://img.shields.io/badge/Handlebars-ff26523?style=flat&logo=handlebarsdotjs&logoColor=f26523&labelColor=595959&color=f26523" height="18">
+- Admin Panel: <img alt="Static Badge" src="https://img.shields.io/badge/React-61dbfb?style=flat&logo=react&logoColor=61dbfb&labelColor=595959&color=61dbfb" height="18"> <img alt="Static Badge" src="https://img.shields.io/badge/TypeScript-2d79c7?style=flat&logo=typescript&logoColor=2d79c7&labelColor=595959&color=2d79c7" height="18"> <img alt="Static Badge" src="https://img.shields.io/badge/Tailwind%20CSS-35bef8?style=flat&logo=tailwindcss&logoColor=35bef8&labelColor=595959&color=35bef8" height="18">
+- Database: <img alt="Static Badge" src="https://img.shields.io/badge/PostgreSQL-2f6792?style=flat&logo=postgresql&logoColor=2f6792&labelColor=595959&color=2f6792" height="18">
+- Real-time: <img alt="Static Badge" src="https://img.shields.io/badge/WebSocket-ff6600?style=flat&logo=socket&logoColor=ff6600&labelColor=595959&color=ff6600" height="18">
+- Authentication: <img alt="Static Badge" src="https://img.shields.io/badge/JWT-fb015c?style=flat&logo=jsonwebtokens&logoColor=fb015c&labelColor=595959&color=fb015c" height="18"> <img alt="Static Badge" src="https://img.shields.io/badge/TOTP-00ac4f?style=flat&logo=googleauthenticator&logoColor=00ac4f&labelColor=595959&color=00ac4f" height="18">
+- Container: <img alt="Static Badge" src="https://img.shields.io/badge/Docker-2496ed?style=flat&logo=docker&logoColor=2496ed&labelColor=595959&color=2496ed" height="18">
