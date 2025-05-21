@@ -1,10 +1,9 @@
 import jwt from 'jsonwebtoken';
 import pool from '../db.js';
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import path from 'path';
-import { WebSocket } from 'ws';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -38,6 +37,7 @@ function isAdminFromJWT(jwtToken) {
 
 function broadcast(wss, data) {
     const msg = JSON.stringify(data);
+    console.log(`[WSS Broadcast] Broadcasting message: ${msg} to ${wss.clients.size} clients`);
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(msg);
@@ -45,11 +45,43 @@ function broadcast(wss, data) {
     });
 }
 
+function broadcastClientCount(wss) {
+    const count = wss.clients.size;
+    console.log(`[WSS broadcastClientCount] Current client count: ${count}`);
+    broadcast(wss, { type: 'client_count_update', count });
+}
+
+async function sendMessageHistory(ws) {
+    try {
+        const { rows: dbMessages } = await pool.query(
+            'SELECT id, username, content, timestamp, message_type, message_color, client_uuid FROM website.messages ORDER BY timestamp DESC LIMIT 50'
+        );
+        
+        const historyMessagesForClient = dbMessages.map(msg => ({
+            id: msg.id,
+            username: msg.username,
+            content: msg.content,
+            timestamp: msg.timestamp,
+            message_type: msg.message_type,
+            message_color: msg.message_color,
+            userUUID: msg.client_uuid,
+            isHistorical: true
+        }));
+        
+        ws.send(JSON.stringify({ type: 'history', data: historyMessagesForClient }));
+    } catch (err) {
+        console.error('Error fetching message history:', err);
+    }
+}
+
 function setupWebSocket(server) {
     const wss = new WebSocketServer({ server, path: '/api/chat' });
+    console.log('[WSS] WebSocket server setup on /api/chat');
 
     wss.on('connection', (ws) => {
+        console.log('[WSS Connection] Client connected.');
         sendMessageHistory(ws);
+        broadcastClientCount(wss);
 
         ws.on('message', async (message) => {
             try {
@@ -133,30 +165,17 @@ function setupWebSocket(server) {
                 console.error('Error handling message:', err);
             }
         });
-    });
-}
 
-async function sendMessageHistory(ws) {
-    try {
-        const { rows: dbMessages } = await pool.query(
-            'SELECT id, username, content, timestamp, message_type, message_color, client_uuid FROM website.messages ORDER BY timestamp DESC LIMIT 50'
-        );
-        
-        const historyMessagesForClient = dbMessages.map(msg => ({
-            id: msg.id,
-            username: msg.username,
-            content: msg.content,
-            timestamp: msg.timestamp,
-            message_type: msg.message_type,
-            message_color: msg.message_color,
-            userUUID: msg.client_uuid,
-            isHistorical: true
-        }));
-        
-        ws.send(JSON.stringify({ type: 'history', data: historyMessagesForClient }));
-    } catch (err) {
-        console.error('Error fetching message history:', err);
-    }
+        ws.on('close', () => {
+            console.log('[WSS Connection] Client disconnected.'); // Log disconnection
+            broadcastClientCount(wss); // Broadcast count on disconnection
+        });
+
+        ws.on('error', (error) => {
+            console.error('[WSS Connection] WebSocket error on client:', error);
+            // Potentially call broadcastClientCount(wss) here too if errors might prevent 'close'
+        });
+    });
 }
 
 export default setupWebSocket;

@@ -8,6 +8,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, B
 export const ChatModeration = () => {
     const [messages, setMessages] = useState<any[]>([]);
     const wsRef = useRef<WebSocket | null>(null);
+    const [clientCount, setClientCount] = useState(0);
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogUser, setDialogUser] = useState<{ userUUID: string, username: string } | null>(null);
@@ -57,6 +58,8 @@ export const ChatModeration = () => {
                         ? { ...msg, username: data.newUsername }
                         : msg
                 ));
+            } else if (data.type === 'client_count_update') { // Handle the new message type
+                setClientCount(data.count);
             }
         };
         wsRef.current.onerror = (err) => {
@@ -64,6 +67,7 @@ export const ChatModeration = () => {
         };
         wsRef.current.onclose = () => {
             console.log('WebSocket closed');
+            setClientCount(0); // Reset count on disconnect if desired
         };
         return () => wsRef.current?.close();
     }, []);
@@ -135,7 +139,7 @@ export const ChatModeration = () => {
         }
         setNewMessageWhileNotAtBottom(false);
     };
-
+    
     useLayoutEffect(() => {
         const ref = scrollContainerRef.current;
         if (!ref) return;
@@ -187,11 +191,29 @@ export const ChatModeration = () => {
                 minHeight: 320,
                 display: 'flex',
                 flexDirection: 'column',
-                height: '60vh',
+                height: '60vh', // Or adjust as needed
                 minWidth: 0,
                 position: 'relative',
             }}
         >
+            {/* Client Count Card */}
+            <div
+                style={{
+                    background: '#232323',
+                    color: '#fff',
+                    padding: '10px 15px',
+                    borderRadius: 6,
+                    marginBottom: 16,
+                    fontFamily: 'monospace',
+                    fontSize: '1rem',
+                    border: '1px solid #333',
+                    textAlign: 'center',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                }}
+            >
+                Connected Clients: <span style={{ color: '#e48f8f', fontWeight: 'bold' }}>{clientCount}</span>
+            </div>
+
             {/* New messages pill */}
             {newMessageWhileNotAtBottom && (
                 <div
