@@ -4,11 +4,16 @@ import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Typography } from '@mui/material';
+import PeopleIcon from '@mui/icons-material/People';
+import MessageIcon from '@mui/icons-material/Message';
+import GroupIcon from '@mui/icons-material/Group';
 
 export const ChatModeration = () => {
     const [messages, setMessages] = useState<any[]>([]);
     const wsRef = useRef<WebSocket | null>(null);
     const [clientCount, setClientCount] = useState(0);
+    const [totalMessages, setTotalMessages] = useState(0);
+    const [uniquePosters, setUniquePosters] = useState(0);
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogUser, setDialogUser] = useState<{ userUUID: string, username: string } | null>(null);
@@ -58,8 +63,11 @@ export const ChatModeration = () => {
                         ? { ...msg, username: data.newUsername }
                         : msg
                 ));
-            } else if (data.type === 'client_count_update') { // Handle the new message type
+            } else if (data.type === 'client_count_update') {
                 setClientCount(data.count);
+            } else if (data.type === 'chat_aggregate_stats') {
+                setTotalMessages(data.data.totalMessages);
+                setUniquePosters(data.data.uniquePosters);
             }
         };
         wsRef.current.onerror = (err) => {
@@ -67,7 +75,7 @@ export const ChatModeration = () => {
         };
         wsRef.current.onclose = () => {
             console.log('WebSocket closed');
-            setClientCount(0); // Reset count on disconnect if desired
+            setClientCount(0);
         };
         return () => wsRef.current?.close();
     }, []);
@@ -178,6 +186,34 @@ export const ChatModeration = () => {
         if (isAtBottom) setNewMessageWhileNotAtBottom(false);
     };
 
+    const StatCard = ({ title, value, icon }: { title: string, value: number | string, icon: React.ReactNode }) => (
+        <Box
+            sx={{
+                background: '#232323',
+                color: '#fff',
+                padding: '15px',
+                borderRadius: 2,
+                border: '1px solid #333',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                flex: 1,
+                minWidth: '150px',
+            }}
+        >
+            {icon}
+            <Typography variant="h6" sx={{ color: '#e48f8f', fontWeight: 'bold', mt: 1 }}>
+                {value}
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#aaa' }}>
+                {title}
+            </Typography>
+        </Box>
+    );
+
     return (
         <div
             style={{
@@ -191,28 +227,17 @@ export const ChatModeration = () => {
                 minHeight: 320,
                 display: 'flex',
                 flexDirection: 'column',
-                height: '60vh', // Or adjust as needed
+                height: '60vh',
                 minWidth: 0,
                 position: 'relative',
             }}
         >
-            {/* Client Count Card */}
-            <div
-                style={{
-                    background: '#232323',
-                    color: '#fff',
-                    padding: '10px 15px',
-                    borderRadius: 6,
-                    marginBottom: 16,
-                    fontFamily: 'monospace',
-                    fontSize: '1rem',
-                    border: '1px solid #333',
-                    textAlign: 'center',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                }}
-            >
-                Connected Clients: <span style={{ color: '#e48f8f', fontWeight: 'bold' }}>{clientCount}</span>
-            </div>
+            {/* Stats Cards Row */}
+            <Box sx={{ display: 'flex', gap: 2, marginBottom: 2, flexWrap: 'wrap' }}>
+                <StatCard title="Connected Users" value={clientCount} icon={<PeopleIcon sx={{ fontSize: 30, color: '#7fd6ff' }} />} />
+                <StatCard title="Total Messages" value={totalMessages} icon={<MessageIcon sx={{ fontSize: 30, color: '#7fd6ff' }} />} />
+                <StatCard title="Unique Posters" value={uniquePosters} icon={<GroupIcon sx={{ fontSize: 30, color: '#7fd6ff' }} />} />
+            </Box>
 
             {/* New messages pill */}
             {newMessageWhileNotAtBottom && (
@@ -220,8 +245,7 @@ export const ChatModeration = () => {
                     style={{
                         position: 'absolute',
                         left: '50%',
-                        // Place just above the chat message list container (which has marginBottom: 16)
-                        bottom: 72, // 16px margin + ~56px for the textbox area (adjust if needed)
+                        bottom: 72,
                         transform: 'translateX(-50%)',
                         zIndex: 20,
                         background: '#e48f8f',

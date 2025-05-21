@@ -74,14 +74,42 @@ async function sendMessageHistory(ws) {
     }
 }
 
+async function getChatAggregateStats() {
+    try {
+        const totalMessagesResult = await pool.query('SELECT COUNT(*) AS total_messages FROM website.messages');
+
+        const uniquePostersResult = await pool.query(
+            "SELECT COUNT(DISTINCT client_uuid) AS unique_posters FROM website.messages WHERE client_uuid IS NOT NULL AND client_uuid != '00000000-0000-0000-0000-000000000000'"
+        );
+
+        const stats = {
+            totalMessages: parseInt(totalMessagesResult.rows[0]?.total_messages, 10) || 0,
+            uniquePosters: parseInt(uniquePostersResult.rows[0]?.unique_posters, 10) || 0,
+        };
+        return stats;
+    } catch (err) {
+        console.error('[WSS getChatAggregateStats] Error fetching chat aggregate stats:', err);
+        return {
+            totalMessages: 0,
+            uniquePosters: 0,
+        };
+    }
+}
+
+async function broadcastAggregateStats(wss) {
+    const updatedAggStats = await getChatAggregateStats();
+    broadcast(wss, { type: 'chat_aggregate_stats', data: updatedAggStats });
+}
+
 function setupWebSocket(server) {
     const wss = new WebSocketServer({ server, path: '/api/chat' });
     console.log('[WSS] WebSocket server setup on /api/chat');
 
-    wss.on('connection', (ws) => {
+    wss.on('connection', async (ws) => {
         console.log('[WSS Connection] Client connected.');
         sendMessageHistory(ws);
         broadcastClientCount(wss);
+        await broadcastAggregateStats(wss);
 
         ws.on('message', async (message) => {
             try {
@@ -91,6 +119,7 @@ function setupWebSocket(server) {
                 if (data.type === 'delete_message' && isAdminFromJWT(data.jwt)) {
                     await pool.query('DELETE FROM website.messages WHERE id = $1', [data.messageId]);
                     broadcast(wss, { type: 'message_deleted', messageId: data.messageId });
+                    await broadcastAggregateStats(wss);
                     return;
                 }
 
@@ -123,29 +152,29 @@ function setupWebSocket(server) {
                             userUUID: result.rows[0].client_uuid,
                         }
                     });
+                    await broadcastAggregateStats(wss);
                     return;
                 }
 
                 // Normal user message
-                const sanitizedContent = sanitizeServerMessage(data.content);
-                const sanitizedUsername = sanitizeServerMessage(data.username);
+                if (data.content && data.username && data.userUUID) {
+                    const sanitizedContent = sanitizeServerMessage(data.content);
+                    const sanitizedUsername = sanitizeServerMessage(data.username);
 
-                const query = `
-                    INSERT INTO website.messages (username, content, message_type, message_color, client_uuid)
-                    VALUES ($1, $2, $3, $4, $5)
-                    RETURNING id, username, content, timestamp, message_type, message_color, client_uuid
-                `;
-                const result = await pool.query(query, [
-                    sanitizedUsername, 
-                    sanitizedContent, 
-                    data.message_type, 
-                    data.message_color,
-                    data.userUUID
-                ]);
+                    const query = `
+                        INSERT INTO website.messages (username, content, message_type, message_color, client_uuid)
+                        VALUES ($1, $2, $3, $4, $5)
+                        RETURNING id, username, content, timestamp, message_type, message_color, client_uuid
+                    `;
+                    const result = await pool.query(query, [
+                        sanitizedUsername, 
+                        sanitizedContent, 
+                        data.message_type || 'chat', 
+                        data.message_color || '#ffffff',
+                        data.userUUID
+                    ]);
 
-                const broadcastData = JSON.stringify({
-                    type: 'message',
-                    data: {
+                    const newMsgData = {
                         id: result.rows[0].id,
                         username: result.rows[0].username,
                         content: result.rows[0].content,
@@ -153,27 +182,23 @@ function setupWebSocket(server) {
                         message_type: result.rows[0].message_type,
                         message_color: result.rows[0].message_color,
                         userUUID: result.rows[0].client_uuid,
-                    }
-                });
+                    };
+                    broadcast(wss, { type: 'message', data: newMsgData });
+                    await broadcastAggregateStats(wss);
+                }
 
-                wss.clients.forEach(client => {
-                    if (client.readyState === WebSocket.OPEN) {
-                        client.send(broadcastData);
-                    }
-                });
             } catch (err) {
                 console.error('Error handling message:', err);
             }
         });
 
         ws.on('close', () => {
-            console.log('[WSS Connection] Client disconnected.'); // Log disconnection
-            broadcastClientCount(wss); // Broadcast count on disconnection
+            console.log('[WSS Connection] Client disconnected.');
+            broadcastClientCount(wss);
         });
 
         ws.on('error', (error) => {
             console.error('[WSS Connection] WebSocket error on client:', error);
-            // Potentially call broadcastClientCount(wss) here too if errors might prevent 'close'
         });
     });
 }
