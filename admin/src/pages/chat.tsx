@@ -8,6 +8,11 @@ import PeopleIcon from '@mui/icons-material/People';
 import MessageIcon from '@mui/icons-material/Message';
 import GroupIcon from '@mui/icons-material/Group';
 
+const themeRed = '#e48f8f';
+const themeRedDark = '#ba7373';
+const themeBorderRed = '#a06060';
+const themeCyan = '#7fd6ff'; // New contrasting color for the change username icon
+
 export const ChatModeration = () => {
     const [messages, setMessages] = useState<any[]>([]);
     const wsRef = useRef<WebSocket | null>(null);
@@ -193,7 +198,7 @@ export const ChatModeration = () => {
                 color: '#fff',
                 padding: '15px',
                 borderRadius: 2,
-                border: '1px solid #333',
+                border: `1px solid ${themeBorderRed}`, // Use theme border color
                 boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -204,8 +209,8 @@ export const ChatModeration = () => {
                 minWidth: '150px',
             }}
         >
-            {icon}
-            <Typography variant="h6" sx={{ color: '#e48f8f', fontWeight: 'bold', mt: 1 }}>
+            {React.cloneElement(icon as React.ReactElement, { sx: { fontSize: 30, color: themeRed } })} {/* Use theme color for icon */}
+            <Typography variant="h6" sx={{ color: themeRed, fontWeight: 'bold', mt: 1 }}>
                 {value}
             </Typography>
             <Typography variant="caption" sx={{ color: '#aaa' }}>
@@ -234,9 +239,9 @@ export const ChatModeration = () => {
         >
             {/* Stats Cards Row */}
             <Box sx={{ display: 'flex', gap: 2, marginBottom: 2, flexWrap: 'wrap' }}>
-                <StatCard title="Connected Users" value={clientCount} icon={<PeopleIcon sx={{ fontSize: 30, color: '#7fd6ff' }} />} />
-                <StatCard title="Total Messages" value={totalMessages} icon={<MessageIcon sx={{ fontSize: 30, color: '#7fd6ff' }} />} />
-                <StatCard title="Unique Posters" value={uniquePosters} icon={<GroupIcon sx={{ fontSize: 30, color: '#7fd6ff' }} />} />
+                <StatCard title="Connected Users" value={clientCount} icon={<PeopleIcon />} />
+                <StatCard title="Total Messages" value={totalMessages} icon={<MessageIcon />} />
+                <StatCard title="Unique Posters" value={uniquePosters} icon={<GroupIcon />} />
             </Box>
 
             {/* New messages pill */}
@@ -248,7 +253,7 @@ export const ChatModeration = () => {
                         bottom: 72,
                         transform: 'translateX(-50%)',
                         zIndex: 20,
-                        background: '#e48f8f',
+                        background: themeRed, // Use theme color
                         color: '#fff',
                         borderRadius: 999,
                         boxShadow: '0 2px 8px #0007',
@@ -279,7 +284,7 @@ export const ChatModeration = () => {
                 style={{
                     flex: 1,
                     overflowY: 'auto',
-                    border: '1px solid #222',
+                    border: `1px solid ${themeBorderRed}`, // Use theme border color
                     borderRadius: 6,
                     background: '#181818',
                     marginBottom: 16,
@@ -302,19 +307,19 @@ export const ChatModeration = () => {
                 >
                     <thead>
                         <tr style={{ background: '#232323', position: 'sticky', top: 0 }}>
-                            <th style={{ padding: '6px 8px', borderBottom: '1px solid #333', minWidth: 60 }}>Time</th>
-                            <th style={{ padding: '6px 8px', borderBottom: '1px solid #333', minWidth: 80 }}>User</th>
-                            <th style={{ padding: '6px 8px', borderBottom: '1px solid #333' }}>Message</th>
-                            <th style={{ padding: '6px 8px', borderBottom: '1px solid #333', minWidth: 80 }}>Actions</th>
+                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}`, minWidth: 60 }}>Time</th>
+                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}`, minWidth: 80 }}>User</th>
+                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}` }}>Message</th>
+                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}`, minWidth: 80 }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {messages.map(msg => (
-                            <tr key={msg.id} style={{ borderBottom: '1px solid #222' }}>
+                            <tr key={msg.id} style={{ borderBottom: '1px solid #2a2a2a' }}> {/* Slightly darker border for rows */}
                                 <td style={{ padding: '4px 8px', color: '#aaa', whiteSpace: 'nowrap' }}>
                                     {msg.timestamp ? formatTimestamp(msg.timestamp) : ''}
                                 </td>
-                                <td style={{ padding: '4px 8px', color: '#7fd6ff', wordBreak: 'break-all' }}>
+                                <td style={{ padding: '4px 8px', color: themeRed, wordBreak: 'break-all' }}> {/* Use theme color for username */}
                                     {msg.username}
                                 </td>
                                 <td style={{ padding: '4px 8px', wordBreak: 'break-word' }}>
@@ -324,7 +329,7 @@ export const ChatModeration = () => {
                                     <span
                                         style={{
                                             cursor: msg.message_type === 'discord' ? 'not-allowed' : 'pointer',
-                                            color: msg.message_type === 'discord' ? '#555' : '#7fd6ff',
+                                            color: msg.message_type === 'discord' ? '#555' : themeCyan, // Use new themeCyan color
                                             display: 'inline-flex',
                                             alignItems: 'center',
                                             opacity: msg.message_type === 'discord' ? 0.5 : 1,
@@ -350,7 +355,7 @@ export const ChatModeration = () => {
                                     <span
                                         style={{
                                             cursor: 'pointer',
-                                            color: '#e48f8f',
+                                            color: themeRed, // Keep delete icon red
                                             display: 'inline-flex',
                                             alignItems: 'center',
                                         }}
@@ -394,19 +399,19 @@ export const ChatModeration = () => {
                         fontFamily: 'monospace',
                         background: '#232323',
                         color: '#fff',
-                        border: '1.5px solid #e48f8f',
+                        border: `1.5px solid ${themeRed}`, // Use theme color
                         borderRadius: 4,
                         fontSize: 16,
                         outline: 'none',
                         transition: 'border 0.2s',
                     }}
-                    onFocus={e => (e.target.style.border = '1.5px solid #e48f8f')}
-                    onBlur={e => (e.target.style.border = '1.5px solid #e48f8f')}
+                    onFocus={e => (e.target.style.border = `1.5px solid ${themeRed}`)}
+                    onBlur={e => (e.target.style.border = `1.5px solid ${themeRed}`)}
                 />
-                <button
+                <button // This is a raw HTML button, its styling is direct
                     type="submit"
                     style={{
-                        background: 'linear-gradient(90deg, #e48f8f 0%, #ba7373 100%)',
+                        background: `linear-gradient(90deg, ${themeRed} 0%, ${themeRedDark} 100%)`, // Use theme colors
                         color: '#fff',
                         border: 'none',
                         borderRadius: 4,
@@ -439,11 +444,11 @@ export const ChatModeration = () => {
                         minWidth: 320,
                         maxWidth: 400,
                         width: '100%',
-                        border: '1.5px solid #e48f8f'
+                        border: `1.5px solid ${themeRed}` // Use theme color
                     }
                 }}
             >
-                <DialogTitle sx={{ color: '#e48f8f', fontWeight: 700, fontFamily: 'monospace' }}>
+                <DialogTitle sx={{ color: themeRed, fontWeight: 700, fontFamily: 'monospace' }}>
                     Change Username
                 </DialogTitle>
                 <DialogContent>
@@ -463,15 +468,15 @@ export const ChatModeration = () => {
                                     color: '#fff',
                                     background: '#232323'
                                 },
-                                label: { color: '#e48f8f' },
+                                label: { color: themeRed }, // Use theme color
                                 '& .MuiOutlinedInput-root': {
-                                    '& fieldset': { borderColor: '#e48f8f' },
-                                    '&:hover fieldset': { borderColor: '#e48f8f' },
-                                    '&.Mui-focused fieldset': { borderColor: '#e48f8f' }
+                                    '& fieldset': { borderColor: themeRed }, // Use theme color
+                                    '&:hover fieldset': { borderColor: themeRed }, // Use theme color
+                                    '&.Mui-focused fieldset': { borderColor: themeRed } // Use theme color
                                 }
                             }}
                             InputLabelProps={{
-                                style: { color: '#e48f8f' }
+                                style: { color: themeRed } // Use theme color
                             }}
                         />
                     </Box>
@@ -481,13 +486,13 @@ export const ChatModeration = () => {
                         variant="outlined"
                         onClick={handleDialogRemove}
                         sx={{
-                            borderColor: '#e48f8f',
-                            color: '#e48f8f',
+                            borderColor: themeRed, // Use theme color
+                            color: themeRed, // Use theme color
                             fontWeight: 600,
                             fontFamily: 'monospace',
                             '&:hover': {
-                                background: '#2a1818',
-                                borderColor: '#e48f8f'
+                                background: 'rgba(228, 143, 143, 0.1)', // Lighter red background on hover
+                                borderColor: themeRed // Use theme color
                             }
                         }}
                     >
@@ -497,7 +502,7 @@ export const ChatModeration = () => {
                         <Button
                             onClick={() => setDialogOpen(false)}
                             sx={{
-                                color: '#fff',
+                                color: '#fff', // Keep cancel button neutral or slightly themed if preferred
                                 fontFamily: 'monospace'
                             }}
                         >
@@ -507,13 +512,13 @@ export const ChatModeration = () => {
                             variant="contained"
                             onClick={handleDialogSave}
                             sx={{
-                                background: 'linear-gradient(90deg, #e48f8f 0%, #ba7373 100%)',
+                                background: `linear-gradient(90deg, ${themeRed} 0%, ${themeRedDark} 100%)`, // Use theme colors
                                 color: '#fff',
                                 fontWeight: 600,
                                 fontFamily: 'monospace',
                                 boxShadow: '0 2px 8px #0002',
                                 '&:hover': {
-                                    background: 'linear-gradient(90deg, #ba7373 0%, #e48f8f 100%)'
+                                    background: `linear-gradient(90deg, ${themeRedDark} 0%, ${themeRed} 100%)` // Reverse gradient on hover
                                 }
                             }}
                         >
