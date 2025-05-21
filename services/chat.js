@@ -138,11 +138,22 @@ function setupWebSocket(server) {
 
 async function sendMessageHistory(ws) {
     try {
-        const { rows: messages } = await pool.query(
-            'SELECT * FROM website.messages ORDER BY timestamp DESC LIMIT 50'
+        const { rows: dbMessages } = await pool.query(
+            'SELECT id, username, content, timestamp, message_type, message_color, client_uuid FROM website.messages ORDER BY timestamp DESC LIMIT 50'
         );
-        const historyMessages = messages.map(msg => ({...msg, isHistorical: true}));
-        ws.send(JSON.stringify({ type: 'history', data: historyMessages }));
+        
+        const historyMessagesForClient = dbMessages.map(msg => ({
+            id: msg.id,
+            username: msg.username,
+            content: msg.content,
+            timestamp: msg.timestamp,
+            message_type: msg.message_type,
+            message_color: msg.message_color,
+            userUUID: msg.client_uuid,
+            isHistorical: true
+        }));
+        
+        ws.send(JSON.stringify({ type: 'history', data: historyMessagesForClient }));
     } catch (err) {
         console.error('Error fetching message history:', err);
     }

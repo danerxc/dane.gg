@@ -32,21 +32,28 @@ export const ChatModeration = () => {
             }
 
             if (data.type === 'history') {
-                setMessages(data.data.reverse());
+                const normalizedHistory = data.data.map(msg => ({
+                    ...msg,
+                    client_uuid: msg.userUUID 
+                })).reverse();
+                setMessages(normalizedHistory);
             } else if (data.type === 'message') {
+                const newMessage = {
+                    ...data.data,
+                    client_uuid: data.data.userUUID
+                };
                 if (wasAtBottomRef.current) {
-                    setMessages(prev => [...prev, data.data]);
-                    // Immediate scroll after new message if at bottom
+                    setMessages(prev => [...prev, newMessage]);
                     setTimeout(() => scrollToBottom(), 0);
                 } else {
-                    setMessages(prev => [...prev, data.data]);
+                    setMessages(prev => [...prev, newMessage]);
                     setNewMessageWhileNotAtBottom(true);
                 }
             } else if (data.type === 'message_deleted') {
                 setMessages(prev => prev.filter(msg => msg.id !== data.messageId));
             } else if (data.type === 'username_changed') {
                 setMessages(prev => prev.map(msg =>
-                    msg.userUUID === data.userUUID
+                    msg.client_uuid === data.userUUID
                         ? { ...msg, username: data.newUsername }
                         : msg
                 ));
@@ -80,7 +87,6 @@ export const ChatModeration = () => {
         sendWithAuth({ type: 'admin_message', content });
     };
 
-    // For better UX, use a ref for the input and clear after send
     const adminMsgRef = useRef<HTMLInputElement>(null);
 
     // Dialog handlers
@@ -271,13 +277,27 @@ export const ChatModeration = () => {
                                 <td style={{ padding: '4px 8px', whiteSpace: 'nowrap', display: 'flex', gap: 8 }}>
                                     <span
                                         style={{
-                                            cursor: 'pointer',
-                                            color: '#7fd6ff',
+                                            cursor: msg.message_type === 'discord' ? 'not-allowed' : 'pointer',
+                                            color: msg.message_type === 'discord' ? '#555' : '#7fd6ff',
                                             display: 'inline-flex',
                                             alignItems: 'center',
+                                            opacity: msg.message_type === 'discord' ? 0.5 : 1,
                                         }}
-                                        title="Change username"
-                                        onClick={() => openUsernameDialog(msg.userUUID, msg.username)}
+                                        title={msg.message_type === 'discord' ? 'Cannot change Discord usernames' : 'Change username'}
+                                        onClick={() => {
+
+                                            if (msg.message_type === 'discord') {
+                                                return;
+                                            }
+
+                                            const userIdentifier = msg.client_uuid;
+
+                                            if (typeof userIdentifier === 'string' && userIdentifier.length > 0) {
+                                                openUsernameDialog(userIdentifier, msg.username);
+                                            } else {
+                                                console.error(`[Change Username Click] FAILED: client_uuid is invalid for message ID ${msg.id}. client_uuid: "${userIdentifier}"`);
+                                            }
+                                        }}
                                     >
                                         <AssignmentIndIcon fontSize="small" />
                                     </span>

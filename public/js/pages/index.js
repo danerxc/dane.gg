@@ -277,8 +277,8 @@ const chatManager = {
         this.ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.type === 'history') {
-                const messages = document.querySelector('.messages');
-                messages.innerHTML = '';
+                const messagesContainer = document.querySelector('.messages');
+                if (messagesContainer) messagesContainer.innerHTML = '';
                 data.data.reverse().forEach(msg => addMessage(msg));
                 addMessage({
                     username: 'System',
@@ -289,13 +289,31 @@ const chatManager = {
             } else if (data.type === 'message') {
                 addMessage(data.data);
             } else if (data.type === 'message_deleted') {
-                // Remove message from DOM by ID
                 document.querySelector(`.message[data-id="${data.messageId}"]`)?.remove();
             } else if (data.type === 'username_changed') {
-                // Update username in all messages with this userUUID
-                document.querySelectorAll(`.message[data-uuid="${data.userUUID}"] .nick`).forEach(nickEl => {
-                    nickEl.textContent = `<${data.newUsername}>`;
-                });
+                console.log('[Frontend Chat] Received username_changed event:', JSON.stringify(data));
+                const targetUUID = data.userUUID; 
+                const newUsername = data.newUsername;
+
+                if (!targetUUID || typeof newUsername === 'undefined') {
+                    console.error('[Frontend Chat] Invalid data in username_changed event:', data);
+                    return;
+                }
+
+                const selector = `.message[data-uuid="${targetUUID}"] .nick`;
+                console.log(`[Frontend Chat] Attempting to find elements with selector: "${selector}"`);
+                
+                const nickElements = document.querySelectorAll(selector);
+                console.log(`[Frontend Chat] Found ${nickElements.length} nick elements to update for UUID ${targetUUID}.`);
+
+                if (nickElements.length > 0) {
+                    nickElements.forEach(nickEl => {
+                        console.log(`[Frontend Chat] Updating nick element (current: "${nickEl.textContent}") to "<${newUsername}>"`);
+                        nickEl.textContent = `<${newUsername}>`;
+                    });
+                } else {
+                    console.warn(`[Frontend Chat] No messages found in DOM for UUID: ${targetUUID} to update username.`);
+                }
             }
             resetInactivityTimeout();
         };
