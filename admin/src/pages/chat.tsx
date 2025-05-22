@@ -237,7 +237,7 @@ export const ChatModeration = () => {
                 minHeight: 320,
                 display: 'flex',
                 flexDirection: 'column',
-                height: '60vh',
+                height: '60vh', // Consider using max-height or a different unit for better mobile adaptability
                 minWidth: 0,
                 position: 'relative',
             }}
@@ -311,12 +311,33 @@ export const ChatModeration = () => {
                     }}
                 >
                     <thead>
-                        <tr style={{ background: '#232323', position: 'sticky', top: 0 }}>
-                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}`, minWidth: 50, textAlign: 'center' }}>Type</th>
-                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}`, minWidth: 60 }}>Time</th>
-                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}`, minWidth: 80 }}>User</th>
-                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}` }}>Message</th>
-                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}`, minWidth: 80 }}>Actions</th>
+                        <tr style={{ background: '#232323', position: 'sticky', top: 0, zIndex: 10 }}>
+                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}`, textAlign: 'center' }}
+                                sx={{
+                                    width: { xs: '35px', sm: 'auto' },
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >Type</th>
+                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}` }}
+                                sx={{
+                                    width: { xs: '55px', sm: 'auto' },
+                                    whiteSpace: { xs: 'normal', sm: 'nowrap' }
+                                }}
+                            >Time</th>
+                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}` }}
+                                sx={{
+                                    width: { xs: '70px', sm: 'auto' },
+                                    maxWidth: { md: '150px' } 
+                                }}
+                            >User</th>
+                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}` }}
+                            >Message</th>
+                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}` }}
+                                sx={{
+                                    width: { xs: '60px', sm: 'auto' },
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -355,18 +376,26 @@ export const ChatModeration = () => {
                                             </Box>
                                         </Tooltip>
                                     </td>
-                                    <td style={{ padding: '4px 8px', color: '#aaa', whiteSpace: 'nowrap' }}>
+                                    <td style={{ padding: '4px 8px', color: '#aaa', wordBreak: 'break-word' }} // Ensure wordBreak for safety
+                                        sx={{ // Match header's whiteSpace behavior
+                                            whiteSpace: { xs: 'normal', sm: 'nowrap' }
+                                        }}
+                                    >
                                         {msg.timestamp ? formatTimestamp(msg.timestamp) : ''}
                                     </td>
                                     <td style={{ padding: '4px 8px', color: usernameColor, wordBreak: 'break-all' }}>
+                                        {/* On xs, this will break within the 70px width. On sm+, it will expand to content. */}
                                         {msg.username}
                                     </td>
                                     <td style={{ padding: '4px 8px', wordBreak: 'break-word' }}>
                                         {msg.content}
                                     </td>
-                                    <td style={{ padding: '4px 8px', whiteSpace: 'nowrap', display: 'flex', gap: 8 }}>
-                                        <Tooltip title={msg.message_type === 'Discord' ? 'You cannot change usernames for Discord messages' : 'Change username'}>
-                                            {}
+                                    <td style={{ padding: '4px 8px', whiteSpace: 'nowrap', display: 'flex', justifyContent: 'center' }}
+                                        sx={{ // Responsive gap for actions
+                                            gap: { xs: 1, sm: 1, md: 2 } // e.g., 8px on xs/sm, 16px on md+
+                                        }}
+                                    >
+                                        <Tooltip title={msg.message_type === 'Discord' ? 'You cannot change Discord usernames' : 'Change username'}>
                                             <span
                                                 style={{
                                                     cursor: msg.message_type === 'Discord' ? 'not-allowed' : 'pointer',
@@ -376,7 +405,6 @@ export const ChatModeration = () => {
                                                     opacity: msg.message_type === 'Discord' ? 0.5 : 1,
                                                 }}
                                                 onClick={() => {
-
                                                     if (msg.message_type === 'Discord') {
                                                         console.log('[Change Username Icon Click] This is a Discord message. Action prevented.');
                                                         return;
