@@ -7,11 +7,15 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, B
 import PeopleIcon from '@mui/icons-material/People';
 import MessageIcon from '@mui/icons-material/Message';
 import GroupIcon from '@mui/icons-material/Group';
+import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
+import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
+import { FaDiscord } from "react-icons/fa";
 
 const themeRed = '#e48f8f';
 const themeRedDark = '#ba7373';
 const themeBorderRed = '#a06060';
 const themeCyan = '#7fd6ff';
+const discordBrandBlue = '#7289DA';
 
 export const ChatModeration = () => {
     const [messages, setMessages] = useState<any[]>([]);
@@ -308,6 +312,7 @@ export const ChatModeration = () => {
                 >
                     <thead>
                         <tr style={{ background: '#232323', position: 'sticky', top: 0 }}>
+                            <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}`, minWidth: 50, textAlign: 'center' }}>Type</th>
                             <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}`, minWidth: 60 }}>Time</th>
                             <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}`, minWidth: 80 }}>User</th>
                             <th style={{ padding: '6px 8px', borderBottom: `1px solid ${themeBorderRed}` }}>Message</th>
@@ -317,16 +322,12 @@ export const ChatModeration = () => {
                     <tbody>
                         {messages.map(msg => {
                             let usernameColor = themeRed;
-
                             if (msg.message_type === 'Discord') {
                                 usernameColor = '#ffffff'; 
-
                                 if (typeof msg.message_color !== 'undefined' && msg.message_color !== null) {
                                     const discordColorDecimal = Number(msg.message_color);
-
                                     if (!isNaN(discordColorDecimal) && discordColorDecimal !== 0) { 
                                         const hexColor = `#${discordColorDecimal.toString(16).padStart(6, '0')}`;
-                                        
                                         if (hexColor.toLowerCase() !== '#000000' && discordColorDecimal >= 1000000) {
                                             usernameColor = hexColor;
                                         }
@@ -334,8 +335,26 @@ export const ChatModeration = () => {
                                 }
                             }
 
+                            let typeIcon = <ChatBubbleIcon fontSize="small" sx={{ color: themeRed }} />;
+                            let typeTooltip = "Chat Message";
+
+                            if (msg.message_type === 'Discord') {
+                                typeIcon = <FaDiscord style={{ fontSize: '20px', color: discordBrandBlue }} />;
+                                typeTooltip = "Discord Message";
+                            } else if (msg.message_type === 'admin') {
+                                typeIcon = <AdminPanelSettings fontSize="small" sx={{ color: themeRed }} />;
+                                typeTooltip = "Admin Message";
+                            }
+
                             return (
                                 <tr key={msg.id} style={{ borderBottom: '1px solid #2a2a2a' }}>
+                                    <td style={{ padding: '4px 8px', textAlign: 'center', verticalAlign: 'middle' }}>
+                                        <Tooltip title={typeTooltip}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                                                {typeIcon}
+                                            </Box>
+                                        </Tooltip>
+                                    </td>
                                     <td style={{ padding: '4px 8px', color: '#aaa', whiteSpace: 'nowrap' }}>
                                         {msg.timestamp ? formatTimestamp(msg.timestamp) : ''}
                                     </td>
