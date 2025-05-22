@@ -3,7 +3,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Typography } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Typography, Tooltip } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import MessageIcon from '@mui/icons-material/Message';
 import GroupIcon from '@mui/icons-material/Group';
@@ -11,7 +11,7 @@ import GroupIcon from '@mui/icons-material/Group';
 const themeRed = '#e48f8f';
 const themeRedDark = '#ba7373';
 const themeBorderRed = '#a06060';
-const themeCyan = '#7fd6ff'; // New contrasting color for the change username icon
+const themeCyan = '#7fd6ff';
 
 export const ChatModeration = () => {
     const [messages, setMessages] = useState<any[]>([]);
@@ -108,6 +108,7 @@ export const ChatModeration = () => {
 
     // Dialog handlers
     const openUsernameDialog = (userUUID: string, username: string) => {
+        console.log('[openUsernameDialog] Called with userUUID:', userUUID, 'username:', username); // Log when function is called
         setDialogUser({ userUUID, username });
         setNewUsername(username);
         setDialogOpen(true);
@@ -198,7 +199,7 @@ export const ChatModeration = () => {
                 color: '#fff',
                 padding: '15px',
                 borderRadius: 2,
-                border: `1px solid ${themeBorderRed}`, // Use theme border color
+                border: `1px solid ${themeBorderRed}`,
                 boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -253,7 +254,7 @@ export const ChatModeration = () => {
                         bottom: 72,
                         transform: 'translateX(-50%)',
                         zIndex: 20,
-                        background: themeRed, // Use theme color
+                        background: themeRed,
                         color: '#fff',
                         borderRadius: 999,
                         boxShadow: '0 2px 8px #0007',
@@ -284,7 +285,7 @@ export const ChatModeration = () => {
                 style={{
                     flex: 1,
                     overflowY: 'auto',
-                    border: `1px solid ${themeBorderRed}`, // Use theme border color
+                    border: `1px solid ${themeBorderRed}`,
                     borderRadius: 6,
                     background: '#181818',
                     marginBottom: 16,
@@ -314,59 +315,86 @@ export const ChatModeration = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {messages.map(msg => (
-                            <tr key={msg.id} style={{ borderBottom: '1px solid #2a2a2a' }}> {/* Slightly darker border for rows */}
-                                <td style={{ padding: '4px 8px', color: '#aaa', whiteSpace: 'nowrap' }}>
-                                    {msg.timestamp ? formatTimestamp(msg.timestamp) : ''}
-                                </td>
-                                <td style={{ padding: '4px 8px', color: themeRed, wordBreak: 'break-all' }}> {/* Use theme color for username */}
-                                    {msg.username}
-                                </td>
-                                <td style={{ padding: '4px 8px', wordBreak: 'break-word' }}>
-                                    {msg.content}
-                                </td>
-                                <td style={{ padding: '4px 8px', whiteSpace: 'nowrap', display: 'flex', gap: 8 }}>
-                                    <span
-                                        style={{
-                                            cursor: msg.message_type === 'discord' ? 'not-allowed' : 'pointer',
-                                            color: msg.message_type === 'discord' ? '#555' : themeCyan, // Use new themeCyan color
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            opacity: msg.message_type === 'discord' ? 0.5 : 1,
-                                        }}
-                                        title={msg.message_type === 'discord' ? 'Cannot change Discord usernames' : 'Change username'}
-                                        onClick={() => {
+                        {messages.map(msg => {
+                            let usernameColor = themeRed;
 
-                                            if (msg.message_type === 'discord') {
-                                                return;
-                                            }
+                            if (msg.message_type === 'Discord') {
+                                usernameColor = '#ffffff'; 
 
-                                            const userIdentifier = msg.client_uuid;
+                                if (typeof msg.message_color !== 'undefined' && msg.message_color !== null) {
+                                    const discordColorDecimal = Number(msg.message_color);
 
-                                            if (typeof userIdentifier === 'string' && userIdentifier.length > 0) {
-                                                openUsernameDialog(userIdentifier, msg.username);
-                                            } else {
-                                                console.error(`[Change Username Click] FAILED: client_uuid is invalid for message ID ${msg.id}. client_uuid: "${userIdentifier}"`);
-                                            }
-                                        }}
-                                    >
-                                        <AssignmentIndIcon fontSize="small" />
-                                    </span>
-                                    <span
-                                        style={{
-                                            cursor: 'pointer',
-                                            color: themeRed, // Keep delete icon red
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                        }}
-                                        title="Delete message"
-                                        onClick={() => deleteMessage(msg.id)}
-                                    >
-                                        <DeleteIcon fontSize="small" />
-                                    </span>
-                                </td>
-                            </tr>
-                        ))}
+                                    if (!isNaN(discordColorDecimal) && discordColorDecimal !== 0) { 
+                                        const hexColor = `#${discordColorDecimal.toString(16).padStart(6, '0')}`;
+                                        
+                                        if (hexColor.toLowerCase() !== '#000000' && discordColorDecimal >= 1000000) {
+                                            usernameColor = hexColor;
+                                        }
+                                    }
+                                }
+                            }
+
+                            return (
+                                <tr key={msg.id} style={{ borderBottom: '1px solid #2a2a2a' }}>
+                                    <td style={{ padding: '4px 8px', color: '#aaa', whiteSpace: 'nowrap' }}>
+                                        {msg.timestamp ? formatTimestamp(msg.timestamp) : ''}
+                                    </td>
+                                    <td style={{ padding: '4px 8px', color: usernameColor, wordBreak: 'break-all' }}>
+                                        {msg.username}
+                                    </td>
+                                    <td style={{ padding: '4px 8px', wordBreak: 'break-word' }}>
+                                        {msg.content}
+                                    </td>
+                                    <td style={{ padding: '4px 8px', whiteSpace: 'nowrap', display: 'flex', gap: 8 }}>
+                                        <Tooltip title={msg.message_type === 'Discord' ? 'You cannot change usernames for Discord messages' : 'Change username'}>
+                                            {}
+                                            <span
+                                                style={{
+                                                    cursor: msg.message_type === 'Discord' ? 'not-allowed' : 'pointer',
+                                                    color: msg.message_type === 'Discord' ? '#555' : themeCyan,
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    opacity: msg.message_type === 'Discord' ? 0.5 : 1,
+                                                }}
+                                                onClick={() => {
+
+                                                    if (msg.message_type === 'Discord') {
+                                                        console.log('[Change Username Icon Click] This is a Discord message. Action prevented.');
+                                                        return;
+                                                    }
+
+                                                    console.log('[Change Username Icon Click] Not a Discord message. Proceeding to check userIdentifier.');
+                                                    const userIdentifier = msg.client_uuid;
+                                                    console.log(`[Change Username Icon Click] userIdentifier (msg.client_uuid): "${userIdentifier}" (Type: ${typeof userIdentifier})`);
+
+                                                    if (typeof userIdentifier === 'string' && userIdentifier.length > 0) {
+                                                        console.log('[Change Username Icon Click] userIdentifier is valid. Calling openUsernameDialog.');
+                                                        openUsernameDialog(userIdentifier, msg.username);
+                                                    } else {
+                                                        console.error(`[Change Username Icon Click] FAILED: userIdentifier is invalid or empty. Cannot open dialog.`);
+                                                    }
+                                                }}
+                                            >
+                                                <AssignmentIndIcon fontSize="small" />
+                                            </span>
+                                        </Tooltip>
+                                        <Tooltip title="Delete message">
+                                            <span
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    color: themeRed,
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                }}
+                                                onClick={() => deleteMessage(msg.id)}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </span>
+                                        </Tooltip>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
@@ -399,7 +427,7 @@ export const ChatModeration = () => {
                         fontFamily: 'monospace',
                         background: '#232323',
                         color: '#fff',
-                        border: `1.5px solid ${themeRed}`, // Use theme color
+                        border: `1.5px solid ${themeRed}`,
                         borderRadius: 4,
                         fontSize: 16,
                         outline: 'none',
@@ -408,10 +436,10 @@ export const ChatModeration = () => {
                     onFocus={e => (e.target.style.border = `1.5px solid ${themeRed}`)}
                     onBlur={e => (e.target.style.border = `1.5px solid ${themeRed}`)}
                 />
-                <button // This is a raw HTML button, its styling is direct
+                <button
                     type="submit"
                     style={{
-                        background: `linear-gradient(90deg, ${themeRed} 0%, ${themeRedDark} 100%)`, // Use theme colors
+                        background: `linear-gradient(90deg, ${themeRed} 0%, ${themeRedDark} 100%)`,
                         color: '#fff',
                         border: 'none',
                         borderRadius: 4,
@@ -444,7 +472,7 @@ export const ChatModeration = () => {
                         minWidth: 320,
                         maxWidth: 400,
                         width: '100%',
-                        border: `1.5px solid ${themeRed}` // Use theme color
+                        border: `1.5px solid ${themeRed}`
                     }
                 }}
             >
@@ -468,15 +496,15 @@ export const ChatModeration = () => {
                                     color: '#fff',
                                     background: '#232323'
                                 },
-                                label: { color: themeRed }, // Use theme color
+                                label: { color: themeRed },
                                 '& .MuiOutlinedInput-root': {
-                                    '& fieldset': { borderColor: themeRed }, // Use theme color
-                                    '&:hover fieldset': { borderColor: themeRed }, // Use theme color
-                                    '&.Mui-focused fieldset': { borderColor: themeRed } // Use theme color
+                                    '& fieldset': { borderColor: themeRed },
+                                    '&:hover fieldset': { borderColor: themeRed },
+                                    '&.Mui-focused fieldset': { borderColor: themeRed }
                                 }
                             }}
                             InputLabelProps={{
-                                style: { color: themeRed } // Use theme color
+                                style: { color: themeRed }
                             }}
                         />
                     </Box>
@@ -486,13 +514,13 @@ export const ChatModeration = () => {
                         variant="outlined"
                         onClick={handleDialogRemove}
                         sx={{
-                            borderColor: themeRed, // Use theme color
-                            color: themeRed, // Use theme color
+                            borderColor: themeRed,
+                            color: themeRed,
                             fontWeight: 600,
                             fontFamily: 'monospace',
                             '&:hover': {
-                                background: 'rgba(228, 143, 143, 0.1)', // Lighter red background on hover
-                                borderColor: themeRed // Use theme color
+                                background: 'rgba(228, 143, 143, 0.1)',
+                                borderColor: themeRed,
                             }
                         }}
                     >
@@ -502,7 +530,7 @@ export const ChatModeration = () => {
                         <Button
                             onClick={() => setDialogOpen(false)}
                             sx={{
-                                color: '#fff', // Keep cancel button neutral or slightly themed if preferred
+                                color: '#fff',
                                 fontFamily: 'monospace'
                             }}
                         >
@@ -512,13 +540,13 @@ export const ChatModeration = () => {
                             variant="contained"
                             onClick={handleDialogSave}
                             sx={{
-                                background: `linear-gradient(90deg, ${themeRed} 0%, ${themeRedDark} 100%)`, // Use theme colors
+                                background: `linear-gradient(90deg, ${themeRed} 0%, ${themeRedDark} 100%)`,
                                 color: '#fff',
                                 fontWeight: 600,
                                 fontFamily: 'monospace',
                                 boxShadow: '0 2px 8px #0002',
                                 '&:hover': {
-                                    background: `linear-gradient(90deg, ${themeRedDark} 0%, ${themeRed} 100%)` // Reverse gradient on hover
+                                    background: `linear-gradient(90deg, ${themeRedDark} 0%, ${themeRed} 100%)`
                                 }
                             }}
                         >
